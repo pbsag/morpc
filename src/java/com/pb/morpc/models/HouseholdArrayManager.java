@@ -17,6 +17,7 @@ import com.pb.morpc.structures.PersonType;
 import com.pb.morpc.structures.Tour;
 import com.pb.morpc.structures.TourType;
 import com.pb.morpc.synpop.SyntheticPopulation;
+import com.pb.common.util.ResourceUtil;
 
 import java.io.File;
 import java.io.IOException;
