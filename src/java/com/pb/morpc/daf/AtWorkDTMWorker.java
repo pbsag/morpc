@@ -14,9 +14,10 @@ import com.pb.morpc.models.DTMHousehold;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.models.TODDataManager;
 import com.pb.morpc.structures.Household;
-//******************logsumlogsumlogsumlogsum**********************
-//import com.pb.morpc.structures.LogsumRecord;
-//******************logsumlogsumlogsumlogsum**********************
+
+import com.pb.morpc.structures.SummitAggregationRecord;
+import com.pb.morpc.util.VectorToArrayConvertor;
+
 import com.pb.morpc.structures.TourType;
 
 import java.util.HashMap;
@@ -31,10 +32,6 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 	private static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 	private Household[] hhList = null;
-//	******************logsumlogsumlogsumlogsum**********************
-	//Wu added for attaching logsums to Message
-	//private LogsumRecord [] logsumRecords=null;
-//	******************logsumlogsumlogsumlogsum**********************
 	private DTMHousehold dtmHH = null;
 
 	private ZonalDataManager zdm = 	null;
@@ -46,6 +43,10 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 	private String modelServer = "AtWorkDTMModelServer";
 
 	private int processorId = 0;
+	
+	//Wu added for Summit Aggregation
+	private SummitAggregationRecord [] summitAggregationArray;
+	private boolean writeSummitAggregationFields;
 
 
     public AtWorkDTMWorker () {
@@ -71,6 +72,15 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 
 
 	public void onMessage(Message msg) {
+		
+		propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+		
+		//Wu added for Summit Aggregation
+		if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+			writeSummitAggregationFields=true;
+		}else{
+			writeSummitAggregationFields=false;
+		}
 
 
 		if (LOGGING)
@@ -87,15 +97,11 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 			//Send a response back to the server
 			if (messageReturnType == MessageID.RESULTS_ID)
 				newMessage = createResultsMessage();
-//			******************logsumlogsumlogsumlogsum**********************			
-			//Wu changed for handling logsum in Message
-			/*
-			if (messageReturnType == MessageID.RESULTS_LOGSUMS_ID){
-				logger.info("in TcMcWorker before create result message.");
-				newMessage = createResultsMessage();
+			//Wu added for Summit Aggregation
+			else if (messageReturnType == MessageID.SUMMIT_AGGREGATION_ID){
+				//logger.info("in TcMcWorker before create result message.");
+				newMessage = createSummitAggregationMessage();
 			}
-			*/
-//			******************logsumlogsumlogsumlogsum**********************
 			else if (messageReturnType == MessageID.FINISHED_ID)
 				newMessage = createFinishedMessage();
 			else if (messageReturnType == MessageID.EXIT_ID)
@@ -186,9 +192,10 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 				// retrieve the contents of the message:
 				hhList = (Household[])msg.getValue( MessageID.HOUSEHOLD_LIST_KEY );
 
-				//Wu added for handling logsums
-				Vector logsums=new Vector();
-				Vector currentLogsums=null;
+				//Wu added for Summit Aggregation
+				Vector summitRecords=new Vector();
+				Vector currentSummitRecords=null;
+				VectorToArrayConvertor convertor=null;
 
 				// if the list is null, no more hhs left to process;
 				// otherwise, put the household objects from the message into an array for processing.
@@ -217,12 +224,12 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 							dtmHH.resetHouseholdCount();
 							dtmHH.atWorkTourMc (hhList[i]);
 							
-//							******************logsumlogsumlogsumlogsum**********************							
-							//Wu added for writing out logsums
-							//currentLogsums=dtmHH.getLogsumRecords();
-							//logsums.addAll(currentLogsums);
-							//logsumRecords=createLogsumRecords(logsums);
-//							******************logsumlogsumlogsumlogsum**********************
+							//Wu added for Summit Aggregation
+							if(writeSummitAggregationFields){
+								currentSummitRecords=dtmHH.getSummitAggregationRecords();
+								summitRecords.addAll(currentSummitRecords);
+							}
+							//logger.info("in TcMcWorker before create logsum records.");
 						}
 						catch (java.lang.Exception e) {
 							e.printStackTrace();
@@ -232,11 +239,14 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
                             System.exit(-1);
 						}
 					}
-//					******************logsumlogsumlogsumlogsum**********************
-					//Wu modified for writing out logsum table
-					//returnValue = MessageID.RESULTS_LOGSUMS_ID;
-//					******************logsumlogsumlogsumlogsum**********************
-					returnValue = MessageID.RESULTS_ID;
+					//Wu added for Summit Aggregation
+					if(writeSummitAggregationFields){
+						convertor=new VectorToArrayConvertor(summitRecords);
+						summitAggregationArray=convertor.getSummitAggregationArray();
+						returnValue = MessageID.SUMMIT_AGGREGATION_ID;
+					}else{
+						returnValue = MessageID.RESULTS_ID;
+					}
 
 				}
 				else {
@@ -274,29 +284,22 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 
 		Message newMessage = createMessage();
 		newMessage.setId( MessageID.RESULTS);
-//		******************logsumlogsumlogsumlogsum**********************
-		//newMessage.setId( MessageID.RESULTS_LOGSUMS );
-//		******************logsumlogsumlogsumlogsum**********************
 		newMessage.setIntValue( MessageID.TOUR_CATEGORY_KEY, TourType.AT_WORK_CATEGORY );
 		newMessage.setValue( MessageID.TOUR_TYPES_KEY, TourType.AT_WORK_TYPES );
 		newMessage.setValue( MessageID.HOUSEHOLD_LIST_KEY, hhList );
-		
-//		******************logsumlogsumlogsumlogsum**********************
-		//Wu added for wrting out logsum tables
-		//newMessage.setValue(MessageID.LOGSUM_LIST_KEY, logsumRecords);
-//		******************logsumlogsumlogsumlogsum**********************
 		return newMessage;
 	}
-//	******************logsumlogsumlogsumlogsum**********************
-	//Wu added for writing logsums out
-	//private LogsumRecord [] createLogsumRecords(Vector logsums){
-		//LogsumRecord [] result=new LogsumRecord[logsums.size()];
-		//for(int i=0; i<logsums.size(); i++){
-			//result[i]=(LogsumRecord)logsums.get(i);
-		//}
-		//return result;
-		
-	//}
-//	******************logsumlogsumlogsumlogsum**********************
+	//Wu added for Summit Aggregation
+	private Message createSummitAggregationMessage () {
+
+		Message newMessage = createMessage();	
+		newMessage.setId( MessageID.SUMMIT_AGGREGATION);
+		newMessage.setIntValue( MessageID.TOUR_CATEGORY_KEY, TourType.MANDATORY_CATEGORY );
+		newMessage.setValue( MessageID.TOUR_TYPES_KEY, TourType.MANDATORY_TYPES );
+		//still need to send hhList back
+		newMessage.setValue( MessageID.HOUSEHOLD_LIST_KEY, hhList );
+		newMessage.setValue(MessageID.SUMMIT_LIST_KEY, summitAggregationArray);
+		return newMessage;
+	}
 
 }

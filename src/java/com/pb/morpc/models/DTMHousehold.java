@@ -11,12 +11,9 @@ import com.pb.common.model.ModelException;
 import com.pb.common.util.SeededRandom;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
-
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Arrays;
 import com.pb.common.model.LogitModel;
-
 import java.util.Vector;
 
 public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
@@ -828,15 +825,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 				//Wu added for Summit Aggregation
 				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-					SummitAggregationRecord record=new SummitAggregationRecord();
-					record.setExpUtils(root.getExponentiatedUtilities());
-					record.setProbs(root.getProbabilities());
-					record.setHouseholdID(hh.getID());
-					record.setPersonID(person);
-					record.setTourCategory(TourType.MANDATORY_CATEGORY);
-					record.setTourID(hh.getTourID());
-					
-					summitAggregationRecords.add(record);
+					summitAggregationRecords=makeSummitAggregationRecords(root, hh, "mandatory");
 				}
 																
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -1337,15 +1326,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 				//Wu added for Summit Aggregation
 				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-					SummitAggregationRecord record=new SummitAggregationRecord();
-					record.setExpUtils(root.getExponentiatedUtilities());
-					record.setProbs(root.getProbabilities());
-					record.setHouseholdID(hh.getID());
-					record.setPersonID(person);
-					record.setTourCategory(TourType.MANDATORY_CATEGORY);
-					record.setTourID(hh.getTourID());
-					
-					summitAggregationRecords.add(record);
+					summitAggregationRecords=makeSummitAggregationRecords(root, hh, "joint");
 				}
 								
 				mcTime += (System.currentTimeMillis() - markTime);
@@ -2009,8 +1990,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				person = hh.indivTours[t].getTourPerson();
 
 
-
-
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -2044,15 +2023,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 				//Wu added for Summit Aggregation
 				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-					SummitAggregationRecord record=new SummitAggregationRecord();
-					record.setExpUtils(root.getExponentiatedUtilities());
-					record.setProbs(root.getProbabilities());
-					record.setHouseholdID(hh.getID());
-					record.setPersonID(person);
-					record.setTourCategory(TourType.MANDATORY_CATEGORY);
-					record.setTourID(hh.getTourID());
-					
-					summitAggregationRecords.add(record);
+					summitAggregationRecords=makeSummitAggregationRecords(root, hh, "individual");
 				}
 								
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -2621,15 +2592,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 				//Wu added for Summit Aggregation
 				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-					SummitAggregationRecord record=new SummitAggregationRecord();
-					record.setExpUtils(root.getExponentiatedUtilities());
-					record.setProbs(root.getProbabilities());
-					record.setHouseholdID(hh.getID());
-					record.setPersonID(person);
-					record.setTourCategory(TourType.MANDATORY_CATEGORY);
-					record.setTourID(hh.getTourID());
-					
-					summitAggregationRecords.add(record);
+					summitAggregationRecords=makeSummitAggregationRecords(root, hh, "atwork");
 				}
 							
 				mcTime += (System.currentTimeMillis() - markTime);
@@ -2887,12 +2850,159 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				logger.info ( "");
 				
 			}
-		}
-							
+		}						
 	}
 	
 	//Wu added for Summit Aggregation
 	public Vector getSummitAggregationRecords(){
 		return summitAggregationRecords;
+	}
+	
+	//Wu added for Summit Aggregation
+	private Vector makeSummitAggregationRecords(LogitModel root, Household hh, String tourCategory){
+		
+		//contains all SummitAggregationRecords in this HH
+		Vector result=new Vector();
+		//current SummitAggregationRecord
+		SummitAggregationRecord record=null;
+
+		
+		JointTour[] jt;
+		Tour[] it;
+		Tour[] st;
+
+		double [] expUtils=root.getExponentiatedUtilities();
+		double [] probs=root.getProbabilities();
+		
+		//mandatory tours
+		if(tourCategory.equalsIgnoreCase("mandatory")){
+			it = hh.getMandatoryTours();
+			if (it != null) {
+				for (int t=0; t < it.length; t++) {
+					record=new SummitAggregationRecord();
+					record.setHouseholdID(hh.getID());
+					record.setPersonID(it[t].getTourPerson());
+					record.setTourID(t+1);
+					record.setPurpose(it[t].getTourType());
+					record.setTourCategory(TourType.MANDATORY_CATEGORY);
+					//for individual tour set party size to 1
+					record.setPartySize(1);
+					record.setHHIncome(hh.getHHIncome());
+					record.setAuto(hh.getAutoOwnership());
+					record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
+					record.setOrigin(it[t].getOrigTaz());
+					record.setDestination(it[t].getDestTaz());
+					record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
+					record.setDestSubZone(it[t].getDestShrtWlk());
+					record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt()));
+					record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt()));
+					record.setMode(it[t].getMode());
+	
+					record.setExpUtils(expUtils);
+					record.setProbs(probs);
+					result.add(record);
+				}
+			}
+		}
+		//joint tours
+		else if(tourCategory.equalsIgnoreCase("joint")){
+			jt = hh.getJointTours();
+			if (jt != null) {
+				for (int t=0; t < jt.length; t++) {
+					record=new SummitAggregationRecord();
+					record.setHouseholdID(hh.getID());
+					record.setPersonID(jt[t].getTourPerson());
+					record.setTourID(t+1);
+					record.setPurpose(jt[t].getTourType());
+					record.setTourCategory(TourType.JOINT_CATEGORY);
+					//for individual tour set party size to 1
+					record.setPartySize((jt[t].getJointTourPersons()).length);
+					record.setHHIncome(hh.getHHIncome());
+					record.setAuto(hh.getAutoOwnership());
+					record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
+					record.setOrigin(jt[t].getOrigTaz());
+					record.setDestination(jt[t].getDestTaz());
+					record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
+					record.setDestSubZone(jt[t].getDestShrtWlk());
+					record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt()));
+					record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt()));
+					record.setMode(jt[t].getMode());
+					
+					record.setExpUtils(expUtils);
+					record.setProbs(probs);
+					result.add(record);
+				}
+			}
+		}
+		//individual non-mandatory tours
+		else if(tourCategory.equalsIgnoreCase("individual")){
+			it = hh.getIndivTours();
+			if (it != null) {
+				for (int t=0; t < it.length; t++) {
+					record=new SummitAggregationRecord();
+					record.setHouseholdID(hh.getID());
+					record.setPersonID(it[t].getTourPerson());
+					record.setTourID(t+1);
+					record.setPurpose(it[t].getTourType());
+					record.setTourCategory(TourType.NON_MANDATORY_CATEGORY);
+					//for individual tour set party size to 1
+					record.setPartySize(1);
+					record.setHHIncome(hh.getHHIncome());
+					record.setAuto(hh.getAutoOwnership());
+					record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
+					record.setOrigin(it[t].getOrigTaz());
+					record.setDestination(it[t].getDestTaz());
+					record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
+					record.setDestSubZone(it[t].getDestShrtWlk());
+					record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt()));
+					record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt()));
+					record.setMode(it[t].getMode());	
+					
+					record.setExpUtils(expUtils);
+					record.setProbs(probs);
+					result.add(record);
+				}
+			}
+		}
+		//at-work tours
+		else if(tourCategory.equalsIgnoreCase("atwork")){
+			it = hh.getMandatoryTours();
+			if (it != null) {
+				for (int t=0; t < it.length; t++) {
+					if (it[t].getTourType() == TourType.WORK) {
+						st = it[t].getSubTours();
+						if (st != null) {
+							for (int s=0; s < st.length; s++) {
+								record=new SummitAggregationRecord();
+								record.setHouseholdID(hh.getID());
+								record.setPersonID(st[s].getTourPerson());	
+								record.setTourID((t+1)*10 + (s+1));
+								record.setPurpose(st[s].getTourType());
+								record.setTourCategory(TourType.AT_WORK_CATEGORY);
+								//for individual tour set party size to 1
+								record.setPartySize(1);
+								record.setHHIncome(hh.getHHIncome());
+								record.setAuto(hh.getAutoOwnership());
+								record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
+								record.setOrigin(st[s].getOrigTaz());
+								record.setDestination(st[s].getDestTaz());
+								record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
+								record.setDestSubZone(st[s].getDestShrtWlk());
+								record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt()));
+								record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt()));
+								record.setMode(st[s].getMode());
+								
+								record.setExpUtils(expUtils);
+								record.setProbs(probs);		
+								result.add(record);
+							}
+						}
+					}
+				}
+			}
+		}else{
+			logger.fatal("invalid tour category type.");
+		}
+		return result;
 	}
 }

@@ -143,10 +143,7 @@ public class HHArrayServer extends MessageProcessingTask {
 		}
 		//The hh array server gets a SEND_START_INFO message from the fpWorkers
 		//saying they're ready to begin work.
-		else {
-			//Wu added for Summit Aggregation
-			//logger.info("in HHArrayServer, message ID="+msg.getId());
-			
+		else {			
 			if ( hhServerStarted ) {
 		        
 				if ( msg.getId().equals( MessageID.SEND_WORK ) ) {		
@@ -180,11 +177,13 @@ public class HHArrayServer extends MessageProcessingTask {
 				TcMcWorker, IndivDTMWorker, JointDTMWorker, and AtWorkDTMWorker
 				*/
 				else if(msg.getId().equals(MessageID.SUMMIT_AGGREGATION)){
-					// retrieve the contents of the message.
-					logger.info("in HHArrayServer before writeLogsums");	
 					//write Summit aggregation records to file on disk
 					writeRecords((SummitAggregationRecord[])msg.getValue(MessageID.SUMMIT_LIST_KEY));
-					
+					//still need to do following so that HHArrayServer continue sending houselholds
+					short category = (short)msg.getIntValue( MessageID.TOUR_CATEGORY_KEY );
+					short[] types = (short[])msg.getValue( MessageID.TOUR_TYPES_KEY );	
+					hhMgr.sendResults ( (Household[])msg.getValue( MessageID.HOUSEHOLD_LIST_KEY ) );
+					sendWork ( category, types );
 				}
 				
 			}
@@ -228,19 +227,29 @@ public class HHArrayServer extends MessageProcessingTask {
 	 * Write out records (including utilities and probabilities) as CSV file
 	 */
 	private void writeRecords(SummitAggregationRecord [] records){
-		
+		logger.info("num of summit aggregation records="+records.length);	
         String fileName=(String)propertyMap.get("summitAggregationFile");
+        String [] ColTitles={"hh_id","person_id","tour_id","tourCategory","prob1","prob2","prob3","prob4","prob5","prob6","expUtil1","expUtil2","expUtil3","expUtil4","expUtil5","expUtil6"};
         File file=null;
                         
         try {
-            file=new File(fileName);       	
+            file=new File(fileName);    
             PrintWriter outStream = new PrintWriter (new BufferedWriter( new FileWriter(file, true) ) );
+            
+            //if summit file doesn't exit, first print column titles
+            if(!file.exists()){     	
+    	        for(int i=0; i<ColTitles.length; i++){
+    	        	outStream.print(ColTitles[i]);
+    	        	if(i!=ColTitles.length-1)
+    	        		outStream.print(",");
+    	        }
+            }
             
             for(int i=0; i<records.length; i++){
     	        double [] probs=records[i].getProbs();
     	        double [] expUtils=records[i].getExpUtils();
     	        int NoAlts=probs.length;
-    	                 
+    	                  
     	        outStream.print(records[i].getHouseholdID());
     	        outStream.print(",");
     	        outStream.print(records[i].getPersonID());
@@ -249,22 +258,28 @@ public class HHArrayServer extends MessageProcessingTask {
     	        outStream.print(",");
     	        outStream.print(records[i].getTourCategory());
     	        outStream.print(",");
+    	        
+    	        //logger.info("num of alts="+NoAlts);
     	            
     	        for(int j=0; j<NoAlts; j++){
+    	        	//logger.info("prob"+j+"="+probs[j]);
     	        	outStream.print(probs[j]);
     	            outStream.print(",");
     	        }
     	            
     	        for(int j=0; j<NoAlts; j++){
-    	            outStream.print(probs[j]);
+    	        	//logger.info("exp"+j+"="+expUtils[j]);
+    	            outStream.print(expUtils[j]);
     	            if(j!=NoAlts-1)
     	            	outStream.print(",");
     	        }
     	        outStream.println();
             }
+            outStream.close();
         }catch(IOException e){
         	logger.fatal("failed open file:"+fileName+", or failed writing record to:"+fileName);
         }
+        logger.info("finished writing records");
 	}
 	
 //	******************logsumlogsumlogsumlogsum**********************

@@ -67,15 +67,6 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 
 	public void onMessage(Message msg) {
-
-		propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
-		
-		//Wu added for Summit Aggregation
-		if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-			writeSummitAggregationFields=true;
-		}else{
-			writeSummitAggregationFields=false;
-		}
 		
 		if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
@@ -91,14 +82,12 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 			//Send a response back to the server
 			if (messageReturnType == MessageID.RESULTS_ID){
 				newMessage = createResultsMessage();
-			}
-			
+			}		
 			//Wu added for Summit Aggregation
-			if (messageReturnType == MessageID.SUMMIT_AGGREGATION_ID){
+			else if (messageReturnType == MessageID.SUMMIT_AGGREGATION_ID){
 				//logger.info("in TcMcWorker before create result message.");
 				newMessage = createSummitAggregationMessage();
 			}
-
 			else if (messageReturnType == MessageID.FINISHED_ID)
 				newMessage = createFinishedMessage();
 			else if (messageReturnType == MessageID.EXIT_ID)
@@ -114,6 +103,15 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 
 	private int respondToMessage (Message msg) {
+		
+		propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+		
+		//Wu added for Summit Aggregation
+		if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+			writeSummitAggregationFields=true;
+		}else{
+			writeSummitAggregationFields=false;
+		}
 
 		int returnValue=0;
 
@@ -207,7 +205,6 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 								currentSummitRecords=dtmHH.getSummitAggregationRecords();
 								summitRecords.addAll(currentSummitRecords);
 							}
-							//logger.info("in TcMcWorker before create logsum records.");
 						}
 						catch (java.lang.Exception e) {
 						    e.printStackTrace();
@@ -276,6 +273,8 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 		newMessage.setId( MessageID.SUMMIT_AGGREGATION);
 		newMessage.setIntValue( MessageID.TOUR_CATEGORY_KEY, TourType.MANDATORY_CATEGORY );
 		newMessage.setValue( MessageID.TOUR_TYPES_KEY, TourType.MANDATORY_TYPES );
+		//still need to send hhList back
+		newMessage.setValue( MessageID.HOUSEHOLD_LIST_KEY, hhList );
 		newMessage.setValue(MessageID.SUMMIT_LIST_KEY, summitAggregationArray);
 		return newMessage;
 	}
