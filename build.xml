@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+	<!ENTITY properties SYSTEM "file:../common-base/config/properties.xml">
+	<!ENTITY targets SYSTEM "file:../common-base/config/targets.xml">
+]>
+
+<project name="morpc" default="usage" basedir=".">
+	&properties;
+    &targets;
+    
+    <!-- ********************************************************* -->
+    <!-- Setup the classpath -->
+    <path id="compile.classpath">
+        <pathelement location="${common-base.dir}/build/classes"/>
+        <pathelement location="${common-daf-v1.dir}/build/classes"/>
+        <pathelement location="${build.classes.dir}"/>
+        <pathelement location="${basedir}/config"/>
+        <pathelement location="${common-base.dir}/config"/>
+        <pathelement location="${common-base.dir}/lib/jxl.jar"/>
+        <pathelement location="${dafapps.dir}/morpcDaf"/>
+        <pathelement location="${dafapps.dir}/morpcDaf/node0"/>
+        
+        <fileset dir="${basedir}">
+            <include name="**/lib/*.jar"/>
+            <include name="**/lib/*.zip"/>
+        </fileset>
+    </path>
+
+
+    <!-- ********************************************************* -->
+    <!-- Compile depedencies -->
+    <target name="pre-build" depends="">
+        <ant dir="${common-base.dir}" target="build" inheritAll="false"/>
+        <ant dir="${common-daf-v1.dir}" target="build" inheritAll="false"/>
+    </target>
+
+
+    <!-- ********************************************************* -->
+    <!-- Create a set of jar files for release -->
+    <target name="release" depends="makejar">
+   
+        <!-- copy dependencies to release directory -->
+        <copy file="${common-base.dir}/release/common-base.jar" todir="${release.dir}"/>
+        <copy file="${common-daf-v1.dir}/release/common-daf-v1.jar" todir="${release.dir}"/>
+    </target>
+
+
+    <!-- ********************************************************* -->
+    <!-- Morpc specific target to start a DAF server VM -->
+    <target name="startvm0">
+        <echo message="Running ${class}"/>
+    
+        <java classname="com.pb.common.daf.StartApplication" fork="yes">
+            <jvmarg value="-Xms${minMem}m"/>
+            <jvmarg value="-Xmx${maxMem}m"/>
+	        <jvmarg value="-Djava.util.logging.config.file=${logFile}"/>
+    
+        	<jvmarg value="-Ddaf.nodeName=node0"/>
+        	<jvmarg value="-DMORPC_DATA=/morpc_module/morpc_data"/>
+        	<jvmarg value="-DMORPC_MATRICES=/morpc_module/tppMatrices"/>
+        	<jvmarg value="-DBINARY_MATRICES=/morpc_module/binMatrices"/>
+        	<jvmarg value="-DOUTPUT_MATRICES=/morpc_module/outputMatrices"/>
+        	<jvmarg value="-DMORPC_OUTPUT=/morpc_module/morpc_data/outputfiles"/>
+        	<jvmarg value="-DMORPC_CONTROL_FILES=/morpc_module/controlfiles"/>
+        	<arg line="${args}"/>
+
+            <classpath refid="compile.classpath"/>
+        </java>
+    </target>
+
+
+    <!-- ********************************************************* -->
+    <!-- Morpc specific target to start a DAF worker VM -->
+    <target name="startvmN">
+        <echo message="Running ${class}"/>
+    
+        <java classname="com.pb.common.daf.StartNode" fork="yes">
+            <jvmarg value="-Xms${minMem}m"/>
+            <jvmarg value="-Xmx${maxMem}m"/>
+	        <jvmarg value="-Djava.util.logging.config.file=${logFile}"/>
+    
+        	<jvmarg value="-Ddaf.nodeName=${node}"/>
+
+            <classpath refid="compile.classpath"/>
+        </java>
+    </target>
+
+
+    <!-- ********************************************************* -->
+    <!-- Morpc specific target to start a DAF worker VM -->
+    <target name="startvmhprofN">
+        <echo message="Running ${class}"/>
+    
+        <java classname="com.pb.common.daf.StartNode" fork="yes">
+            <jvmarg value="-Xms${minMem}m"/>
+            <jvmarg value="-Xmx${maxMem}m"/>
+	        <jvmarg value="-Djava.util.logging.config.file=${logFile}"/>
+    
+        	<jvmarg value="-Ddaf.nodeName=${node}"/>
+			<jvmarg value="-Xrunhprof:cpu=samples,file=/morpc_module/morpc_data/outputfiles/hprof.txt,depth=10"/>
+
+            <classpath refid="compile.classpath"/>
+        </java>
+    </target>
+
+</project>
