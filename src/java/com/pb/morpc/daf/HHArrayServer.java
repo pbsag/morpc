@@ -69,8 +69,10 @@ public class HHArrayServer extends MessageProcessingTask {
 
 	public void onMessage(Message msg) {
 
+		/*
 		if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
+		*/
 		
 		//The hh array server gets a START_INFO message from the main server
 		//when it's ready for the hh DiskObjectArray to be built.
@@ -212,8 +214,11 @@ public class HHArrayServer extends MessageProcessingTask {
 			}
 		}
 
+		/*
 		if (LOGGING)
 		    logger.info( "end of onMessage() for " + this.name +  " , sent by " + msg.getSender() + "." );
+		*/
+		
 		MorpcModelServer.showMemory ();
 
 	}
@@ -245,7 +250,10 @@ public class HHArrayServer extends MessageProcessingTask {
 	 * Write out records (including utilities and probabilities) as CSV file
 	 */
 	private void writeRecords(SummitAggregationRecord [] records){
+		/*
 		logger.info("num of summit aggregation records="+records.length);	
+		*/
+		
         String fileName=(String)propertyMap.get("summitAggregationFile");
         String [] ColTitles={"hh_id","person_id","tour_id","purpose","tourCategory","prob1","prob2","prob3","prob4","prob5","prob6","expUtil1","expUtil2","expUtil3","expUtil4","expUtil5","expUtil6"};
         File file=null;
@@ -321,6 +329,8 @@ public class HHArrayServer extends MessageProcessingTask {
         }catch(IOException e){
         	logger.fatal("failed open file:"+fileName+", or failed writing record to:"+fileName);
         }
+        /*
         logger.info("finished writing records");
+        */
 	}
 }

@@ -1281,20 +1281,24 @@ public class MorpcModelServer extends MessageProcessingTask {
         String skimDir = (String) propertyMap.get("SkimsDirectory.tpplus");
         String command = "copy " + skimDir + "\\" + "*.skm " + skimDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
-        runDOSCommand(command);		
+        runDOSCommand(command);	
+        
+        
+        //run external and commercial procedures in all global iterations
+        
+	    //if future year scenario +Y, othewise +N
+		if(!scenario.equalsIgnoreCase(baseYearScenario)){
+	    	runDOSCommand(run_extfutureCmd+" Y");
+	    }else{
+	    	runDOSCommand(run_extfutureCmd+" N");
+	    }
+	    runDOSCommand(run_cmvCmd);
+	    runDOSCommand(run_extCmd);
       
 		// first or last iteration
 		if(iteration+1 == 1 || iteration+1 == numberOfIterations) { 
 
-	        runDOSCommand(run_extfutureCmd);
-		    runDOSCommand(run_cmvCmd);
-		    runDOSCommand(run_extCmd);
-	    
-		    if(!scenario.equalsIgnoreCase(baseYearScenario)){
-		    	runDOSCommand(run_extfutureCmd);
-		    }
-		    
-		    // first iteration only
+		    // if is 1st iteration in multiple iterations
 		    if( iteration+1 == 1 && iteration+1!=numberOfIterations) {
               
 		        if(RUN_HIGHWAY_ASSIGNMENT_SKIMMING.equals("true")){
