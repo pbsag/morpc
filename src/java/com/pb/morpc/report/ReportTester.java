@@ -19,15 +19,16 @@ public class ReportTester {
         propertyMap = ResourceUtil.getResourceBundleAsHashMap("morpc");
     }
 
-    public void writeReport() {
+    public void writeReport(String logging) {
         Report report = new Report();
+        report.setLoggingInfo(logging);
         report.generateReports();
     }
 
     public static void main(String[] args) {
         double markTime=System.currentTimeMillis();
         ReportTester rt = new ReportTester();
-        rt.writeReport();
+        rt.writeReport(args[1]);
         double runningTime = System.currentTimeMillis() - markTime;
         logger.info ("total running minutes = " + (float)((runningTime/1000.0)/60.0));
     }

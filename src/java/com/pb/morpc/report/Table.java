@@ -112,6 +112,22 @@ public class Table {
     public Vector getAvgRows() {
         return avgRows;
     }
+    
+    public void writeLogging(String file, String logging){
+        PrintWriter outStream;
+        try {
+            outStream = new PrintWriter(new BufferedWriter(new FileWriter(file,true)));
+
+            //print logging infor
+            outStream.print(logging);
+            outStream.println("\n");
+            //close outStream
+            outStream.close();
+        } catch (IOException e) {
+        	System.out.println("can not write logging information");
+        	System.exit(1);
+        }
+    }
 
     /**
      * write talbe to hard disk
@@ -138,11 +154,13 @@ public class Table {
             tableName.length()) / 2;
 
         try {
-            outStream = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+            outStream = new PrintWriter(new BufferedWriter(new FileWriter(file,true)));
 
             //print table name
-            outStream.print(Format.print("%" + tableNameFormatLen + "s",
-                    tableName));
+            outStream.println("\n");
+            //comment out if table name not formatted
+            //outStream.print(Format.print("%" + tableNameFormatLen + "s",tableName));
+            outStream.print(tableName);
             outStream.println("\n");
 
             if (formatline.equals("Yes")) {

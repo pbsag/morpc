@@ -31,6 +31,7 @@ public class Report {
     TableDataSet DistrictTable;
     HashMap propertyMap;
     String reportDirectory;
+    protected String loggingInfo;
 
     public Report() {
         //get a logger object
@@ -126,6 +127,10 @@ public class Report {
 
         return t1;
     }
+    
+    public void setLoggingInfo(String info){
+    	loggingInfo=info;
+    }
 
     public void generateReports() {
         //echo morpc properties
@@ -142,7 +147,10 @@ public class Report {
             int[] shape = rpp.getMatrixShape();
             int dimensions = rpp.getMatrixDimensions();
             String mName = rpp.getMatrixName();
-            String rLocation = reportDirectory + rpp.getReportLocation();
+            //comment out if want to write reports in one file
+            //String rLocation = reportDirectory + rpp.getReportLocation();
+            //comment out if want to write reports separately
+            String rLocation=reportDirectory+"report"+loggingInfo+".txt";
             String format = rpp.getFormat();
             String type = rpp.getType();
             String formatLine = rpp.getFormatLine();
@@ -162,6 +170,8 @@ public class Report {
                 //create table from matrix
                 Table table = new Table(matrix, mName, dTitles, sTitles);
 
+                //write logging infor if is 1st table
+                //table.writeLogging(rLocation, loggingInfo);
                 //write table to hard drive
                 table.writeTable(rLocation, format, type, formatLine);
             }
@@ -1158,6 +1168,8 @@ public class Report {
                                 (modeVals[j] == mode[i])) {
                             m_cell = result.getValue(position);
                             result.setValue(m_cell + 1, position);
+                        }else{
+                        	//
                         }
                     } else {
                         if ((modeVals[j] == mode[i])) {
@@ -1204,6 +1216,8 @@ public class Report {
                                     (modeVals[j] == mode[i])) {
                                 m_cell = result.getValue(position);
                                 result.setValue(m_cell + 1, position);
+                            }else{
+                            	//
                             }
                         } else {
                             if ((modeVals[j] == mode[i])) {
@@ -1251,6 +1265,8 @@ public class Report {
                                     (modeVals[j] == mode[i])) {
                                 m_cell = result.getValue(position);
                                 result.setValue(m_cell + 1, position);
+                            }else{
+                            	//
                             }
                         } else {
                             if ((modeVals[j] == mode[i])) {
@@ -1594,6 +1610,8 @@ public class Report {
                     if (purposeVals[j] == purpose[i]) {
                         m_cell = result.getValue(position);
                         result.setValue(m_cell + 1, position);
+                    }else{
+                    	//
                     }
                 } else {
                     position[1] = 8;
@@ -1628,6 +1646,8 @@ public class Report {
                         if (purposeVals[j] == purpose[i]) {
                             m_cell = result.getValue(position);
                             result.setValue(m_cell + 1, position);
+                        }else{
+                        	//
                         }
                     } else {
                         position[1] = 8;
@@ -1663,6 +1683,8 @@ public class Report {
                         if (purposeVals[j] == purpose[i]) {
                             m_cell = result.getValue(position);
                             result.setValue(m_cell + 1, position);
+                        }else{
+                        	//
                         }
                     } else {
                         position[1] = 8;
@@ -1804,6 +1826,8 @@ public class Report {
                             m_cell = result.getValue(position);
                             result.setValue(m_cell + persontypeCount[i][k],
                                 position);
+                        }else{
+                        	//
                         }
                     } else {
                         position[0] = 8;

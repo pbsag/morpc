@@ -260,7 +260,9 @@ public class SpecialEvent {
 	
 		float [] size=calSizeAttractiveness();
 		ColumnVector sizeVector=new ColumnVector(size);
+		//uncommet next line is matrix is 0-based
 		sizeVector.setExternalNumbersZeroBased(tazData.getColumnAsInt("taz"));
+		//sizeVector.setExternalNumbers(tazData.getColumnAsInt("taz"));
 		
 		int NoEvents=eventData.getRowCount();	
 		String name=null;
