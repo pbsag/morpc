@@ -340,6 +340,7 @@ public class MorpcModelServer extends MessageProcessingTask {
         	writeDiskObjectArray(hhs);
         	hhs=null;
         	writeDiskObjectZDMTDM(zdm,tdm,staticZonalDataMap,staticTodDataMap,propertyMap);
+        	
         }
         
         //delete big household array from memory
@@ -1384,22 +1385,21 @@ public class MorpcModelServer extends MessageProcessingTask {
 		}
 		
 		//copy intermediate assignment results to sub iteration folders  
-		command="copy " + assignDir;
-		String tempDir=command.trim();
+		String tempDir=assignDir.trim();
 		
-        command = tempDir + "\\" + "ve*.trp " + tempDir+"\\Iter"+(iteration+1);
+        command = "copy "+tempDir + "\\" + "ve*.trp " + tempDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
         runDOSCommand(command);	
-        command = tempDir + "\\" + "h*.lod " + tempDir+"\\Iter"+(iteration+1);
+        command = "copy "+tempDir + "\\" + "h*.lod " + tempDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
         runDOSCommand(command);
-        command = tempDir + "\\" + "h*.dbf " + tempDir+"\\Iter"+(iteration+1);
+        command = "copy "+tempDir + "\\" + "h*.dbf " + tempDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
         runDOSCommand(command);
-        command = tempDir + "\\" + "*.dat " + tempDir+"\\Iter"+(iteration+1);
+        command = "copy "+tempDir + "\\" + "*.dat " + tempDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
         runDOSCommand(command);
-        command = tempDir + "\\" + "hasn.s " + tempDir+"\\Iter"+(iteration+1);
+        command = "copy "+tempDir + "\\" + "hasn.s " + tempDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
         runDOSCommand(command);
 	      
@@ -1420,6 +1420,8 @@ public class MorpcModelServer extends MessageProcessingTask {
     		//write each hh to disk object array
     		for(int i=0; i<NoHHs; i++){
         		diskObjectArray.add(i,hhs[i]);
+        		//force each array element for gc
+        		hhs[i]=null;
         	}
     	}catch(IOException e){
     		logger.severe("can not open disk object array file for writing");
@@ -1430,12 +1432,22 @@ public class MorpcModelServer extends MessageProcessingTask {
     	String diskObjectZDMTDMFile=(String)propertyMap.get("DiskObjectZDMTDM.file");
     	try{
     		FileOutputStream out=new FileOutputStream(diskObjectZDMTDMFile);
+    		logger.info("opened out put strem for zdmtdm");
         	ObjectOutputStream s=new ObjectOutputStream(out);
         	s.writeObject(zdm);
+        	zdm=null;
+        	logger.info("wrote out zdm.");
         	s.writeObject(tdm);
+        	tdm=null;
+        	logger.info("wrote out tdm.");
         	s.writeObject(staticZonalDataMap);
+        	staticZonalDataMap=null;
+        	logger.info("wrote out zonal data map.");
         	s.writeObject(staticTodDataMap);
+        	staticTodDataMap=null;
+        	logger.info("wrote out tod data map");
         	s.flush();
+        	s=null;
     	}catch(IOException e){
     		System.err.println(e);
     	}
