@@ -5,7 +5,6 @@
 	<projects>
 		<project>common-base</project>
 		<project>common-daf-v1</project>
-		<project>team-projectsets</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
