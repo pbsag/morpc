@@ -158,6 +158,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 
 				hh.mandatoryTours[t].setOrigTaz (hh_taz_id);
+				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
 
@@ -377,6 +378,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	
 
 				hh.mandatoryTours[t].setOrigTaz ( hh_taz_id );
+				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -791,6 +793,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	
 
 				hh.mandatoryTours[t].setOrigTaz ( hh_taz_id );
+				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -823,9 +826,18 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				LogitModel root=mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 				
+				
+				double[] modeChoiceProbabilities = root.getProbabilities();
+				
+				int dummy=0;
+				if (tourTypes[m] != TourType.WORK) {
+					dummy = 1;
+				}
+				
 				//Wu added for Summit Aggregation
-				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-					summitAggregationRecords=makeSummitAggregationRecords(root, hh, "mandatory");
+				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
+						summitAggregationRecords=makeSummitAggregationRecords(root, hh, "mandatory");
 				}
 																
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -1009,6 +1021,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					continue;
 
 				hh.jointTours[t].setOrigTaz (hh_taz_id);
+				hh.jointTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				hh.setTourID ( t );
 
 
@@ -1167,6 +1180,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					continue;
 
 				hh.jointTours[t].setOrigTaz (hh_taz_id);
+				hh.jointTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				hh.setTourID ( t );
 
 
@@ -1285,6 +1299,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					continue;
 
 				hh.jointTours[t].setOrigTaz (hh_taz_id);
+				hh.jointTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				hh.setTourID ( t );
 
 
@@ -1325,8 +1340,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
-				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-					summitAggregationRecords=makeSummitAggregationRecords(root, hh, "joint");
+				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
+						summitAggregationRecords=makeSummitAggregationRecords(root, hh, "joint");
 				}
 								
 				mcTime += (System.currentTimeMillis() - markTime);
@@ -1483,6 +1499,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
+				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
 
@@ -1639,6 +1656,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
+				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
 
@@ -1991,6 +2009,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
+				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
 
@@ -2022,8 +2041,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
-				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-					summitAggregationRecords=makeSummitAggregationRecords(root, hh, "individual");
+				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
+						summitAggregationRecords=makeSummitAggregationRecords(root, hh, "individual");
 				}
 								
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -2200,6 +2220,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			person = hh.mandatoryTours[t].getTourPerson();
 
 			hh.mandatoryTours[t].setOrigTaz (hh_taz_id);
+			hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 			hh.setPersonID ( person );
 			hh.setTourID ( t );
 
@@ -2210,7 +2231,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// the origin for the at-work tour is the destination of the primary work tour
 				hh.mandatoryTours[t].subTours[s].setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
+				hh.mandatoryTours[t].subTours[s].setOriginShrtWlk ( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
+				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );
 
         
@@ -2406,7 +2429,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// the origin for the at-work tour is the destination of the primary work tour
 				hh.mandatoryTours[t].subTours[s].setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
+				hh.mandatoryTours[t].subTours[s].setOriginShrtWlk ( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
+				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );
 
         
@@ -2559,7 +2584,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// the origin for the at-work tour is the destination of the primary work tour
 				hh.mandatoryTours[t].subTours[s].setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
+				hh.mandatoryTours[t].subTours[s].setOriginShrtWlk ( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
+				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );
 
         
@@ -2591,8 +2618,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
-				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-					summitAggregationRecords=makeSummitAggregationRecords(root, hh, "atwork");
+				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
+						summitAggregationRecords=makeSummitAggregationRecords(root, hh, "atwork");
 				}
 							
 				mcTime += (System.currentTimeMillis() - markTime);

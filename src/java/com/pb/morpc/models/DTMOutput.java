@@ -913,6 +913,7 @@ public class DTMOutput implements java.io.Serializable {
 				tableHeadings.add("jt_person_" + i + "_type");
 			}
 			tableHeadings.add("tour_orig");
+			tableHeadings.add("tour_orig_WLKseg");
 			tableHeadings.add("M5_DC_TAZid");
 			tableHeadings.add("M5_DC_WLKseg");
 			tableHeadings.add("M6_TOD");
@@ -1050,128 +1051,128 @@ public class DTMOutput implements java.io.Serializable {
 						tableData[7] = it[t].getTourType();
 						k = 9 + (2*maxPartySize);
 						tableData[k] = it[t].getOrigTaz();
-						tableData[k+1] = it[t].getDestTaz();
-						tableData[k+2] = it[t].getDestShrtWlk();
-						tableData[k+3] = it[t].getTimeOfDayAlt();
+						tableData[k+1] = it[t].getOriginShrtWlk();
+						tableData[k+2] = it[t].getDestTaz();
+						tableData[k+3] = it[t].getDestShrtWlk();
+						tableData[k+4] = it[t].getTimeOfDayAlt();
 						if (it[t].getTimeOfDayAlt() < 1)
 							continue;
-						tableData[k+4] = com.pb.morpc.models.TODDataManager.getTodStartHour( it[t].getTimeOfDayAlt() );
-						tableData[k+5] = com.pb.morpc.models.TODDataManager.getTodEndHour( it[t].getTimeOfDayAlt() );
-						tableData[k+6] = com.pb.morpc.models.TODDataManager.getTodStartPeriod( it[t].getTimeOfDayAlt() );
-						tableData[k+7] = com.pb.morpc.models.TODDataManager.getTodEndPeriod( it[t].getTimeOfDayAlt() );
-						tableData[k+8] = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() );
-						tableData[k+9] = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() );
-						tableData[k+10] = it[t].getMode();
-						tableData[k+11] = it[t].getSubmodeOB();
-						tableData[k+12] = it[t].getSubmodeIB();
-						tableData[k+13] = it[t].getStopFreqAlt();
-						tableData[k+14] = it[t].getStopLocOB();
-						tableData[k+15] = it[t].getStopLocSubzoneOB();
-						tableData[k+16] = it[t].getStopLocIB();
-						tableData[k+17] = it[t].getStopLocSubzoneIB();
-						tableData[k+18] = it[t].getTripIkMode();
-						tableData[k+19] = it[t].getTripKjMode();
-						tableData[k+20] = it[t].getTripJkMode();
-						tableData[k+21] = it[t].getTripKiMode();
-						tableData[k+22] = (float)resultsOB[0];
-						tableData[k+23] = (float)resultsIB[0];
-						tableData[k+24] = (float)resultsOB[1];
-						tableData[k+25] = (float)resultsOB[2];
-						tableData[k+26] = (float)resultsIB[1];
-						tableData[k+27] = (float)resultsIB[2];
-						tableData[k+28] = it[t].getChosenPark();
-						tableData[k+29] = (float)resultsPark[1];
-						tableData[k+30] = (float)resultsPark[2];
+						tableData[k+5] = com.pb.morpc.models.TODDataManager.getTodStartHour( it[t].getTimeOfDayAlt() );
+						tableData[k+6] = com.pb.morpc.models.TODDataManager.getTodEndHour( it[t].getTimeOfDayAlt() );
+						tableData[k+7] = com.pb.morpc.models.TODDataManager.getTodStartPeriod( it[t].getTimeOfDayAlt() );
+						tableData[k+8] = com.pb.morpc.models.TODDataManager.getTodEndPeriod( it[t].getTimeOfDayAlt() );
+						tableData[k+9] = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() );
+						tableData[k+10] = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() );
+						tableData[k+11] = it[t].getMode();
+						tableData[k+12] = it[t].getSubmodeOB();
+						tableData[k+13] = it[t].getSubmodeIB();
+						tableData[k+14] = it[t].getStopFreqAlt();
+						tableData[k+15] = it[t].getStopLocOB();
+						tableData[k+16] = it[t].getStopLocSubzoneOB();
+						tableData[k+17] = it[t].getStopLocIB();
+						tableData[k+18] = it[t].getStopLocSubzoneIB();
+						tableData[k+19] = it[t].getTripIkMode();
+						tableData[k+20] = it[t].getTripKjMode();
+						tableData[k+21] = it[t].getTripJkMode();
+						tableData[k+22] = it[t].getTripKiMode();
+						tableData[k+23] = (float)resultsOB[0];
+						tableData[k+24] = (float)resultsIB[0];
+						tableData[k+25] = (float)resultsOB[1];
+						tableData[k+26] = (float)resultsOB[2];
+						tableData[k+27] = (float)resultsIB[1];
+						tableData[k+28] = (float)resultsIB[2];
+						tableData[k+29] = it[t].getChosenPark();
+						tableData[k+30] = (float)resultsPark[1];
+						tableData[k+31] = (float)resultsPark[2];
 						if (it[t].getMode() == 3) {
-							if (tableData[k+8] == 1) {
-								tableData[k+31] = (float)resultsOB[3];
-								tableData[k+33] = (float)resultsOB[4];
-								tableData[k+35] = (float)resultsOB[5];
-								tableData[k+37] = (float)resultsOB[6];
-								tableData[k+39] = (float)resultsOB[7];
-							}
-							else if (tableData[k+8] == 2) {
-								tableData[k+31] = (float)resultsIB[3];
-								tableData[k+33] = (float)resultsIB[4];
-								tableData[k+35] = (float)resultsIB[5];
-								tableData[k+37] = (float)resultsIB[6];
-								tableData[k+39] = (float)resultsIB[7];
-							}
-							else {
-								tableData[k+31] = (float)resultsOB[8];
-								tableData[k+33] = (float)resultsOB[9];
-								tableData[k+35] = (float)resultsOB[10];
-								tableData[k+37] = (float)resultsOB[11];
-								tableData[k+39] = (float)resultsOB[12];
-							}
 							if (tableData[k+9] == 1) {
-								tableData[k+32] = (float)resultsIB[3];
-								tableData[k+34] = (float)resultsIB[4];
-								tableData[k+36] = (float)resultsIB[5];
-								tableData[k+38] = (float)resultsIB[6];
-								tableData[k+40] = (float)resultsIB[7];
-							}
-							else if (tableData[k+9] == 2) {
 								tableData[k+32] = (float)resultsOB[3];
 								tableData[k+34] = (float)resultsOB[4];
 								tableData[k+36] = (float)resultsOB[5];
 								tableData[k+38] = (float)resultsOB[6];
 								tableData[k+40] = (float)resultsOB[7];
 							}
+							else if (tableData[k+9] == 2) {
+								tableData[k+32] = (float)resultsIB[3];
+								tableData[k+34] = (float)resultsIB[4];
+								tableData[k+36] = (float)resultsIB[5];
+								tableData[k+38] = (float)resultsIB[6];
+								tableData[k+40] = (float)resultsIB[7];
+							}
 							else {
-								tableData[k+32] = (float)resultsIB[8];
-								tableData[k+34] = (float)resultsIB[9];
-								tableData[k+36] = (float)resultsIB[10];
-								tableData[k+38] = (float)resultsIB[11];
-								tableData[k+40] = (float)resultsIB[12];
+								tableData[k+32] = (float)resultsOB[8];
+								tableData[k+34] = (float)resultsOB[9];
+								tableData[k+36] = (float)resultsOB[10];
+								tableData[k+38] = (float)resultsOB[11];
+								tableData[k+40] = (float)resultsOB[12];
+							}
+							if (tableData[k+10] == 1) {
+								tableData[k+33] = (float)resultsIB[3];
+								tableData[k+35] = (float)resultsIB[4];
+								tableData[k+37] = (float)resultsIB[5];
+								tableData[k+39] = (float)resultsIB[6];
+								tableData[k+41] = (float)resultsIB[7];
+							}
+							else if (tableData[k+10] == 2) {
+								tableData[k+33] = (float)resultsOB[3];
+								tableData[k+35] = (float)resultsOB[4];
+								tableData[k+37] = (float)resultsOB[5];
+								tableData[k+39] = (float)resultsOB[6];
+								tableData[k+41] = (float)resultsOB[7];
+							}
+							else {
+								tableData[k+33] = (float)resultsIB[8];
+								tableData[k+35] = (float)resultsIB[9];
+								tableData[k+37] = (float)resultsIB[10];
+								tableData[k+39] = (float)resultsIB[11];
+								tableData[k+41] = (float)resultsIB[12];
 							}
 						}
 						else if (it[t].getMode() == 4) {
-							if (tableData[k+8] == 1) {
-								tableData[k+31] = (float)resultsOB[13];
-								tableData[k+33] = (float)resultsOB[14];
-								tableData[k+35] = (float)resultsOB[15];
-								tableData[k+37] = (float)resultsOB[16];
-								tableData[k+39] = (float)resultsOB[17];
-							}
-							else if (tableData[k+8] == 2) {
-								tableData[k+31] = (float)resultsIB[13];
-								tableData[k+33] = (float)resultsIB[14];
-								tableData[k+35] = (float)resultsIB[15];
-								tableData[k+37] = (float)resultsIB[16];
-								tableData[k+39] = (float)resultsIB[17];
-							}
-							else {
-								tableData[k+31] = (float)resultsOB[18];
-								tableData[k+33] = (float)resultsOB[19];
-								tableData[k+35] = (float)resultsOB[20];
-								tableData[k+37] = (float)resultsOB[21];
-								tableData[k+39] = (float)resultsOB[22];
-							}
 							if (tableData[k+9] == 1) {
-								tableData[k+32] = (float)resultsIB[13];
-								tableData[k+34] = (float)resultsIB[14];
-								tableData[k+36] = (float)resultsIB[15];
-								tableData[k+38] = (float)resultsIB[16];
-								tableData[k+40] = (float)resultsIB[17];
-							}
-							else if (tableData[k+9] == 2) {
 								tableData[k+32] = (float)resultsOB[13];
 								tableData[k+34] = (float)resultsOB[14];
 								tableData[k+36] = (float)resultsOB[15];
 								tableData[k+38] = (float)resultsOB[16];
 								tableData[k+40] = (float)resultsOB[17];
 							}
+							else if (tableData[k+9] == 2) {
+								tableData[k+32] = (float)resultsIB[13];
+								tableData[k+34] = (float)resultsIB[14];
+								tableData[k+36] = (float)resultsIB[15];
+								tableData[k+38] = (float)resultsIB[16];
+								tableData[k+40] = (float)resultsIB[17];
+							}
 							else {
-								tableData[k+32] = (float)resultsIB[18];
-								tableData[k+34] = (float)resultsIB[19];
-								tableData[k+36] = (float)resultsIB[20];
-								tableData[k+38] = (float)resultsIB[21];
-								tableData[k+40] = (float)resultsIB[22];
+								tableData[k+32] = (float)resultsOB[18];
+								tableData[k+34] = (float)resultsOB[19];
+								tableData[k+36] = (float)resultsOB[20];
+								tableData[k+38] = (float)resultsOB[21];
+								tableData[k+40] = (float)resultsOB[22];
+							}
+							if (tableData[k+10] == 1) {
+								tableData[k+33] = (float)resultsIB[13];
+								tableData[k+35] = (float)resultsIB[14];
+								tableData[k+37] = (float)resultsIB[15];
+								tableData[k+39] = (float)resultsIB[16];
+								tableData[k+41] = (float)resultsIB[17];
+							}
+							else if (tableData[k+10] == 2) {
+								tableData[k+33] = (float)resultsOB[13];
+								tableData[k+35] = (float)resultsOB[14];
+								tableData[k+37] = (float)resultsOB[15];
+								tableData[k+39] = (float)resultsOB[16];
+								tableData[k+41] = (float)resultsOB[17];
+							}
+							else {
+								tableData[k+33] = (float)resultsIB[18];
+								tableData[k+35] = (float)resultsIB[19];
+								tableData[k+37] = (float)resultsIB[20];
+								tableData[k+39] = (float)resultsIB[21];
+								tableData[k+41] = (float)resultsIB[22];
 							}
 						}
 						else {
-							tableData[k+31] = 0.0f;
 							tableData[k+32] = 0.0f;
 							tableData[k+33] = 0.0f;
 							tableData[k+34] = 0.0f;
@@ -1181,6 +1182,7 @@ public class DTMOutput implements java.io.Serializable {
 							tableData[k+38] = 0.0f;
 							tableData[k+39] = 0.0f;
 							tableData[k+40] = 0.0f;
+							tableData[k+41] = 0.0f;
 						}
 						
 						if (outputFileDTM != null) {
@@ -1275,129 +1277,129 @@ public class DTMOutput implements java.io.Serializable {
 						}
 						k = 9 + (2*maxPartySize);
 						tableData[k] = jt[t].getOrigTaz();
-						tableData[k+1] = jt[t].getDestTaz();
-						tableData[k+2] = jt[t].getDestShrtWlk();
-						tableData[k+3] = jt[t].getTimeOfDayAlt();
+						tableData[k+1] = jt[t].getOriginShrtWlk();
+						tableData[k+2] = jt[t].getDestTaz();
+						tableData[k+3] = jt[t].getDestShrtWlk();
+						tableData[k+4] = jt[t].getTimeOfDayAlt();
 						if (jt[t].getTimeOfDayAlt() < 1)
 							continue;
-						tableData[k+4] = com.pb.morpc.models.TODDataManager.getTodStartHour( jt[t].getTimeOfDayAlt() );
-						tableData[k+5] = com.pb.morpc.models.TODDataManager.getTodEndHour( jt[t].getTimeOfDayAlt() );
-						tableData[k+6] = com.pb.morpc.models.TODDataManager.getTodStartPeriod( jt[t].getTimeOfDayAlt() );
-						tableData[k+7] = com.pb.morpc.models.TODDataManager.getTodEndPeriod( jt[t].getTimeOfDayAlt() );
-						tableData[k+8] = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() );
-						tableData[k+9] = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() );
-						tableData[k+10] = jt[t].getMode();
-						tableData[k+11] = jt[t].getSubmodeOB();
-						tableData[k+12] = jt[t].getSubmodeIB();
-						tableData[k+13] = jt[t].getStopFreqAlt();
-						tableData[k+14] = jt[t].getStopLocOB();
-						tableData[k+15] = jt[t].getStopLocSubzoneOB();
-						tableData[k+16] = jt[t].getStopLocIB();
-						tableData[k+17] = jt[t].getStopLocSubzoneIB();
-						tableData[k+18] = jt[t].getTripIkMode();
-						tableData[k+19] = jt[t].getTripKjMode();
-						tableData[k+20] = jt[t].getTripJkMode();
-						tableData[k+21] = jt[t].getTripKiMode();
-						tableData[k+22] = (float)resultsOB[0];
+						tableData[k+5] = com.pb.morpc.models.TODDataManager.getTodStartHour( jt[t].getTimeOfDayAlt() );
+						tableData[k+6] = com.pb.morpc.models.TODDataManager.getTodEndHour( jt[t].getTimeOfDayAlt() );
+						tableData[k+7] = com.pb.morpc.models.TODDataManager.getTodStartPeriod( jt[t].getTimeOfDayAlt() );
+						tableData[k+8] = com.pb.morpc.models.TODDataManager.getTodEndPeriod( jt[t].getTimeOfDayAlt() );
+						tableData[k+9] = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() );
+						tableData[k+10] = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() );
+						tableData[k+11] = jt[t].getMode();
+						tableData[k+12] = jt[t].getSubmodeOB();
+						tableData[k+13] = jt[t].getSubmodeIB();
+						tableData[k+14] = jt[t].getStopFreqAlt();
+						tableData[k+15] = jt[t].getStopLocOB();
+						tableData[k+16] = jt[t].getStopLocSubzoneOB();
+						tableData[k+17] = jt[t].getStopLocIB();
+						tableData[k+18] = jt[t].getStopLocSubzoneIB();
+						tableData[k+19] = jt[t].getTripIkMode();
+						tableData[k+20] = jt[t].getTripKjMode();
+						tableData[k+21] = jt[t].getTripJkMode();
+						tableData[k+22] = jt[t].getTripKiMode();
 						tableData[k+23] = (float)resultsOB[0];
-						tableData[k+24] = (float)resultsOB[1];
-						tableData[k+25] = (float)resultsOB[2];
-						tableData[k+26] = (float)resultsIB[1];
-						tableData[k+27] = (float)resultsIB[2];
-						tableData[k+28] = jt[t].getChosenPark();
-						tableData[k+29] = (float)resultsPark[1];
-						tableData[k+30] = (float)resultsPark[2];
+						tableData[k+24] = (float)resultsOB[0];
+						tableData[k+25] = (float)resultsOB[1];
+						tableData[k+26] = (float)resultsOB[2];
+						tableData[k+27] = (float)resultsIB[1];
+						tableData[k+28] = (float)resultsIB[2];
+						tableData[k+29] = jt[t].getChosenPark();
+						tableData[k+30] = (float)resultsPark[1];
+						tableData[k+31] = (float)resultsPark[2];
 						if (jt[t].getMode() == 3) {
-							if (tableData[k+8] == 1) {
-								tableData[k+31] = (float)resultsOB[3];
-								tableData[k+33] = (float)resultsOB[4];
-								tableData[k+35] = (float)resultsOB[5];
-								tableData[k+37] = (float)resultsOB[6];
-								tableData[k+39] = (float)resultsOB[7];
-							}
-							else if (tableData[k+8] == 2) {
-								tableData[k+31] = (float)resultsIB[3];
-								tableData[k+33] = (float)resultsIB[4];
-								tableData[k+35] = (float)resultsIB[5];
-								tableData[k+37] = (float)resultsIB[6];
-								tableData[k+39] = (float)resultsIB[7];
-							}
-							else {
-								tableData[k+31] = (float)resultsOB[8];
-								tableData[k+33] = (float)resultsOB[9];
-								tableData[k+35] = (float)resultsOB[10];
-								tableData[k+37] = (float)resultsOB[11];
-								tableData[k+39] = (float)resultsOB[12];
-							}
 							if (tableData[k+9] == 1) {
-								tableData[k+32] = (float)resultsIB[3];
-								tableData[k+34] = (float)resultsIB[4];
-								tableData[k+36] = (float)resultsIB[5];
-								tableData[k+38] = (float)resultsIB[6];
-								tableData[k+40] = (float)resultsIB[7];
-							}
-							else if (tableData[k+9] == 2) {
 								tableData[k+32] = (float)resultsOB[3];
 								tableData[k+34] = (float)resultsOB[4];
 								tableData[k+36] = (float)resultsOB[5];
 								tableData[k+38] = (float)resultsOB[6];
 								tableData[k+40] = (float)resultsOB[7];
 							}
+							else if (tableData[k+9] == 2) {
+								tableData[k+32] = (float)resultsIB[3];
+								tableData[k+34] = (float)resultsIB[4];
+								tableData[k+36] = (float)resultsIB[5];
+								tableData[k+38] = (float)resultsIB[6];
+								tableData[k+40] = (float)resultsIB[7];
+							}
 							else {
-								tableData[k+32] = (float)resultsIB[8];
-								tableData[k+34] = (float)resultsIB[9];
-								tableData[k+36] = (float)resultsIB[10];
-								tableData[k+38] = (float)resultsIB[11];
-								tableData[k+40] = (float)resultsIB[12];
+								tableData[k+32] = (float)resultsOB[8];
+								tableData[k+34] = (float)resultsOB[9];
+								tableData[k+36] = (float)resultsOB[10];
+								tableData[k+38] = (float)resultsOB[11];
+								tableData[k+40] = (float)resultsOB[12];
+							}
+							if (tableData[k+10] == 1) {
+								tableData[k+33] = (float)resultsIB[3];
+								tableData[k+35] = (float)resultsIB[4];
+								tableData[k+37] = (float)resultsIB[5];
+								tableData[k+39] = (float)resultsIB[6];
+								tableData[k+41] = (float)resultsIB[7];
+							}
+							else if (tableData[k+10] == 2) {
+								tableData[k+33] = (float)resultsOB[3];
+								tableData[k+35] = (float)resultsOB[4];
+								tableData[k+37] = (float)resultsOB[5];
+								tableData[k+39] = (float)resultsOB[6];
+								tableData[k+41] = (float)resultsOB[7];
+							}
+							else {
+								tableData[k+33] = (float)resultsIB[8];
+								tableData[k+35] = (float)resultsIB[9];
+								tableData[k+37] = (float)resultsIB[10];
+								tableData[k+39] = (float)resultsIB[11];
+								tableData[k+41] = (float)resultsIB[12];
 							}
 						}
 						else if (jt[t].getMode() == 4) {
-							if (tableData[k+8] == 1) {
-								tableData[k+31] = (float)resultsOB[13];
-								tableData[k+33] = (float)resultsOB[14];
-								tableData[k+35] = (float)resultsOB[15];
-								tableData[k+37] = (float)resultsOB[16];
-								tableData[k+39] = (float)resultsOB[17];
-							}
-							else if (tableData[k+8] == 2) {
-								tableData[k+31] = (float)resultsIB[13];
-								tableData[k+33] = (float)resultsIB[14];
-								tableData[k+35] = (float)resultsIB[15];
-								tableData[k+37] = (float)resultsIB[16];
-								tableData[k+39] = (float)resultsIB[17];
-							}
-							else {
-								tableData[k+31] = (float)resultsOB[18];
-								tableData[k+33] = (float)resultsOB[19];
-								tableData[k+35] = (float)resultsOB[20];
-								tableData[k+37] = (float)resultsOB[21];
-								tableData[k+39] = (float)resultsOB[22];
-							}
 							if (tableData[k+9] == 1) {
-								tableData[k+32] = (float)resultsIB[13];
-								tableData[k+34] = (float)resultsIB[14];
-								tableData[k+36] = (float)resultsIB[15];
-								tableData[k+38] = (float)resultsIB[16];
-								tableData[k+40] = (float)resultsIB[17];
-							}
-							else if (tableData[k+9] == 2) {
 								tableData[k+32] = (float)resultsOB[13];
 								tableData[k+34] = (float)resultsOB[14];
 								tableData[k+36] = (float)resultsOB[15];
 								tableData[k+38] = (float)resultsOB[16];
 								tableData[k+40] = (float)resultsOB[17];
 							}
+							else if (tableData[k+9] == 2) {
+								tableData[k+32] = (float)resultsIB[13];
+								tableData[k+34] = (float)resultsIB[14];
+								tableData[k+36] = (float)resultsIB[15];
+								tableData[k+38] = (float)resultsIB[16];
+								tableData[k+40] = (float)resultsIB[17];
+							}
 							else {
-								tableData[k+32] = (float)resultsIB[18];
-								tableData[k+34] = (float)resultsIB[19];
-								tableData[k+36] = (float)resultsIB[20];
-								tableData[k+38] = (float)resultsIB[21];
-								tableData[k+40] = (float)resultsIB[22];
+								tableData[k+32] = (float)resultsOB[18];
+								tableData[k+34] = (float)resultsOB[19];
+								tableData[k+36] = (float)resultsOB[20];
+								tableData[k+38] = (float)resultsOB[21];
+								tableData[k+40] = (float)resultsOB[22];
+							}
+							if (tableData[k+10] == 1) {
+								tableData[k+33] = (float)resultsIB[13];
+								tableData[k+35] = (float)resultsIB[14];
+								tableData[k+37] = (float)resultsIB[15];
+								tableData[k+39] = (float)resultsIB[16];
+								tableData[k+41] = (float)resultsIB[17];
+							}
+							else if (tableData[k+10] == 2) {
+								tableData[k+33] = (float)resultsOB[13];
+								tableData[k+35] = (float)resultsOB[14];
+								tableData[k+37] = (float)resultsOB[15];
+								tableData[k+39] = (float)resultsOB[16];
+								tableData[k+41] = (float)resultsOB[17];
+							}
+							else {
+								tableData[k+33] = (float)resultsIB[18];
+								tableData[k+35] = (float)resultsIB[19];
+								tableData[k+37] = (float)resultsIB[20];
+								tableData[k+39] = (float)resultsIB[21];
+								tableData[k+41] = (float)resultsIB[22];
 							}
 
 						}
 						else {
-							tableData[k+31] = 0.0f;
 							tableData[k+32] = 0.0f;
 							tableData[k+33] = 0.0f;
 							tableData[k+34] = 0.0f;
@@ -1407,6 +1409,7 @@ public class DTMOutput implements java.io.Serializable {
 							tableData[k+38] = 0.0f;
 							tableData[k+39] = 0.0f;
 							tableData[k+40] = 0.0f;
+							tableData[k+41] = 0.0f;
 						}
 						
 						if (outputFileDTM != null) {
@@ -1495,129 +1498,129 @@ public class DTMOutput implements java.io.Serializable {
 						tableData[7] = it[t].getTourType();
 						k = 9 + (2*maxPartySize);
 						tableData[k] = it[t].getOrigTaz();
-						tableData[k+1] = it[t].getDestTaz();
-						tableData[k+2] = it[t].getDestShrtWlk();
-						tableData[k+3] = it[t].getTimeOfDayAlt();
+						tableData[k+1] = it[t].getOriginShrtWlk();
+						tableData[k+2] = it[t].getDestTaz();
+						tableData[k+3] = it[t].getDestShrtWlk();
+						tableData[k+4] = it[t].getTimeOfDayAlt();
 						if (it[t].getTimeOfDayAlt() < 1)
 							continue;
-						tableData[k+4] = com.pb.morpc.models.TODDataManager.getTodStartHour( it[t].getTimeOfDayAlt() );
-						tableData[k+5] = com.pb.morpc.models.TODDataManager.getTodEndHour( it[t].getTimeOfDayAlt() );
-						tableData[k+6] = com.pb.morpc.models.TODDataManager.getTodStartPeriod( it[t].getTimeOfDayAlt() );
-						tableData[k+7] = com.pb.morpc.models.TODDataManager.getTodEndPeriod( it[t].getTimeOfDayAlt() );
-						tableData[k+8] = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() );
-						tableData[k+9] = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() );
-						tableData[k+10] = it[t].getMode();
-						tableData[k+11] = it[t].getSubmodeOB();
-						tableData[k+12] = it[t].getSubmodeIB();
-						tableData[k+13] = it[t].getStopFreqAlt();
-						tableData[k+14] = it[t].getStopLocOB();
-						tableData[k+15] = it[t].getStopLocSubzoneOB();
-						tableData[k+16] = it[t].getStopLocIB();
-						tableData[k+17] = it[t].getStopLocSubzoneIB();
-						tableData[k+18] = it[t].getTripIkMode();
-						tableData[k+19] = it[t].getTripKjMode();
-						tableData[k+20] = it[t].getTripJkMode();
-						tableData[k+21] = it[t].getTripKiMode();
-						tableData[k+22] = (float)resultsOB[0];
+						tableData[k+5] = com.pb.morpc.models.TODDataManager.getTodStartHour( it[t].getTimeOfDayAlt() );
+						tableData[k+6] = com.pb.morpc.models.TODDataManager.getTodEndHour( it[t].getTimeOfDayAlt() );
+						tableData[k+7] = com.pb.morpc.models.TODDataManager.getTodStartPeriod( it[t].getTimeOfDayAlt() );
+						tableData[k+8] = com.pb.morpc.models.TODDataManager.getTodEndPeriod( it[t].getTimeOfDayAlt() );
+						tableData[k+9] = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() );
+						tableData[k+10] = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() );
+						tableData[k+11] = it[t].getMode();
+						tableData[k+12] = it[t].getSubmodeOB();
+						tableData[k+13] = it[t].getSubmodeIB();
+						tableData[k+14] = it[t].getStopFreqAlt();
+						tableData[k+15] = it[t].getStopLocOB();
+						tableData[k+16] = it[t].getStopLocSubzoneOB();
+						tableData[k+17] = it[t].getStopLocIB();
+						tableData[k+18] = it[t].getStopLocSubzoneIB();
+						tableData[k+19] = it[t].getTripIkMode();
+						tableData[k+20] = it[t].getTripKjMode();
+						tableData[k+21] = it[t].getTripJkMode();
+						tableData[k+22] = it[t].getTripKiMode();
 						tableData[k+23] = (float)resultsOB[0];
-						tableData[k+24] = (float)resultsOB[1];
-						tableData[k+25] = (float)resultsOB[2];
-						tableData[k+26] = (float)resultsIB[1];
-						tableData[k+27] = (float)resultsIB[2];
-						tableData[k+28] = it[t].getChosenPark();
-						tableData[k+29] = (float)resultsPark[1];
-						tableData[k+30] = (float)resultsPark[2];
+						tableData[k+24] = (float)resultsOB[0];
+						tableData[k+25] = (float)resultsOB[1];
+						tableData[k+26] = (float)resultsOB[2];
+						tableData[k+27] = (float)resultsIB[1];
+						tableData[k+28] = (float)resultsIB[2];
+						tableData[k+29] = it[t].getChosenPark();
+						tableData[k+30] = (float)resultsPark[1];
+						tableData[k+31] = (float)resultsPark[2];
 						if (it[t].getMode() == 3) {
-							if (tableData[k+8] == 1) {
-								tableData[k+31] = (float)resultsOB[3];
-								tableData[k+33] = (float)resultsOB[4];
-								tableData[k+35] = (float)resultsOB[5];
-								tableData[k+37] = (float)resultsOB[6];
-								tableData[k+39] = (float)resultsOB[7];
-							}
-							else if (tableData[k+8] == 2) {
-								tableData[k+31] = (float)resultsIB[3];
-								tableData[k+33] = (float)resultsIB[4];
-								tableData[k+35] = (float)resultsIB[5];
-								tableData[k+37] = (float)resultsIB[6];
-								tableData[k+39] = (float)resultsIB[7];
-							}
-							else {
-								tableData[k+31] = (float)resultsOB[8];
-								tableData[k+33] = (float)resultsOB[9];
-								tableData[k+35] = (float)resultsOB[10];
-								tableData[k+37] = (float)resultsOB[11];
-								tableData[k+39] = (float)resultsOB[12];
-							}
 							if (tableData[k+9] == 1) {
-								tableData[k+32] = (float)resultsIB[3];
-								tableData[k+34] = (float)resultsIB[4];
-								tableData[k+36] = (float)resultsIB[5];
-								tableData[k+38] = (float)resultsIB[6];
-								tableData[k+40] = (float)resultsIB[7];
-							}
-							else if (tableData[k+9] == 2) {
 								tableData[k+32] = (float)resultsOB[3];
 								tableData[k+34] = (float)resultsOB[4];
 								tableData[k+36] = (float)resultsOB[5];
 								tableData[k+38] = (float)resultsOB[6];
 								tableData[k+40] = (float)resultsOB[7];
 							}
+							else if (tableData[k+9] == 2) {
+								tableData[k+32] = (float)resultsIB[3];
+								tableData[k+34] = (float)resultsIB[4];
+								tableData[k+36] = (float)resultsIB[5];
+								tableData[k+38] = (float)resultsIB[6];
+								tableData[k+40] = (float)resultsIB[7];
+							}
 							else {
-								tableData[k+32] = (float)resultsIB[8];
-								tableData[k+34] = (float)resultsIB[9];
-								tableData[k+36] = (float)resultsIB[10];
-								tableData[k+38] = (float)resultsIB[11];
-								tableData[k+40] = (float)resultsIB[12];
+								tableData[k+32] = (float)resultsOB[8];
+								tableData[k+34] = (float)resultsOB[9];
+								tableData[k+36] = (float)resultsOB[10];
+								tableData[k+38] = (float)resultsOB[11];
+								tableData[k+40] = (float)resultsOB[12];
+							}
+							if (tableData[k+10] == 1) {
+								tableData[k+33] = (float)resultsIB[3];
+								tableData[k+35] = (float)resultsIB[4];
+								tableData[k+37] = (float)resultsIB[5];
+								tableData[k+39] = (float)resultsIB[6];
+								tableData[k+41] = (float)resultsIB[7];
+							}
+							else if (tableData[k+10] == 2) {
+								tableData[k+33] = (float)resultsOB[3];
+								tableData[k+35] = (float)resultsOB[4];
+								tableData[k+37] = (float)resultsOB[5];
+								tableData[k+39] = (float)resultsOB[6];
+								tableData[k+41] = (float)resultsOB[7];
+							}
+							else {
+								tableData[k+33] = (float)resultsIB[8];
+								tableData[k+35] = (float)resultsIB[9];
+								tableData[k+37] = (float)resultsIB[10];
+								tableData[k+39] = (float)resultsIB[11];
+								tableData[k+41] = (float)resultsIB[12];
 							}
 						}
 						else if (it[t].getMode() == 4) {
-							if (tableData[k+8] == 1) {
-								tableData[k+31] = (float)resultsOB[13];
-								tableData[k+33] = (float)resultsOB[14];
-								tableData[k+35] = (float)resultsOB[15];
-								tableData[k+37] = (float)resultsOB[16];
-								tableData[k+39] = (float)resultsOB[17];
-							}
-							else if (tableData[k+8] == 2) {
-								tableData[k+31] = (float)resultsIB[13];
-								tableData[k+33] = (float)resultsIB[14];
-								tableData[k+35] = (float)resultsIB[15];
-								tableData[k+37] = (float)resultsIB[16];
-								tableData[k+39] = (float)resultsIB[17];
-							}
-							else {
-								tableData[k+31] = (float)resultsOB[18];
-								tableData[k+33] = (float)resultsOB[19];
-								tableData[k+35] = (float)resultsOB[20];
-								tableData[k+37] = (float)resultsOB[21];
-								tableData[k+39] = (float)resultsOB[22];
-							}
 							if (tableData[k+9] == 1) {
-								tableData[k+32] = (float)resultsIB[13];
-								tableData[k+34] = (float)resultsIB[14];
-								tableData[k+36] = (float)resultsIB[15];
-								tableData[k+38] = (float)resultsIB[16];
-								tableData[k+40] = (float)resultsIB[17];
-							}
-							else if (tableData[k+9] == 2) {
 								tableData[k+32] = (float)resultsOB[13];
 								tableData[k+34] = (float)resultsOB[14];
 								tableData[k+36] = (float)resultsOB[15];
 								tableData[k+38] = (float)resultsOB[16];
 								tableData[k+40] = (float)resultsOB[17];
 							}
+							else if (tableData[k+9] == 2) {
+								tableData[k+32] = (float)resultsIB[13];
+								tableData[k+34] = (float)resultsIB[14];
+								tableData[k+36] = (float)resultsIB[15];
+								tableData[k+38] = (float)resultsIB[16];
+								tableData[k+40] = (float)resultsIB[17];
+							}
 							else {
-								tableData[k+32] = (float)resultsIB[18];
-								tableData[k+34] = (float)resultsIB[19];
-								tableData[k+36] = (float)resultsIB[20];
-								tableData[k+38] = (float)resultsIB[21];
-								tableData[k+40] = (float)resultsIB[22];
+								tableData[k+32] = (float)resultsOB[18];
+								tableData[k+34] = (float)resultsOB[19];
+								tableData[k+36] = (float)resultsOB[20];
+								tableData[k+38] = (float)resultsOB[21];
+								tableData[k+40] = (float)resultsOB[22];
+							}
+							if (tableData[k+10] == 1) {
+								tableData[k+33] = (float)resultsIB[13];
+								tableData[k+35] = (float)resultsIB[14];
+								tableData[k+37] = (float)resultsIB[15];
+								tableData[k+39] = (float)resultsIB[16];
+								tableData[k+41] = (float)resultsIB[17];
+							}
+							else if (tableData[k+10] == 2) {
+								tableData[k+33] = (float)resultsOB[13];
+								tableData[k+35] = (float)resultsOB[14];
+								tableData[k+37] = (float)resultsOB[15];
+								tableData[k+39] = (float)resultsOB[16];
+								tableData[k+41] = (float)resultsOB[17];
+							}
+							else {
+								tableData[k+33] = (float)resultsIB[18];
+								tableData[k+35] = (float)resultsIB[19];
+								tableData[k+37] = (float)resultsIB[20];
+								tableData[k+39] = (float)resultsIB[21];
+								tableData[k+41] = (float)resultsIB[22];
 							}
 
 						}
 						else {
-							tableData[k+31] = 0.0f;
 							tableData[k+32] = 0.0f;
 							tableData[k+33] = 0.0f;
 							tableData[k+34] = 0.0f;
@@ -1627,6 +1630,7 @@ public class DTMOutput implements java.io.Serializable {
 							tableData[k+38] = 0.0f;
 							tableData[k+39] = 0.0f;
 							tableData[k+40] = 0.0f;
+							tableData[k+41] = 0.0f;
 						}
 						
 						if (outputFileDTM != null) {
@@ -1705,129 +1709,129 @@ public class DTMOutput implements java.io.Serializable {
 
 									k = 9 + (2*maxPartySize);
 									tableData[k] = st[s].getOrigTaz();
-									tableData[k+1] = st[s].getDestTaz();
-									tableData[k+2] = st[s].getDestShrtWlk();
-									tableData[k+3] = st[s].getTimeOfDayAlt();
+									tableData[k+1] = st[s].getOriginShrtWlk();
+									tableData[k+2] = st[s].getDestTaz();
+									tableData[k+3] = st[s].getDestShrtWlk();
+									tableData[k+4] = st[s].getTimeOfDayAlt();
 									if (st[s].getTimeOfDayAlt() < 1)
 										continue;
-									tableData[k+4] = com.pb.morpc.models.TODDataManager.getTodStartHour( st[s].getTimeOfDayAlt() );
-									tableData[k+5] = com.pb.morpc.models.TODDataManager.getTodEndHour( st[s].getTimeOfDayAlt() );
-									tableData[k+6] = com.pb.morpc.models.TODDataManager.getTodStartPeriod( st[s].getTimeOfDayAlt() );
-									tableData[k+7] = com.pb.morpc.models.TODDataManager.getTodEndPeriod( st[s].getTimeOfDayAlt() );
-									tableData[k+8] = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() );
-									tableData[k+9] = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() );
-									tableData[k+10] = st[s].getMode();
-									tableData[k+11] = st[s].getSubmodeOB();
-									tableData[k+12] = st[s].getSubmodeIB();
-									tableData[k+13] = st[s].getStopFreqAlt();
-									tableData[k+14] = st[s].getStopLocOB();
-									tableData[k+15] = st[s].getStopLocSubzoneOB();
-									tableData[k+16] = st[s].getStopLocIB();
-									tableData[k+17] = st[s].getStopLocSubzoneIB();
-									tableData[k+18] = st[s].getTripIkMode();
-									tableData[k+19] = st[s].getTripKjMode();
-									tableData[k+20] = st[s].getTripJkMode();
-									tableData[k+21] = st[s].getTripKiMode();
-									tableData[k+22] = (float)resultsOB[0];
+									tableData[k+5] = com.pb.morpc.models.TODDataManager.getTodStartHour( st[s].getTimeOfDayAlt() );
+									tableData[k+6] = com.pb.morpc.models.TODDataManager.getTodEndHour( st[s].getTimeOfDayAlt() );
+									tableData[k+7] = com.pb.morpc.models.TODDataManager.getTodStartPeriod( st[s].getTimeOfDayAlt() );
+									tableData[k+8] = com.pb.morpc.models.TODDataManager.getTodEndPeriod( st[s].getTimeOfDayAlt() );
+									tableData[k+9] = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() );
+									tableData[k+10] = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() );
+									tableData[k+11] = st[s].getMode();
+									tableData[k+12] = st[s].getSubmodeOB();
+									tableData[k+13] = st[s].getSubmodeIB();
+									tableData[k+14] = st[s].getStopFreqAlt();
+									tableData[k+15] = st[s].getStopLocOB();
+									tableData[k+16] = st[s].getStopLocSubzoneOB();
+									tableData[k+17] = st[s].getStopLocIB();
+									tableData[k+18] = st[s].getStopLocSubzoneIB();
+									tableData[k+19] = st[s].getTripIkMode();
+									tableData[k+20] = st[s].getTripKjMode();
+									tableData[k+21] = st[s].getTripJkMode();
+									tableData[k+22] = st[s].getTripKiMode();
 									tableData[k+23] = (float)resultsOB[0];
-									tableData[k+24] = (float)resultsOB[1];
-									tableData[k+25] = (float)resultsOB[2];
-									tableData[k+26] = (float)resultsIB[1];
-									tableData[k+27] = (float)resultsIB[2];
-									tableData[k+28] = st[s].getChosenPark();
-									tableData[k+29] = (float)resultsPark[1];
-									tableData[k+30] = (float)resultsPark[2];
+									tableData[k+24] = (float)resultsOB[0];
+									tableData[k+25] = (float)resultsOB[1];
+									tableData[k+26] = (float)resultsOB[2];
+									tableData[k+27] = (float)resultsIB[1];
+									tableData[k+28] = (float)resultsIB[2];
+									tableData[k+29] = st[s].getChosenPark();
+									tableData[k+30] = (float)resultsPark[1];
+									tableData[k+31] = (float)resultsPark[2];
 									if (st[s].getMode() == 3) {
-										if (tableData[k+8] == 1) {
-											tableData[k+31] = (float)resultsOB[3];
-											tableData[k+33] = (float)resultsOB[4];
-											tableData[k+35] = (float)resultsOB[5];
-											tableData[k+37] = (float)resultsOB[6];
-											tableData[k+39] = (float)resultsOB[7];
-										}
-										else if (tableData[k+8] == 2) {
-											tableData[k+31] = (float)resultsIB[3];
-											tableData[k+33] = (float)resultsIB[4];
-											tableData[k+35] = (float)resultsIB[5];
-											tableData[k+37] = (float)resultsIB[6];
-											tableData[k+39] = (float)resultsIB[7];
-										}
-										else {
-											tableData[k+31] = (float)resultsOB[8];
-											tableData[k+33] = (float)resultsOB[9];
-											tableData[k+35] = (float)resultsOB[10];
-											tableData[k+37] = (float)resultsOB[11];
-											tableData[k+39] = (float)resultsOB[12];
-										}
 										if (tableData[k+9] == 1) {
-											tableData[k+32] = (float)resultsIB[3];
-											tableData[k+34] = (float)resultsIB[4];
-											tableData[k+36] = (float)resultsIB[5];
-											tableData[k+38] = (float)resultsIB[6];
-											tableData[k+40] = (float)resultsIB[7];
-										}
-										else if (tableData[k+9] == 2) {
 											tableData[k+32] = (float)resultsOB[3];
 											tableData[k+34] = (float)resultsOB[4];
 											tableData[k+36] = (float)resultsOB[5];
 											tableData[k+38] = (float)resultsOB[6];
 											tableData[k+40] = (float)resultsOB[7];
 										}
+										else if (tableData[k+9] == 2) {
+											tableData[k+32] = (float)resultsIB[3];
+											tableData[k+34] = (float)resultsIB[4];
+											tableData[k+36] = (float)resultsIB[5];
+											tableData[k+38] = (float)resultsIB[6];
+											tableData[k+40] = (float)resultsIB[7];
+										}
 										else {
-											tableData[k+32] = (float)resultsIB[8];
-											tableData[k+34] = (float)resultsIB[9];
-											tableData[k+36] = (float)resultsIB[10];
-											tableData[k+38] = (float)resultsIB[11];
-											tableData[k+40] = (float)resultsIB[12];
+											tableData[k+32] = (float)resultsOB[8];
+											tableData[k+34] = (float)resultsOB[9];
+											tableData[k+36] = (float)resultsOB[10];
+											tableData[k+38] = (float)resultsOB[11];
+											tableData[k+40] = (float)resultsOB[12];
+										}
+										if (tableData[k+10] == 1) {
+											tableData[k+33] = (float)resultsIB[3];
+											tableData[k+35] = (float)resultsIB[4];
+											tableData[k+37] = (float)resultsIB[5];
+											tableData[k+39] = (float)resultsIB[6];
+											tableData[k+41] = (float)resultsIB[7];
+										}
+										else if (tableData[k+10] == 2) {
+											tableData[k+33] = (float)resultsOB[3];
+											tableData[k+35] = (float)resultsOB[4];
+											tableData[k+37] = (float)resultsOB[5];
+											tableData[k+39] = (float)resultsOB[6];
+											tableData[k+41] = (float)resultsOB[7];
+										}
+										else {
+											tableData[k+33] = (float)resultsIB[8];
+											tableData[k+35] = (float)resultsIB[9];
+											tableData[k+37] = (float)resultsIB[10];
+											tableData[k+39] = (float)resultsIB[11];
+											tableData[k+41] = (float)resultsIB[12];
 										}
 									}
 									else if (st[s].getMode() == 4) {
-										if (tableData[k+8] == 1) {
-											tableData[k+31] = (float)resultsOB[13];
-											tableData[k+33] = (float)resultsOB[14];
-											tableData[k+35] = (float)resultsOB[15];
-											tableData[k+37] = (float)resultsOB[16];
-											tableData[k+39] = (float)resultsOB[17];
-										}
-										else if (tableData[k+8] == 2) {
-											tableData[k+31] = (float)resultsIB[13];
-											tableData[k+33] = (float)resultsIB[14];
-											tableData[k+35] = (float)resultsIB[15];
-											tableData[k+37] = (float)resultsIB[16];
-											tableData[k+39] = (float)resultsIB[17];
-										}
-										else {
-											tableData[k+31] = (float)resultsOB[18];
-											tableData[k+33] = (float)resultsOB[19];
-											tableData[k+35] = (float)resultsOB[20];
-											tableData[k+37] = (float)resultsOB[21];
-											tableData[k+39] = (float)resultsOB[22];
-										}
 										if (tableData[k+9] == 1) {
-											tableData[k+32] = (float)resultsIB[13];
-											tableData[k+34] = (float)resultsIB[14];
-											tableData[k+36] = (float)resultsIB[15];
-											tableData[k+38] = (float)resultsIB[16];
-											tableData[k+40] = (float)resultsIB[17];
-										}
-										else if (tableData[k+9] == 2) {
 											tableData[k+32] = (float)resultsOB[13];
 											tableData[k+34] = (float)resultsOB[14];
 											tableData[k+36] = (float)resultsOB[15];
 											tableData[k+38] = (float)resultsOB[16];
 											tableData[k+40] = (float)resultsOB[17];
 										}
+										else if (tableData[k+9] == 2) {
+											tableData[k+32] = (float)resultsIB[13];
+											tableData[k+34] = (float)resultsIB[14];
+											tableData[k+36] = (float)resultsIB[15];
+											tableData[k+38] = (float)resultsIB[16];
+											tableData[k+40] = (float)resultsIB[17];
+										}
 										else {
-											tableData[k+32] = (float)resultsIB[18];
-											tableData[k+34] = (float)resultsIB[19];
-											tableData[k+36] = (float)resultsIB[20];
-											tableData[k+38] = (float)resultsIB[21];
-											tableData[k+40] = (float)resultsIB[22];
+											tableData[k+32] = (float)resultsOB[18];
+											tableData[k+34] = (float)resultsOB[19];
+											tableData[k+36] = (float)resultsOB[20];
+											tableData[k+38] = (float)resultsOB[21];
+											tableData[k+40] = (float)resultsOB[22];
+										}
+										if (tableData[k+10] == 1) {
+											tableData[k+33] = (float)resultsIB[13];
+											tableData[k+35] = (float)resultsIB[14];
+											tableData[k+37] = (float)resultsIB[15];
+											tableData[k+39] = (float)resultsIB[16];
+											tableData[k+41] = (float)resultsIB[17];
+										}
+										else if (tableData[k+10] == 2) {
+											tableData[k+33] = (float)resultsOB[13];
+											tableData[k+35] = (float)resultsOB[14];
+											tableData[k+37] = (float)resultsOB[15];
+											tableData[k+39] = (float)resultsOB[16];
+											tableData[k+41] = (float)resultsOB[17];
+										}
+										else {
+											tableData[k+33] = (float)resultsIB[18];
+											tableData[k+35] = (float)resultsIB[19];
+											tableData[k+37] = (float)resultsIB[20];
+											tableData[k+39] = (float)resultsIB[21];
+											tableData[k+41] = (float)resultsIB[22];
 										}
 
 									}
 									else {
-										tableData[k+31] = 0.0f;
 										tableData[k+32] = 0.0f;
 										tableData[k+33] = 0.0f;
 										tableData[k+34] = 0.0f;
@@ -1837,6 +1841,7 @@ public class DTMOutput implements java.io.Serializable {
 										tableData[k+38] = 0.0f;
 										tableData[k+39] = 0.0f;
 										tableData[k+40] = 0.0f;
+										tableData[k+41] = 0.0f;
 									}
 
 									if (outputFileDTM != null) {

@@ -3,6 +3,7 @@ package com.pb.morpc.structures;
 import com.pb.common.util.ObjectUtil;
 import com.pb.morpc.models.TODDataManager;
 import com.pb.morpc.models.ZonalDataManager;
+import com.pb.morpc.models.ChoiceModelApplication;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -29,6 +30,7 @@ public class Household implements java.io.Externalizable {
 	private short tourID;
 	private short subtourID;
 	private short chosenDest;
+	private short originWalkSegment;
 	private short chosenWalkSegment;
 	private short chosenTodAlt;
 
@@ -135,6 +137,26 @@ public class Household implements java.io.Externalizable {
 	}
 
 
+	/**
+	 * set walk segment (0-none, 1-short, 2-long walk to transit access) for the origin for this tour
+	 */
+	public void setInitialOriginWalkSegment (int taz) {
+		double[] proportions = new double[ZonalDataManager.WALK_SEGMENTS];
+		for (int i=0; i < ZonalDataManager.WALK_SEGMENTS; i++)
+			proportions[i] = ZonalDataManager.getWalkPct(i, taz);
+		originWalkSegment = (short)ChoiceModelApplication.getMonteCarloSelection(proportions);
+	}
+
+	public void setOriginWalkSegment (int taz) {
+		originWalkSegment = (short)taz;
+	}
+
+	public int getOriginWalkSegment () {
+		return originWalkSegment;
+	}
+
+
+	
 	/**
 	 * set walk segment (0-none, 1-short, 2-long walk to transit access) for the destination choice alternative for this tour
 	 */

@@ -549,8 +549,8 @@ public class ZonalDataManager implements java.io.Serializable {
         calculateAttractions(zoneTable);
     }
 
-    public float getWalkPct(int chosenShrtWlkAlt, int chosenDestAlt) {
-        return walkPctArray[chosenShrtWlkAlt][chosenDestAlt];
+    public static float getWalkPct(int subzoneIndex, int taz) {
+        return walkPctArray[subzoneIndex][taz];
     }
 
     private void calculateSize(int tourType) {

@@ -496,7 +496,9 @@ public class HouseholdArrayManager implements java.io.Serializable {
             // set the array which records what person id belongs to each person type
             tempHHs[i].setPersonsByPersonTypeArray();
 
-        }
+            tempHHs[i].setInitialOriginWalkSegment( tempHHs[i].getTazID() );
+			
+		}
 
 		hhTable = null;
 		

@@ -311,7 +311,7 @@ public class ChoiceModelApplication implements java.io.Serializable {
 	}
 
 	
-	public int getMonteCarloSelection (double[] probabilities) {
+	public static int getMonteCarloSelection (double[] probabilities) {
 	    
 		double randomNumber = SeededRandom.getRandom();
 		int returnValue = 0;

@@ -31,6 +31,7 @@ public class Tour implements java.io.Externalizable {
 	short origTaz;
 	short destTaz;
 	short parkTaz;
+	short originShortWalk;
 	short destShrtWlk;
 	short tourOrder;
 	short numPersons;
@@ -86,6 +87,17 @@ public class Tour implements java.io.Externalizable {
 	 */
 	public int getDestTaz () {
 		return this.destTaz;
+	}
+
+	/**
+	 * set tour origin short walk segment for this Tour object
+	 */
+	public void setOriginShrtWlk (int arg) {
+		this.originShortWalk = (short)arg;
+	}
+
+	public int getOriginShrtWlk () {
+		return this.originShortWalk;
 	}
 
 	/**
