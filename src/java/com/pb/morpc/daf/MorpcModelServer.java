@@ -1278,19 +1278,10 @@ public class MorpcModelServer extends MessageProcessingTask {
 	        runDOSCommand(run_extfutureCmd);
 		    runDOSCommand(run_cmvCmd);
 		    runDOSCommand(run_extCmd);
-
-		    /*
+	    
 		    if(!scenario.equalsIgnoreCase(baseYearScenario)){
 		    	runDOSCommand(run_extfutureCmd);
-		    	/*
-		    //if(year>2000) {//if future year
-		        runDOSCommand(run_extfutureCmd+" Y");
 		    }
-		    else {//if not future year
-		        runDOSCommand(run_extfutureCmd+" N");
-		        */
-		    }
-		    */
 		    
 		    // first iteration only
 		    if( iteration+1 == 1 && iteration+1!=numberOfIterations) {

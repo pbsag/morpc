@@ -14,7 +14,9 @@ import com.pb.morpc.models.DTMHousehold;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.models.TODDataManager;
 import com.pb.morpc.structures.Household;
-import com.pb.morpc.structures.LogsumRecord;
+//******************logsumlogsumlogsumlogsum**********************
+//import com.pb.morpc.structures.LogsumRecord;
+//******************logsumlogsumlogsumlogsum**********************
 import com.pb.morpc.structures.TourType;
 
 import java.util.HashMap;
@@ -29,8 +31,10 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 	private static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 	private Household[] hhList = null;
+//	******************logsumlogsumlogsumlogsum**********************
 	//Wu added for attaching logsums to Message
-	private LogsumRecord [] logsumRecords=null;
+	//private LogsumRecord [] logsumRecords=null;
+//	******************logsumlogsumlogsumlogsum**********************
 	private DTMHousehold dtmHH = null;
 
 	private ZonalDataManager zdm = 	null;
@@ -204,11 +208,12 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 							dtmHH.resetHouseholdCount();
 							dtmHH.atWorkTourMc (hhList[i]);
 							
+//							******************logsumlogsumlogsumlogsum**********************							
 							//Wu added for writing out logsums
-							currentLogsums=dtmHH.getLogsumRecords();
-							logsums.addAll(currentLogsums);
-							logsumRecords=createLogsumRecords(logsums);
-
+							//currentLogsums=dtmHH.getLogsumRecords();
+							//logsums.addAll(currentLogsums);
+							//logsumRecords=createLogsumRecords(logsums);
+//							******************logsumlogsumlogsumlogsum**********************
 						}
 						catch (java.lang.Exception e) {
 							e.printStackTrace();
@@ -262,20 +267,22 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 		newMessage.setValue( MessageID.TOUR_TYPES_KEY, TourType.AT_WORK_TYPES );
 		newMessage.setValue( MessageID.HOUSEHOLD_LIST_KEY, hhList );
 		
+//		******************logsumlogsumlogsumlogsum**********************
 		//Wu added for wrting out logsum tables
-		newMessage.setValue(MessageID.LOGSUM_LIST_KEY, logsumRecords);
-
+		//newMessage.setValue(MessageID.LOGSUM_LIST_KEY, logsumRecords);
+//		******************logsumlogsumlogsumlogsum**********************
 		return newMessage;
 	}
-
+//	******************logsumlogsumlogsumlogsum**********************
 	//Wu added for writing logsums out
-	private LogsumRecord [] createLogsumRecords(Vector logsums){
-		LogsumRecord [] result=new LogsumRecord[logsums.size()];
-		for(int i=0; i<logsums.size(); i++){
-			result[i]=(LogsumRecord)logsums.get(i);
-		}
-		return result;
+	//private LogsumRecord [] createLogsumRecords(Vector logsums){
+		//LogsumRecord [] result=new LogsumRecord[logsums.size()];
+		//for(int i=0; i<logsums.size(); i++){
+			//result[i]=(LogsumRecord)logsums.get(i);
+		//}
+		//return result;
 		
-	}
+	//}
+//	******************logsumlogsumlogsumlogsum**********************
 
 }

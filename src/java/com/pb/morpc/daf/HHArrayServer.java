@@ -9,14 +9,15 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.morpc.models.HouseholdArrayManager;
 import com.pb.morpc.structures.Household;
-import com.pb.morpc.structures.LogsumRecord;
-import java.text.DecimalFormat;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.File;
+//******************logsumlogsumlogsumlogsum**********************
+//import com.pb.morpc.structures.LogsumRecord;
+//import java.text.DecimalFormat;
+//import java.io.BufferedWriter;
+//import java.io.FileWriter;
+//import java.io.IOException;
+//import java.io.PrintWriter;
+//import java.io.File;
+//******************logsumlogsumlogsumlogsum**********************
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -171,8 +172,10 @@ public class HHArrayServer extends MessageProcessingTask {
 
 					sendWork ( category, types );
 				}
+//				******************logsumlogsumlogsumlogsum**********************
 				//Wu added for handling logsums.  Following if block get RESULTS_LOGSUMS message from
 				//TcMcWorker, IndivDTMWorker, JointDTMWorker, and AtWorkDTMWorker
+				/*
 				else if(msg.getId().equals(MessageID.RESULTS_LOGSUMS)){
 					// retrieve the contents of the message.
 					short category = (short)msg.getIntValue( MessageID.TOUR_CATEGORY_KEY );
@@ -188,6 +191,8 @@ public class HHArrayServer extends MessageProcessingTask {
 					writeLogsums((LogsumRecord [])msg.getValue(MessageID.LOGSUM_LIST_KEY));
 					
 				}
+				*/
+//				******************logsumlogsumlogsumlogsum**********************
 				
 			}
 			else {
@@ -226,7 +231,9 @@ public class HHArrayServer extends MessageProcessingTask {
 		
 	}
 	
+//	******************logsumlogsumlogsumlogsum**********************
 	//Wu added for writing out logsums
+	/*
 	private void writeLogsums(LogsumRecord [] records){
 		
 		if(records==null){
@@ -305,4 +312,6 @@ public class HHArrayServer extends MessageProcessingTask {
             logger.severe("failed writing logsum to disk.");
         }
 	}
+	*/
+//	******************logsumlogsumlogsumlogsum**********************
 }

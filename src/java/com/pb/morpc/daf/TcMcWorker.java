@@ -15,7 +15,9 @@ import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.models.TODDataManager;
 import com.pb.morpc.structures.Household;
 import com.pb.morpc.structures.TourType;
-import com.pb.morpc.structures.LogsumRecord;
+//******************logsumlogsumlogsumlogsum**********************
+//import com.pb.morpc.structures.LogsumRecord;
+//******************logsumlogsumlogsumlogsum**********************
 
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -29,8 +31,10 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 	private static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 	private Household[] hhList = null;
+//	******************logsumlogsumlogsumlogsum**********************
 	//Wu added for attaching logsums to Message
-	private LogsumRecord [] logsumRecords=null;
+	//private LogsumRecord [] logsumRecords=null;
+//	******************logsumlogsumlogsumlogsum**********************
 	private DTMHousehold dtmHH = null;
 
 	private ZonalDataManager zdm = 	null;
@@ -188,12 +192,13 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 							dtmHH.resetHouseholdCount();
 							dtmHH.mandatoryTourMc (hhList[i]);
 							dtmHH.updateTimeWindows (hhList[i]);
-							
+//							******************logsumlogsumlogsumlogsum**********************					
 							//Wu added for writing out logsums
-							currentLogsums=dtmHH.getLogsumRecords();
-							logsums.addAll(currentLogsums);
-							logger.info("in TcMcWorker before create logsum records.");
-							logsumRecords=createLogsumRecords(logsums);
+							//currentLogsums=dtmHH.getLogsumRecords();
+							//logsums.addAll(currentLogsums);
+							//logger.info("in TcMcWorker before create logsum records.");
+							//logsumRecords=createLogsumRecords(logsums);
+//							******************logsumlogsumlogsumlogsum**********************
 
 						}
 						catch (java.lang.Exception e) {
@@ -248,20 +253,24 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 		newMessage.setIntValue( MessageID.TOUR_CATEGORY_KEY, TourType.MANDATORY_CATEGORY );
 		newMessage.setValue( MessageID.TOUR_TYPES_KEY, TourType.MANDATORY_TYPES );
 		newMessage.setValue( MessageID.HOUSEHOLD_LIST_KEY, hhList );
+//		******************logsumlogsumlogsumlogsum**********************
 		//Wu added for wrting out logsum tables
-		newMessage.setValue(MessageID.LOGSUM_LIST_KEY, logsumRecords);
+		//newMessage.setValue(MessageID.LOGSUM_LIST_KEY, logsumRecords);
+//		******************logsumlogsumlogsumlogsum**********************
 
 		return newMessage;
 	}
 	
+//	******************logsumlogsumlogsumlogsum**********************
 	//Wu added for writing logsums out
-	private LogsumRecord [] createLogsumRecords(Vector logsums){
-		LogsumRecord [] result=new LogsumRecord[logsums.size()];
-		for(int i=0; i<logsums.size(); i++){
-			result[i]=(LogsumRecord)logsums.get(i);
-		}
-		return result;
+	//private LogsumRecord [] createLogsumRecords(Vector logsums){
+		//LogsumRecord [] result=new LogsumRecord[logsums.size()];
+		//for(int i=0; i<logsums.size(); i++){
+			//result[i]=(LogsumRecord)logsums.get(i);
+		//}
+		//return result;
 		
-	}
+	//}
+//	******************logsumlogsumlogsumlogsum**********************
 
 }
