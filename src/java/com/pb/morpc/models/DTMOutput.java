@@ -954,6 +954,7 @@ public class DTMOutput implements java.io.Serializable {
 			tableHeadings.add("LRT_IVT_IB");
 			tableHeadings.add("CRL_IVT_OB");
 			tableHeadings.add("CRL_IVT_IB");
+			tableHeadings.add("Logsum");
 
 			// define an array for use in writing output file
 			float[] tableData = new float[tableHeadings.size()];
@@ -1170,6 +1171,7 @@ public class DTMOutput implements java.io.Serializable {
 								tableData[k+38] = (float)resultsIB[21];
 								tableData[k+40] = (float)resultsIB[22];
 							}
+							tableData[k+41]=(float)it[t].getLogsum();
 						}
 						else {
 							tableData[k+31] = 0.0f;
@@ -1396,6 +1398,7 @@ public class DTMOutput implements java.io.Serializable {
 								tableData[k+38] = (float)resultsIB[21];
 								tableData[k+40] = (float)resultsIB[22];
 							}
+							tableData[k+41]=(float)jt[t].getLogsum();
 						}
 						else {
 							tableData[k+31] = 0.0f;
@@ -1617,6 +1620,7 @@ public class DTMOutput implements java.io.Serializable {
 								tableData[k+38] = (float)resultsIB[21];
 								tableData[k+40] = (float)resultsIB[22];
 							}
+							tableData[k+41]=(float)it[t].getLogsum();
 						}
 						else {
 							tableData[k+31] = 0.0f;
@@ -1828,6 +1832,7 @@ public class DTMOutput implements java.io.Serializable {
 											tableData[k+38] = (float)resultsIB[21];
 											tableData[k+40] = (float)resultsIB[22];
 										}
+										tableData[k+41]=(float)st[s].getLogsum();
 									}
 									else {
 										tableData[k+31] = 0.0f;

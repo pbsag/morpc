@@ -815,11 +815,15 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
+				double chosenLogsum=mc[tourTypeIndex].getLogsum();
+				
 				mcTime += (System.currentTimeMillis()-markTime);
 
 				
 				// set chosen in alternative in tour objects
 				hh.mandatoryTours[t].setMode (chosenModeAlt);
+				//set chosen logsum in tour object
+				hh.mandatoryTours[t].setLogsum(chosenLogsum);
 
 
 
@@ -1297,10 +1301,14 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
+				double chosenLogsum=mc[m].getLogsum();
+				
 				mcTime += (System.currentTimeMillis() - markTime);
 
 				// set chosen in alternative in tour objects
 				hh.jointTours[t].setMode (chosenModeAlt);
+				//set chosen logsum in tour object
+				hh.jointTours[t].setLogsum(chosenLogsum);
 
 
 				// set park zone to zero, not used for joint.
@@ -1978,13 +1986,14 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
+				double chosenLogsum=mc[m].getLogsum();
+				
 				mcTime += (System.currentTimeMillis()-markTime);
 
 				// set chosen in alternative in tour objects
 				hh.indivTours[t].setMode (chosenModeAlt);
-
-
-
+				//set chosen logsum in tour object
+				hh.indivTours[t].setLogsum(chosenLogsum);
 
 
 				index.setOriginZone( hh.indivTours[t].getOrigTaz() );
@@ -2531,10 +2540,15 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
+				double chosenLogsum=mc[m].getLogsum();
+				
 				mcTime += (System.currentTimeMillis() - markTime);
     
 				// set chosen in alternative in tour objects
 				hh.mandatoryTours[t].subTours[s].setMode (chosenModeAlt);
+				
+				//set chosen logsum in tour object
+				hh.mandatoryTours[t].subTours[s].setLogsum(chosenLogsum);
     
 
 				// set park zone to zero, not used for at-work.

@@ -49,6 +49,8 @@ public class Tour implements java.io.Externalizable {
 	short tripKjMode;
 	short tripJkMode;
 	short tripKiMode;
+	//wu added for logsum
+	double logsum;
 
 
     public Tour() {
@@ -503,6 +505,22 @@ public class Tour implements java.io.Externalizable {
 	 */
 	public int getSubmodeIB () {
 		return this.submodeIB;
+	}
+	
+	/**
+	 * set logsum of this tour
+	 * @param logsum
+	 */
+	public void setLogsum(double logsum){
+		this.logsum=logsum;
+	}
+	
+	/**
+	 * get logsum of this tour
+	 * @return
+	 */
+	public double getLogsum(){
+		return logsum;
 	}
 
 
