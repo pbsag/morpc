@@ -92,7 +92,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("bestWtIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 	
@@ -118,7 +122,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("bestWtIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 	
@@ -145,7 +153,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("bestDtIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 	
@@ -172,7 +184,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("bestDtIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 	
@@ -195,7 +211,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtLbsIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -219,7 +239,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtEbsIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -244,7 +268,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtBrtIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -270,7 +298,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtLrtIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -297,7 +329,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtCrlIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -320,7 +356,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtLbsIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -344,7 +384,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtEbsIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -369,7 +413,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtBrtIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -395,7 +443,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtLrtIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -422,7 +474,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("wtCrlIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -445,7 +501,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtLbsIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -469,7 +529,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtEbsIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -494,7 +558,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtBrtIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -520,7 +588,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtLrtIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -547,7 +619,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtCrlIvtAm.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -570,7 +646,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtLbsIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -594,7 +674,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtEbsIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -619,7 +703,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtBrtIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -645,7 +733,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtLrtIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -672,7 +764,11 @@ public class MorpcMatrixAggregater {
  
 		String fileName = binaryDirectory + "/" + (String)propertyMap.get("dtCrlIvtMd.file") + ".binary";
 		MatrixWriter writer = MatrixWriter.createWriter (MatrixType.BINARY, new File( fileName ) );
+
+        long startTime = System.currentTimeMillis();
 		writer.writeMatrix ( resultMatrix );
+        logger.info("wrote "  + fileName + ", " + resultMatrix.getRowCount()*resultMatrix.getColumnCount()*4 + " bytes, in " + 
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 		
 	}
 
@@ -705,12 +801,20 @@ public class MorpcMatrixAggregater {
 	
 	public static void main(String[] args) {
 
+		HashMap propertyMap;
+		
 		// aggregate the original 129 matrices specified for Stop location choice into 25.
-		HashMap propertyMap = ResourceUtil.getResourceBundleAsHashMap ("morpc" );
+		if (args.length == 0) {
+			propertyMap = ResourceUtil.getResourceBundleAsHashMap ("morpc" );
+		}
+		else {
+			propertyMap = ResourceUtil.getResourceBundleAsHashMap ( args[0] );
+		}
+		
 		MorpcMatrixAggregater ma = new MorpcMatrixAggregater(propertyMap);
 		ma.aggregateSlcSkims();
                         
-		logger.fine("end of aggregating MORPC TP+ Matrices");
+		logger.info("end of aggregating MORPC TP+ Matrices");
 
 		System.exit (0);
         
