@@ -44,6 +44,7 @@ public class NonMandatoryDTM implements java.io.Serializable {
 			return;
 			
 			
+		dtmHH.resetHouseholdCount();
 		for (int i=0; i < hhList.length; i++) {
 			dtmHH.indivNonMandatoryTourDc (hhList[i]);
 			dtmHH.indivNonMandatoryTourTc (hhList[i]);

@@ -189,7 +189,7 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 							hhList[i].setProcessorId (processorId);
 							//Wu added for FTA restart
 							//if FTA restart run skip DC and TC
-							if(!FTA_Restart_run.equalsIgnoreCase("true")){
+							if( FTA_Restart_run == null || !FTA_Restart_run.equalsIgnoreCase("true") ){
 								dtmHH.resetHouseholdCount();
 								dtmHH.atWorkTourDc (hhList[i]);
 								dtmHH.resetHouseholdCount();

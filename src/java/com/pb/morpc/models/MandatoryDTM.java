@@ -40,6 +40,7 @@ public class MandatoryDTM implements java.io.Serializable {
 			return;
 			
 		dtmHH.clearProbabilitiesMaps( TourType.MANDATORY_TYPES );
+		dtmHH.resetHouseholdCount();
 		for (int i=0; i < hhList.length; i++) {
 			dtmHH.mandatoryTourDc (hhList[i]);
 		}
@@ -57,6 +58,7 @@ public class MandatoryDTM implements java.io.Serializable {
 		if (hhList == null)
 			return;
 			
+		dtmHH.resetHouseholdCount();
 		for (int i=0; i < hhList.length; i++) {
 			dtmHH.mandatoryTourTc (hhList[i]);
 			dtmHH.mandatoryTourMc (hhList[i]);
@@ -68,13 +70,13 @@ public class MandatoryDTM implements java.io.Serializable {
 	
 	
 	
-	public void setShadowPricingIteration ( int iter ) {
-		dtmHH.setShadowPricingIteration( iter );
+	public void resetHouseholdCount () {
+		dtmHH.resetHouseholdCount();
 	}
 	
 
-	public void resetHouseholdCount () {
-		dtmHH.resetHouseholdCount();
+	public void setShadowPricingIteration ( int iter ) {
+		dtmHH.setShadowPricingIteration( iter );
 	}
 	
 

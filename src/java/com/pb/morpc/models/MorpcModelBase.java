@@ -55,7 +55,7 @@ public class MorpcModelBase {
 		boolean SKIP_CREATE_DISK_OBJECT_ARRAY = false;
 
 		
-        propertyMap = ResourceUtil.getResourceBundleAsHashMap ("morpc" );
+        propertyMap = ResourceUtil.getResourceBundleAsHashMap ("morpc_bench" );
 /*
     	String TPP_TO_BINARY_PROGRAM_DIRECTORY = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM_DIRECTORY");
         String BINARY_TO_TPP_PROGRAM_DIRECTORY = (String) propertyMap.get("BINARY_TO_TPP_PROGRAM_DIRECTORY");

@@ -171,7 +171,7 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 							hhList[i].setProcessorId (processorId);
 							//Wu added for FTA restart
 							//if FTA restart run skip DC and TC
-							if(!FTA_Restart_run.equalsIgnoreCase("true")){
+							if( FTA_Restart_run == null || !FTA_Restart_run.equalsIgnoreCase("true") ){
 								dtmHH.resetHouseholdCount();
 								dtmHH.indivNonMandatoryTourDc (hhList[i]);
 								dtmHH.resetHouseholdCount();
