@@ -530,7 +530,7 @@ public class SpecialEvent {
 			//add totpop and hotelpop up, to get popupation term in calculating attrctiveness
 			poppr[i]=(totpop[i]+hotelpop[i])/totpopsum;
 			emppr[i]=(empoff[i]+empretgds[i]+empretsrv[i])/(empoffsum+empretgdssum+empretsrvsum);
-			hipr[i]=hhinc[i]/110000f;
+			hipr[i]=hhinc[i]/110000.00f;
 			result[i]=(float)(0.4456*poppr[i]+0.1265*emppr[i]+0.004635*hipr[i]);
 		}
 		
