@@ -15,8 +15,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.DiskObjectArray;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
-
-
 import com.pb.morpc.matrix.MorpcMatrixAggregater;
 import com.pb.morpc.matrix.MorpcMatrixZipper;
 import com.pb.morpc.models.AccessibilityIndices;
@@ -61,8 +59,7 @@ public class MorpcModelServer extends MessageProcessingTask {
     String hhFile;
     String personFile;
     String zonalFile;
-    TableDataSet zoneTable = null;
-
+//    TableDataSet zoneTable = null;
 
     private ZonalDataManager zdm = null;
     private TODDataManager tdm = null;
@@ -70,12 +67,10 @@ public class MorpcModelServer extends MessageProcessingTask {
     private HashMap staticZonalDataMap = null;
     private HashMap staticTodDataMap = null;
 
-
     private int numberOfHouseoldsToProcess = 0;
     private int hhResultsCount = 0;
     private boolean allHHResultsProcessed;
     private boolean incrementTourCategory;
-
 
     private long startTime = 0;
     static long runningTime = 0;
@@ -86,12 +81,8 @@ public class MorpcModelServer extends MessageProcessingTask {
 
     Household[] hhs = null;
 
-
-
     public MorpcModelServer() {
     }
-
-
 
     public void onStart() {
 
@@ -99,10 +90,7 @@ public class MorpcModelServer extends MessageProcessingTask {
 
         startTime = System.currentTimeMillis();
 
-
         propertyMap = ResourceUtil.getResourceBundleAsHashMap(iterationPropertyFiles[0]);
-
-
         
 		// send a message to the random number server so that the random number seed will be set on all nodes
 		PortManager pManager = PortManager.getInstance();
@@ -113,8 +101,6 @@ public class MorpcModelServer extends MessageProcessingTask {
 
 		propertyMapMsg.setId(MessageID.START_INFO);
 		propertyMapMsg.setValue(MessageID.PROPERTY_MAP_KEY, propertyMap);
-
-
 		
 		// set the global random number generator seed read from the properties file on the nodes
 		// that runs the worker tasks
@@ -135,7 +121,6 @@ public class MorpcModelServer extends MessageProcessingTask {
 		exitMsg.setId(MessageID.EXIT);
 		sendTo("RnServer", exitMsg);
 
-        
 		// set the global random number generator seed read from the properties file on the node
 		// that runs the server tasks
 		SeededRandom.setSeed(Integer.parseInt((String) propertyMap.get("RandomSeed")));
@@ -144,7 +129,6 @@ public class MorpcModelServer extends MessageProcessingTask {
 			logger.info("Memory at end of RnServer");
 			showMemory();
 		}
-        
         
         // set the global number of iterations read from the properties file
         numberOfIterations = (Integer.parseInt((String) propertyMap.get( "GlobalIterations")));
@@ -171,18 +155,13 @@ public class MorpcModelServer extends MessageProcessingTask {
             runModelIteration(i);
         }
 
-
-
         //		Report report=new Report();
         //		report.generateReports();
-
 
         if (LOGGING) {
             logger.info("Memory after running reports - end of program");
             showMemory();
         }
-
-
 
         if (LOGGING) {
             logger.info("end of MORPC Demand Models");
@@ -190,17 +169,11 @@ public class MorpcModelServer extends MessageProcessingTask {
         }
 
         System.exit(0);
-
-
     }
-
-
 
     private void runModelIteration(int iteration) {
 
-
         logger.info("Global iteration:" + (iteration+1) + " started.");
-
 
         // read the property file specific to this global iteration
         propertyMap = ResourceUtil.getResourceBundleAsHashMap(iterationPropertyFiles[iteration]);
@@ -214,27 +187,22 @@ public class MorpcModelServer extends MessageProcessingTask {
 			// build a synthetic population
 	        if (((String) propertyMap.get("RUN_POPULATION_SYNTHESIS_MODEL")).equalsIgnoreCase( "true"))
 	            runPopulationSynthesizer();
-	
-	
-	
+		
 	        // call a C program to read the tpplus skims matrices and create the binary format skims matrices needed for the model run
 	        if (((String) propertyMap.get("RUN_TPPLUS_SKIMS_CONVERTER")).equalsIgnoreCase( "true")) {
 	
 	            String TPP_TO_BINARY_PROGRAM_DIRECTORY = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM_DIRECTORY");
 	            String TPP_TO_BINARY_PROGRAM = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM");
-	
-	
+		
 	            String tppDir = (String) propertyMap.get("SkimsDirectory.tpplus");
 	            String binDir = (String) propertyMap.get("SkimsDirectory.binary");
 	            runDOSCommand(TPP_TO_BINARY_PROGRAM_DIRECTORY + "\\" + TPP_TO_BINARY_PROGRAM + " " + tppDir + " " + binDir);
 	            logger.info("done converting tpplus to binary skim matrices");
-	
-	
+		
 	            MorpcMatrixAggregater ma = new MorpcMatrixAggregater(propertyMap);
 	            ma.aggregateSlcSkims();
 	            logger.info("done aggregating slc skim matrices");
-	
-	
+		
 	            MorpcMatrixZipper mx = new MorpcMatrixZipper(propertyMap);
 	            mx.convertHwyBinaryToZip();
 	            mx.convertWTBinaryToZip();
@@ -259,11 +227,7 @@ public class MorpcModelServer extends MessageProcessingTask {
 	        }
         }
 
-
-
         runCoreModel(iteration);
-
-
 
         // write binary matrices and summary tables and .csv output files for DTM
         PortManager pManager = PortManager.getInstance();
@@ -286,8 +250,6 @@ public class MorpcModelServer extends MessageProcessingTask {
 
         hhs = (Household[]) waitMsg.getValue(MessageID.HHS_ARRAY_KEY);
 
-
-
         DTMOutput dtmOut = new DTMOutput(propertyMap, zdm);
         try {
             dtmOut.writeDTMOutput(hhs);
@@ -295,8 +257,6 @@ public class MorpcModelServer extends MessageProcessingTask {
         catch (java.io.IOException e) {
             e.printStackTrace();
         }
-
-
 
         if (((String) propertyMap.get("WRITE_TRIP_TABLES")).equalsIgnoreCase("true")) {
 
@@ -325,8 +285,6 @@ public class MorpcModelServer extends MessageProcessingTask {
 
         }
 
-
-
         dtmOut = null;
 
         if (LOGGING) {
@@ -334,22 +292,20 @@ public class MorpcModelServer extends MessageProcessingTask {
             showMemory();
         }
         
-        
+        // clear the household data from the TableDataSetManager for the next iteration
+		com.pb.common.calculator.UtilityExpressionCalculator.clearData();
+               
         //write disk object array to hard drive if not FTA restart run
         if (((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("false")&&numberOfIterations==(iteration+1) ){
+            //write big disk object array to disk
         	writeDiskObjectArray(hhs);
         	hhs=null;
         	writeDiskObjectZDMTDM(zdm,tdm,staticZonalDataMap,staticTodDataMap,propertyMap);
-        	
         }
         
         //delete big household array from memory
         hhs=null;
         
-        // clear the household data from the TableDataSetManager for the next iteration
-		com.pb.common.calculator.UtilityExpressionCalculator.clearData();
-
-		
 		//execute assignment and skimming
         String SKIP_ASSIGNMENT_SKIMMING=(String)propertyMap.get("SKIP_ASSIGNMENT_SKIMMING");
         if(!SKIP_ASSIGNMENT_SKIMMING.equals("true")){
@@ -357,9 +313,6 @@ public class MorpcModelServer extends MessageProcessingTask {
         }
         
     }
-
-
-
 
     private void runCoreModel(int iteration) {
     	
@@ -385,14 +338,10 @@ public class MorpcModelServer extends MessageProcessingTask {
 	            runAutoOwnershipModel();
 	
 	        }
-
-
 	        // assign person type and daily activity pattern attributes and generate mandatory tours
 	        if (((String) propertyMap.get("RUN_DAILY_PATTERN_MODELS")).equalsIgnoreCase("true"))
 	            runDailyActivityPatternModels();
         }
-
-
 
         PortManager pManager = PortManager.getInstance();
         Port receivePort = pManager.getReceivePort();
@@ -406,14 +355,10 @@ public class MorpcModelServer extends MessageProcessingTask {
         Message exitMsg = createMessage();
         exitMsg.setId(MessageID.EXIT);
 
-
         Message sendHHsMsg = createMessage();
         Message resetHHsMsg = createMessage();
         Message updateHHsMsg = createMessage();
         Message startInfoMsg = createMessage();
-
-
-
         
         // for each iteration:
         // after the DAP models have run, respond to the HouseholdArray server
@@ -430,8 +375,7 @@ public class MorpcModelServer extends MessageProcessingTask {
         while (!(waitMsg.getSender().equals("HhArrayServer") && waitMsg.getId().equals(MessageID.HH_ARRAY_FINISHED))) {
             waitMsg = receivePort.receive();
         }
-        
-        
+                
 		//if FTA_Restart_run skip Free Parking
         if (((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("false") ){
 
@@ -1136,30 +1080,37 @@ public class MorpcModelServer extends MessageProcessingTask {
         // preschool children
         Model21 m21 = new Model21(propertyMap);
         m21.runPreschoolDailyActivityPatternChoice();
+        m21=null;
 
         // predriving children
         Model22 m22 = new Model22(propertyMap);
         m22.runPredrivingDailyActivityPatternChoice();
+        m22=null;
 
         // driving children
         Model23 m23 = new Model23(propertyMap);
         m23.runDrivingDailyActivityPatternChoice();
+        m23=null;
 
         // students
         Model24 m24 = new Model24(propertyMap);
         m24.runStudentDailyActivityPatternChoice();
+        m24=null;
 
         // full time workers
         Model25 m25 = new Model25(propertyMap);
         m25.runWorkerFtDailyActivityPatternChoice();
+        m25=null;
 
         // full time workers
         Model26 m26 = new Model26(propertyMap);
         m26.runWorkerPtDailyActivityPatternChoice();
+        m26=null;
 
         // non workers
         Model27 m27 = new Model27(propertyMap);
         m27.runNonworkerDailyActivityPatternChoice();
+        m27=null;
 
 
         if (LOGGING)
@@ -1420,8 +1371,6 @@ public class MorpcModelServer extends MessageProcessingTask {
     		//write each hh to disk object array
     		for(int i=0; i<NoHHs; i++){
         		diskObjectArray.add(i,hhs[i]);
-        		//force each array element for gc
-        		hhs[i]=null;
         	}
     	}catch(IOException e){
     		logger.severe("can not open disk object array file for writing");
@@ -1432,20 +1381,11 @@ public class MorpcModelServer extends MessageProcessingTask {
     	String diskObjectZDMTDMFile=(String)propertyMap.get("DiskObjectZDMTDM.file");
     	try{
     		FileOutputStream out=new FileOutputStream(diskObjectZDMTDMFile);
-    		logger.info("opened out put strem for zdmtdm");
         	ObjectOutputStream s=new ObjectOutputStream(out);
         	s.writeObject(zdm);
-        	zdm=null;
-        	logger.info("wrote out zdm.");
         	s.writeObject(tdm);
-        	tdm=null;
-        	logger.info("wrote out tdm.");
         	s.writeObject(staticZonalDataMap);
-        	staticZonalDataMap=null;
-        	logger.info("wrote out zonal data map.");
         	s.writeObject(staticTodDataMap);
-        	staticTodDataMap=null;
-        	logger.info("wrote out tod data map");
         	s.flush();
         	s=null;
     	}catch(IOException e){
@@ -1469,6 +1409,5 @@ public class MorpcModelServer extends MessageProcessingTask {
     		System.err.println(e);
     	}
     	return result;
-    }
- 
+    } 
 }
