@@ -1052,6 +1052,9 @@ public class DTMOutput implements java.io.Serializable {
 						k = 9 + (2*maxPartySize);
 						tableData[k] = it[t].getOrigTaz();
 						tableData[k+1] = it[t].getOriginShrtWlk();
+						
+						logger.info("origin shrt wlk="+tableData[k+1]);
+						
 						tableData[k+2] = it[t].getDestTaz();
 						tableData[k+3] = it[t].getDestShrtWlk();
 						tableData[k+4] = it[t].getTimeOfDayAlt();

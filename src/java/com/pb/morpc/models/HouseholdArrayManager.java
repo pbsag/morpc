@@ -497,6 +497,8 @@ public class HouseholdArrayManager implements java.io.Serializable {
             tempHHs[i].setPersonsByPersonTypeArray();
 
             tempHHs[i].setInitialOriginWalkSegment( tempHHs[i].getTazID() );
+            
+            logger.info("in HouseholdArrayManager, initial origin shrt wlk="+tempHHs[i].getOriginWalkSegment());
 			
 		}
 
@@ -690,8 +692,13 @@ public class HouseholdArrayManager implements java.io.Serializable {
                 
                 tempHHs = new Household[hhsRemaining];
 
-                for (int i = 0; i < hhsRemaining; i++)
+                for (int i = 0; i < hhsRemaining; i++){
                     tempHHs[i] = (Household) bigHHArray[listOfHHIds[i + hhsProcessed]];
+                    
+                    logger.info("in HHArrayManager's getHouseHoldsForWorker, walk access="+tempHHs[i].getOriginWalkSegment());
+                    
+                    
+                }
 
                 hhsProcessed += hhsRemaining;
             }

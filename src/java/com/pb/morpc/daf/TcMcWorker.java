@@ -75,7 +75,7 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 	    propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 	    
 	    if(propertyMap==null){
-	    	logger.fatal("TcMcServer onMessage, no propertyMap included in this message.");
+	    	logger.fatal("TcMcWorker onMessage, no propertyMap included in this message.");
 	    }
 		
 		Message newMessage = null;
@@ -194,13 +194,20 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 						try {
 
 							hhList[i].setProcessorId (processorId);
+							
 							//Wu added for FTA restart
 							//if FTA restart run skip DC and TC
 							if( FTA_Restart_run == null || !FTA_Restart_run.equalsIgnoreCase("true") ){
 								dtmHH.resetHouseholdCount();
+								
+								logger.info("in tcmc worker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
+								
 								dtmHH.mandatoryTourTc (hhList[i]);
 							}
 							dtmHH.resetHouseholdCount();
+							
+							logger.info("in tcmc worker, before mc , hh walk access="+hhList[i].getOriginWalkSegment());
+							
 							dtmHH.mandatoryTourMc (hhList[i]);
 							dtmHH.updateTimeWindows (hhList[i]);
 				

@@ -159,6 +159,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				hh.mandatoryTours[t].setOrigTaz (hh_taz_id);
 				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+				
+				logger.info("in DTM mandatory dc, setting orig short walk="+hh.getOriginWalkSegment());
+				
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
 
@@ -379,6 +382,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				hh.mandatoryTours[t].setOrigTaz ( hh_taz_id );
 				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+				
+				logger.info("in DTM mandatory tc, setting orig short walk="+hh.getOriginWalkSegment());
 
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -794,6 +799,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				hh.mandatoryTours[t].setOrigTaz ( hh_taz_id );
 				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+				
+				logger.info("in DTM mandatory mc, setting orig short walk="+hh.getOriginWalkSegment());
 
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -1022,6 +1029,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				hh.jointTours[t].setOrigTaz (hh_taz_id);
 				hh.jointTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+				
+				logger.info("in DTM joint dc, setting orig short walk="+hh.getOriginWalkSegment());
+				
 				hh.setTourID ( t );
 
 
@@ -1181,6 +1191,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				hh.jointTours[t].setOrigTaz (hh_taz_id);
 				hh.jointTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+				
+				logger.info("in DTM joint tc, setting orig short walk="+hh.getOriginWalkSegment());
+				
 				hh.setTourID ( t );
 
 
@@ -1300,6 +1313,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				hh.jointTours[t].setOrigTaz (hh_taz_id);
 				hh.jointTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+				
+				logger.info("in DTM joint mc, setting orig short walk="+hh.getOriginWalkSegment());
+				
 				hh.setTourID ( t );
 
 
@@ -1500,6 +1516,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
 				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+				
+				logger.info("in DTM indi dc, setting orig short walk="+hh.getOriginWalkSegment());
+				
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
 
@@ -1657,6 +1676,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
 				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+				
+				logger.info("in DTM indi tc, setting orig short walk="+hh.getOriginWalkSegment());
+				
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
 
@@ -2010,6 +2032,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
 				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+				
+				logger.info("in DTM indi mc, setting orig short walk="+hh.getOriginWalkSegment());
+				
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
 
@@ -2220,7 +2245,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			person = hh.mandatoryTours[t].getTourPerson();
 
 			hh.mandatoryTours[t].setOrigTaz (hh_taz_id);
-			hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+			hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment());
+			
+			logger.info("in DTM atwork dc, setting orig short walk="+hh.getOriginWalkSegment());
+			
 			hh.setPersonID ( person );
 			hh.setTourID ( t );
 
@@ -2232,6 +2260,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// the origin for the at-work tour is the destination of the primary work tour
 				hh.mandatoryTours[t].subTours[s].setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.mandatoryTours[t].subTours[s].setOriginShrtWlk ( hh.mandatoryTours[t].getDestShrtWlk() );
+				
+				logger.info("in DTMHousehold atwork Tc, set "+hh.mandatoryTours[t].getOriginShrtWlk()+" to shrt wlk to tour");
+				
+				
 				hh.setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );
@@ -2430,8 +2462,12 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// the origin for the at-work tour is the destination of the primary work tour
 				hh.mandatoryTours[t].subTours[s].setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.mandatoryTours[t].subTours[s].setOriginShrtWlk ( hh.mandatoryTours[t].getDestShrtWlk() );
+				
+				logger.info("in DTM atwork tc, setting orig short walk="+hh.getOriginWalkSegment());
+				
 				hh.setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
+				
 				hh.setSubtourID ( s );
 
         
@@ -2585,6 +2621,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// the origin for the at-work tour is the destination of the primary work tour
 				hh.mandatoryTours[t].subTours[s].setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.mandatoryTours[t].subTours[s].setOriginShrtWlk ( hh.mandatoryTours[t].getDestShrtWlk() );
+				
+				logger.info("in DTM atwork mc, setting orig short walk="+hh.getOriginWalkSegment());
+				
 				hh.setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );

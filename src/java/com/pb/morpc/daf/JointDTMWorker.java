@@ -75,7 +75,7 @@ public class JointDTMWorker extends MessageProcessingTask implements java.io.Ser
 		propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 		
 	    if(propertyMap==null){
-	    	logger.fatal("JointDTMServer onMessage, no propertyMap included in this message.");
+	    	logger.fatal("JointDTMWorker onMessage, no propertyMap included in this message.");
 	    }
 
 		if (LOGGING)
@@ -202,11 +202,21 @@ public class JointDTMWorker extends MessageProcessingTask implements java.io.Ser
 							//if FTA restart run skip DC and TC
 							if( FTA_Restart_run == null || !FTA_Restart_run.equalsIgnoreCase("true") ){
 								dtmHH.resetHouseholdCount();
+								
+								logger.info("in jointDTMWorker, before dc , hh walk access="+hhList[i].getOriginWalkSegment());
+								
 								dtmHH.jointTourDc (hhList[i]);
 								dtmHH.resetHouseholdCount();
+								
+								logger.info("in jointDTMWorker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
+								
 								dtmHH.jointTourTc (hhList[i]);
 							}
 							dtmHH.resetHouseholdCount();
+							
+							
+							logger.info("in jointDTMWorker, before mc , hh walk access="+hhList[i].getOriginWalkSegment());
+							
 							dtmHH.jointTourMc (hhList[i]);
 							
 							//Wu added for Summit Aggregation

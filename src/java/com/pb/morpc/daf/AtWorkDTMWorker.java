@@ -220,11 +220,20 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 							//if FTA restart run skip DC and TC
 							if( FTA_Restart_run == null || !FTA_Restart_run.equalsIgnoreCase("true") ){
 								dtmHH.resetHouseholdCount();
+								
+								logger.info("in atworkDTMWorker, before dc , hh walk access="+hhList[i].getOriginWalkSegment());
+								
 								dtmHH.atWorkTourDc (hhList[i]);
 								dtmHH.resetHouseholdCount();
+								
+								logger.info("in atworkDTMWorker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
+								
 								dtmHH.atWorkTourTc (hhList[i]);
 							}
 							dtmHH.resetHouseholdCount();
+							
+							logger.info("in atworkDTMWorker, before mc , hh walk access="+hhList[i].getOriginWalkSegment());
+							
 							dtmHH.atWorkTourMc (hhList[i]);
 							
 							//Wu added for Summit Aggregation

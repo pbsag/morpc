@@ -997,7 +997,7 @@ public class StopsModelBase implements java.io.Serializable {
 						stopAttractions[4][i] + stopAttractions[5][i] + stopAttractions[6][i] + 
 						stopAttractions[7][i] + stopAttractions[8][i] + stopAttractions[9][i];
 
-			for (int j=0; j < WALK_SEGMENTS; j++) {
+			for (int j=0; j < WALK_SEGMENTS; j++) {		
 				stopSize[0][1][k] = stopAttractions[11][i]*walkPctArray[j][i];
 				stopSize[1][1][k] = stopAttractions[12][i]*walkPctArray[j][i];
 				stopSize[0][2][k] = stopAttractions[21][i]*walkPctArray[j][i];
