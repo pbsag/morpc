@@ -2590,6 +2590,7 @@ public class Household implements java.io.Externalizable {
         tourID = in.readShort();
         subtourID = in.readShort();
         chosenDest = in.readShort();
+        originWalkSegment = in.readShort();
         chosenWalkSegment = in.readShort();
         chosenTodAlt = in.readShort();
 
@@ -2688,6 +2689,7 @@ public class Household implements java.io.Externalizable {
         out.writeShort(tourID);
         out.writeShort(subtourID);
         out.writeShort(chosenDest);
+        out.writeShort(originWalkSegment);
         out.writeShort(chosenWalkSegment);
         out.writeShort(chosenTodAlt);
 
@@ -2746,6 +2748,7 @@ public class Household implements java.io.Externalizable {
       logger.info("tourID:"+tourID);
       logger.info("subtourID:"+subtourID);
       logger.info("chosenDest:"+chosenDest);
+      logger.info("originWalkSegment:"+originWalkSegment);
       logger.info("chosenWalkSegment:"+chosenWalkSegment);
       logger.info("chosenTodAlt:"+chosenTodAlt);
       logger.info("income:"+income);
