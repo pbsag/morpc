@@ -196,6 +196,9 @@ public class MandatoryStopsWorker extends MessageProcessingTask implements java.
 					}
 
 					returnValue = MessageID.RESULTS_ID;
+					
+					//Wu added for release memory after each hh[] is processed
+					//com.pb.common.calculator.UtilityExpressionCalculator.clearData();
 
 				}
 				else {
