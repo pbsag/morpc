@@ -813,7 +813,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
-				double chosenLogsum=mc[tourTypeIndex].getLogsum();
+//				double chosenLogsum=mc[tourTypeIndex].getLogsum();
 				
 //				logger.info("man chosenLogsum "+hh_id+":"+chosenLogsum);
 								
@@ -821,10 +821,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// set chosen in alternative in tour objects
 				hh.mandatoryTours[t].setMode (chosenModeAlt);
-				//set chosen logsum in tour object
-				hh.mandatoryTours[t].setLogsum(chosenLogsum);
-				
-//				logger.info("man logsum from tour="+hh.mandatoryTours[t].getLogsum());
 
 				index.setOriginZone( hh.mandatoryTours[t].getOrigTaz() );
 				index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
@@ -1300,7 +1296,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
-				double chosenLogsum=mc[m].getLogsum();
+//				double chosenLogsum=mc[m].getLogsum();
 				
 //				logger.info("joint chosenLogsum "+hh_id+":"+chosenLogsum);
 				
@@ -1308,11 +1304,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// set chosen in alternative in tour objects
 				hh.jointTours[t].setMode (chosenModeAlt);
-				//set chosen logsum in tour object
-				hh.jointTours[t].setLogsum(chosenLogsum);
-				
-//				logger.info("joint logsum from tour="+hh.jointTours[t].getLogsum());
-
 
 				// set park zone to zero, not used for joint.
 				hh.jointTours[t].setChosenPark (0);
@@ -1989,7 +1980,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
-				double chosenLogsum=mc[m].getLogsum();
+//				double chosenLogsum=mc[m].getLogsum();
 				
 //				logger.info("indi chosenLogsum "+hh_id+":"+chosenLogsum);
 				
@@ -1997,11 +1988,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// set chosen in alternative in tour objects
 				hh.indivTours[t].setMode (chosenModeAlt);
-				//set chosen logsum in tour object
-				hh.indivTours[t].setLogsum(chosenLogsum);
-				
-//				logger.info("indiv logsum from tour="+hh.indivTours[t].getLogsum());
-
 
 				index.setOriginZone( hh.indivTours[t].getOrigTaz() );
 				index.setDestZone( hh.indivTours[t].getDestTaz() );
@@ -2547,20 +2533,14 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
-				double chosenLogsum=mc[m].getLogsum();
+//				double chosenLogsum=mc[m].getLogsum();
 				
 //				logger.info("at work chosenLogsum "+hh_id+":"+chosenLogsum);
 				
 				mcTime += (System.currentTimeMillis() - markTime);
     
 				// set chosen in alternative in tour objects
-				hh.mandatoryTours[t].subTours[s].setMode (chosenModeAlt);
-				
-				//set chosen logsum in tour object
-				hh.mandatoryTours[t].subTours[s].setLogsum(chosenLogsum);
-				
-//				logger.info("atwork logsum from tour="+hh.mandatoryTours[t].subTours[s].getLogsum());
-    
+				hh.mandatoryTours[t].subTours[s].setMode (chosenModeAlt);    
 
 				// set park zone to zero, not used for at-work.
 				hh.mandatoryTours[t].subTours[s].setChosenPark (0);

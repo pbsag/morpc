@@ -7,7 +7,6 @@ package com.pb.morpc.structures;
  */
 public final class TourType {
 
-    
 	public static final short TYPES=9;
     public static final short WORK = 1;
     public static final short UNIVERSITY = 2;

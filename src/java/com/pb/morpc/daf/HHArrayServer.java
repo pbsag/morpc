@@ -158,12 +158,10 @@ public class HHArrayServer extends MessageProcessingTask {
 					// retrieve the contents of the message.
 					short category = (short)msg.getIntValue( MessageID.TOUR_CATEGORY_KEY );
 					short[] types = (short[])msg.getValue( MessageID.TOUR_TYPES_KEY );	
-				
+									
 					hhMgr.sendResults ( (Household[])msg.getValue( MessageID.HOUSEHOLD_LIST_KEY ) );
 
-
 					sendWork ( category, types );
-
 				}
 				
 			}
