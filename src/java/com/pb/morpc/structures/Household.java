@@ -2051,8 +2051,7 @@ public class Household implements java.io.Externalizable {
 	 * return the short walk access for the origin of this tour
 	*/
 	public float getZonalShortWalkAccessOrig () {
-		int alt = (origTaz-1)*ZonalDataManager.WALK_SEGMENTS + chosenWalkSegment;
-		return ZonalDataManager.zonalShortAccess[alt];
+		return getOriginWalkSegment ();
 	}
 
 	/**
