@@ -75,13 +75,9 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 		
 		propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 		
-		//Wu added for Summit Aggregation
-		if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-			writeSummitAggregationFields=true;
-		}else{
-			writeSummitAggregationFields=false;
-		}
-
+	    if(propertyMap==null){
+	    	logger.fatal("AtWorkDTMWorker onMessage, no propertyMap included in this message.");
+	    }
 
 		if (LOGGING)
 		    logger.debug( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
@@ -125,7 +121,7 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 
 			if (msg.getId().equals(MessageID.START_INFO)) {
 
-				propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+				//propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 				zdm = (ZonalDataManager)msg.getValue( MessageID.ZONAL_DATA_MANAGER_KEY );
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
@@ -186,6 +182,10 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 		}
 		else {
 
+			//wu added for FTA restart
+			//propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+			String FTA_Restart_run=(String)propertyMap.get("FTA_Restart_run");
+			
 			// this message should contain an array of Household objects to process
 			if ( msg.getId().equals( MessageID.HOUSEHOLD_LIST )	) {
 
@@ -204,10 +204,13 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 					// run the dtm models for the atwork subtours in these households
 					if (LOGGING)
 					    logger.info ( this.getName() + " processing household ids: " + hhList[0].getID() + " to " + hhList[hhList.length-1].getID() );
-
-					//wu added for FTA restart
-					propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
-					String FTA_Restart_run=(String)propertyMap.get("FTA_Restart_run");
+					
+					//Wu added for Summit Aggregation
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+						writeSummitAggregationFields=true;
+					}else{
+						writeSummitAggregationFields=false;
+					}
 					
 					for (int i=0; i < hhList.length; i++) {
 						try {
@@ -241,8 +244,10 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 					}
 					//Wu added for Summit Aggregation
 					if(writeSummitAggregationFields){
+						logger.info("in AtWorkWorker, original records="+summitRecords.size());
 						convertor=new VectorToArrayConvertor(summitRecords);
 						summitAggregationArray=convertor.getSummitAggregationArray();
+						logger.info("converted records="+summitAggregationArray.length);
 						returnValue = MessageID.SUMMIT_AGGREGATION_ID;
 					}else{
 						returnValue = MessageID.RESULTS_ID;

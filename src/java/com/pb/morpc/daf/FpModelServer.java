@@ -59,7 +59,12 @@ public class FpModelServer extends MessageProcessingTask {
 		if ( msg.getSender().equals("MorpcServer") ) {
 
 			if (msg.getId().equals(MessageID.START_INFO)) {
+				
 				propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+			    if(propertyMap==null){
+			    	logger.fatal("FpModelServer onMessage, no propertyMap included in this message.");
+			    }
+
 				serverStarted = true;
 				serverExiting = false;
 				activeWorkers = 0;

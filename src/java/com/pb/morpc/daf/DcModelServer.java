@@ -57,7 +57,7 @@ public class DcModelServer extends MessageProcessingTask {
 
 
 	public void onMessage(Message msg) {
-
+		
 		if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
 
@@ -68,6 +68,10 @@ public class DcModelServer extends MessageProcessingTask {
 			if (msg.getId().equals(MessageID.START_INFO)) {
 			    // resolve message contents
 				propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+			    if(propertyMap==null){
+			    	logger.fatal("GenericModelServer onMessage, no propertyMap included in this message.");
+			    }
+			    
 				zdm = (ZonalDataManager)msg.getValue( MessageID.ZONAL_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );

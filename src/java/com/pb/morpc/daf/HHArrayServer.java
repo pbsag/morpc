@@ -28,7 +28,7 @@ import java.io.File;
 public class HHArrayServer extends MessageProcessingTask {
 
 
-	private static boolean LOGGING = false;
+	private static boolean LOGGING = true;
     static Logger logger = Logger.getLogger("com.pb.morpc.models");
     
 	
@@ -68,14 +68,17 @@ public class HHArrayServer extends MessageProcessingTask {
 
 		if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
-
+		
 		//The hh array server gets a START_INFO message from the main server
 		//when it's ready for the hh DiskObjectArray to be built.
 		if ( msg.getSender().equals("MorpcServer") ) {
 
 			if (msg.getId().equals(MessageID.START_INFO)) {
-
+				
 			    propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+			    if(propertyMap==null){
+			    	logger.fatal("HHArrayServer onMessage, no propertyMap included in this message.");
+			    }
 
 				hhMgr = new HouseholdArrayManager( propertyMap );
 
@@ -229,7 +232,7 @@ public class HHArrayServer extends MessageProcessingTask {
 	private void writeRecords(SummitAggregationRecord [] records){
 		logger.info("num of summit aggregation records="+records.length);	
         String fileName=(String)propertyMap.get("summitAggregationFile");
-        String [] ColTitles={"hh_id","person_id","tour_id","tourCategory","prob1","prob2","prob3","prob4","prob5","prob6","expUtil1","expUtil2","expUtil3","expUtil4","expUtil5","expUtil6"};
+        String [] ColTitles={"hh_id","person_id","tour_id","purpose","tourCategory","prob1","prob2","prob3","prob4","prob5","prob6","expUtil1","expUtil2","expUtil3","expUtil4","expUtil5","expUtil6"};
         File file=null;
                         
         try {
@@ -256,7 +259,31 @@ public class HHArrayServer extends MessageProcessingTask {
     	        outStream.print(",");
     	        outStream.print(records[i].getTourID());
     	        outStream.print(",");
+    	        outStream.print(records[i].getPurpose());
+    	        outStream.print(",");
     	        outStream.print(records[i].getTourCategory());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getPartySize());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getHHIncome());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getAuto());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getWorkers());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getOrigin());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getDestination());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getOrigSubZone());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getDestSubZone());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getOutTOD());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getInTOD());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getMode());
     	        outStream.print(",");
     	        
     	        //logger.info("num of alts="+NoAlts);
@@ -281,88 +308,4 @@ public class HHArrayServer extends MessageProcessingTask {
         }
         logger.info("finished writing records");
 	}
-	
-//	******************logsumlogsumlogsumlogsum**********************
-	//Wu added for writing out logsums
-	/*
-	private void writeLogsums(LogsumRecord [] records){
-		
-		if(records==null){
-			logger.error("logsum records are empty.");
-			return;
-		}
-		
-        String logsumPattern="#####.####";
-        String keyPattern="##########";
-        DecimalFormat logsumFormat=new DecimalFormat(logsumPattern);
-        DecimalFormat keyFormat=new DecimalFormat(keyPattern);
-
-        PrintWriter outStream = null;
-
-        int nCols = 6;
-        int nRows = records.length;
-        String[] columnLabels = {"HH_ID","Person_ID","Tour_ID","TourCategory","Subtour_ID","Logsum"};
-        String fileName=(String)propertyMap.get("logsumFile");
-        File file;
-                        
-        try {
-        	
-            file=new File(fileName);       	
-            outStream = new PrintWriter (new BufferedWriter( new FileWriter(file, true) ) );
-            
-            //Print titles
-            logger.info("in HHArrayServer, printing column labels");
-            for (int i = 0; i < columnLabels.length; i++) {
-                if (i != 0)
-                    outStream.print(",");
-                outStream.print( columnLabels[i] );
-            }
-            outStream.println();
-
-            //Print data
-            logger.info("in HHArrayServer, printing logsum records.");
-            for (int r=0; r < nRows; r++) {                
-                for (int c=0; c < nCols; c++) {
-                    if (c != 0)
-                        outStream.print(",");
-
-                    switch(c) {
-                    case 0:
-                        int hh_id = records[r].getHouseholdID();
-                        outStream.print( keyFormat.format(hh_id));
-                        break;
-                    case 1:
-                        int person_id = records[r].getPersonID();
-                        outStream.print(keyFormat.format(person_id));
-                        break;
-                    case 2:
-                        int tour_id = records[r].getTourID();
-                        outStream.print( keyFormat.format(tour_id));
-                        break;
-                    case 3:
-                        int tourCat = records[r].getTourCategory();
-                        outStream.print(keyFormat.format(tourCat));
-                        break;
-                    case 4:
-                        int subtour_id = records[r].getSubtourID();
-                        outStream.print( keyFormat.format(subtour_id));
-                        break;
-                    case 5:
-                        double logsum = records[r].getLogsum();
-                        outStream.print(logsumFormat.format(logsum));
-                        break;
-                    default:
-                        logger.error("invalid column number: " + c);
-                    }
-                }
-                outStream.println();
-            }
-            outStream.close();
-        }
-        catch (IOException e) {
-            logger.fatal("failed writing logsum to disk.");
-        }
-	}
-	*/
-//	******************logsumlogsumlogsumlogsum**********************
 }

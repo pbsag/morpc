@@ -2884,9 +2884,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					record.setPersonID(it[t].getTourPerson());
 					record.setTourID(t+1);
 					record.setPurpose(it[t].getTourType());
-					record.setTourCategory(TourType.MANDATORY_CATEGORY);
+					record.setTourCategory(1);
 					//for individual tour set party size to 1
-					record.setPartySize(1);
+					record.setPartySize(0);
 					record.setHHIncome(hh.getHHIncome());
 					record.setAuto(hh.getAutoOwnership());
 					record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
@@ -2914,8 +2914,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					record.setPersonID(jt[t].getTourPerson());
 					record.setTourID(t+1);
 					record.setPurpose(jt[t].getTourType());
-					record.setTourCategory(TourType.JOINT_CATEGORY);
-					//for individual tour set party size to 1
+					record.setTourCategory(2);
+					//for individual tour set party size to 0
 					record.setPartySize((jt[t].getJointTourPersons()).length);
 					record.setHHIncome(hh.getHHIncome());
 					record.setAuto(hh.getAutoOwnership());
@@ -2944,9 +2944,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					record.setPersonID(it[t].getTourPerson());
 					record.setTourID(t+1);
 					record.setPurpose(it[t].getTourType());
-					record.setTourCategory(TourType.NON_MANDATORY_CATEGORY);
-					//for individual tour set party size to 1
-					record.setPartySize(1);
+					record.setTourCategory(3);
+					//for individual tour set party size to 0
+					record.setPartySize(0);
 					record.setHHIncome(hh.getHHIncome());
 					record.setAuto(hh.getAutoOwnership());
 					record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
@@ -2977,10 +2977,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 								record.setHouseholdID(hh.getID());
 								record.setPersonID(st[s].getTourPerson());	
 								record.setTourID((t+1)*10 + (s+1));
-								record.setPurpose(st[s].getTourType());
-								record.setTourCategory(TourType.AT_WORK_CATEGORY);
-								//for individual tour set party size to 1
-								record.setPartySize(1);
+								record.setPurpose(st[s].getSubTourType());
+								record.setTourCategory(4);
+								//for individual tour set party size to 0
+								record.setPartySize(0);
 								record.setHHIncome(hh.getHHIncome());
 								record.setAuto(hh.getAutoOwnership());
 								record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());

@@ -68,10 +68,17 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 	public void onMessage(Message msg) {
 		
+		
 		if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
 
-	    Message newMessage = null;
+	    propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+	    
+	    if(propertyMap==null){
+	    	logger.fatal("TcMcServer onMessage, no propertyMap included in this message.");
+	    }
+		
+		Message newMessage = null;
 
 
 		//Do some work ...
@@ -103,23 +110,14 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 
 	private int respondToMessage (Message msg) {
-		
-		propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
-		
-		//Wu added for Summit Aggregation
-		if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-			writeSummitAggregationFields=true;
-		}else{
-			writeSummitAggregationFields=false;
-		}
 
 		int returnValue=0;
-
 
 		if ( msg.getSender().equals( modelServer ) ) {
 
 			if (msg.getId().equals(MessageID.START_INFO)) {
-
+				
+				//propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 				zdm = (ZonalDataManager)msg.getValue( MessageID.ZONAL_DATA_MANAGER_KEY );
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
@@ -162,7 +160,10 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 		}
 		else {
-
+			//wu added for FTA restart
+			//propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+			String FTA_Restart_run=(String)propertyMap.get("FTA_Restart_run");
+			
 			// this message should contain an array of Household objects to process
 			if ( msg.getId().equals( MessageID.HOUSEHOLD_LIST )	) {
 
@@ -181,10 +182,13 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 					// run the TcMc model for the mandatory tours in these households
 					if (LOGGING)
 					    logger.info ( this.getName() + " processing household ids: " + hhList[0].getID() + " to " + hhList[hhList.length-1].getID() );
-
-					//wu added for FTA restart
-					propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
-					String FTA_Restart_run=(String)propertyMap.get("FTA_Restart_run");
+					
+					//Wu added for Summit Aggregation
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+						writeSummitAggregationFields=true;
+					}else{
+						writeSummitAggregationFields=false;
+					}
 					
 					for (int i=0; i < hhList.length; i++) {
 						try {
@@ -217,8 +221,10 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 					//Wu added for Summit Aggregation
 					if(writeSummitAggregationFields){
+						logger.info("in TcMcWorker, original records="+summitRecords.size());
 						convertor=new VectorToArrayConvertor(summitRecords);
 						summitAggregationArray=convertor.getSummitAggregationArray();
+						logger.info("converted records="+summitAggregationArray.length);
 						returnValue = MessageID.SUMMIT_AGGREGATION_ID;
 					}else{
 						returnValue = MessageID.RESULTS_ID;

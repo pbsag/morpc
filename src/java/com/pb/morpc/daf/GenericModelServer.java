@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 
 public class GenericModelServer extends MessageProcessingTask {
 
-	private static boolean LOGGING = false;
+	private static boolean LOGGING = true;
     static Logger logger = Logger.getLogger("com.pb.morpc.models");
     
 	private boolean serverStarted = false;
@@ -60,7 +60,7 @@ public class GenericModelServer extends MessageProcessingTask {
 
 
 	public void onMessage(Message msg) {
-
+		
 		if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
 
@@ -68,9 +68,14 @@ public class GenericModelServer extends MessageProcessingTask {
 		//when it's ready for the model to begin running.
 		if ( msg.getSender().equals("MorpcServer") ) {
 
-			if (msg.getId().equals(MessageID.START_INFO)) {
-				// resolve message contents
+
+			if (msg.getId().equals(MessageID.START_INFO)) {					
 				propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+			    if(propertyMap==null){
+			    	logger.fatal("GenericModelServer onMessage, no propertyMap included in this message.");
+			    }
+				// resolve message contents
+				//propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 				zdm = (ZonalDataManager)msg.getValue( MessageID.ZONAL_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
