@@ -37,6 +37,8 @@ public class GenericModelServer extends MessageProcessingTask {
 	private HashMap zdmMap = null;
 	private HashMap tdmMap = null;
 	
+	private ArrayList workerTaskList = null;
+	
 	private int activeWorkers = 0;
 	
 
@@ -113,6 +115,8 @@ public class GenericModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(activeWorkers) );
 				
 						sendTo( sender, startWorkMessage );
+						// add the sender task name and number that requested work to a HashMap
+						workerTaskList.add ( sender );
 						activeWorkers++;
 						i.remove();
 					}
@@ -127,7 +131,12 @@ public class GenericModelServer extends MessageProcessingTask {
 					if (activeWorkers == 1) {
 					    Message rmMsg = createMessage();
 					    rmMsg.setId(MessageID.RELEASE_MATRIX_MEMORY);
-					    sendTo( qMsg.getSender(), rmMsg );
+
+						// loop through all tasks that asked for work and send a RELEASE_MATRIX_MEMORY message
+				        for (int m = 0; m < workerTaskList.size(); m++) {
+						    logger.info( "all worker tasks have finished, " + this.name + " sending a RELEASE_MATRIX_MEMORY to " + (String)workerTaskList.get(m) );
+							sendTo( (String)workerTaskList.get(m), rmMsg );
+				        }
 					}
 					//queue a SEND_START_INFO from a worker
 					qMsg.setId(MessageID.SEND_START_INFO);
@@ -168,6 +177,8 @@ public class GenericModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(activeWorkers) );
 				
 						replyToSender(startWorkMessage);
+						// add the sender task name and number that requested work to a HashMap
+						workerTaskList.add ( msg.getSender() );
 						activeWorkers++;
 					}
 				}
@@ -176,12 +187,17 @@ public class GenericModelServer extends MessageProcessingTask {
 					Message rMsg = createMessage();
 					rMsg.setId(MessageID.RELEASE_MEMORY);
 					sendTo( msg.getSender(), rMsg );
-					//If this is the last worker, send a RELEASE_MATRIX_MEMORY to the workers.
+					//If this is the last worker, send a RELEASE_MATRIX_MEMORY to all the workers.
 					//Only AtWorkDTMWorkers and AtWorkStopsWorkers will do anything with this message
 					if (activeWorkers == 1) {
 						Message rmMsg = createMessage();
 						rmMsg.setId(MessageID.RELEASE_MATRIX_MEMORY);
-						sendTo( msg.getSender(), rmMsg );
+
+						// loop through all tasks that asked for work and send a RELEASE_MATRIX_MEMORY message
+				        for (int m = 0; m < workerTaskList.size(); m++) {
+						    logger.info( "all worker tasks have finished, " + this.name + " sending a RELEASE_MATRIX_MEMORY to " + (String)workerTaskList.get(m) );
+							sendTo( (String)workerTaskList.get(m), rmMsg );
+				        }
 					}
 					//queue a SEND_START_INFO from a worker
 					msg.setId(MessageID.SEND_START_INFO);
