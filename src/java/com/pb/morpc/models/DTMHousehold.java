@@ -883,6 +883,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				index.setOriginZone( hh.mandatoryTours[t].getOrigTaz() );
 				index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
 
+				//wu added for FTA restart
+				int tod=hh.mandatoryTours[t].getTimeOfDayAlt();
+				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
+				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
+				
 				if ( chosenModeAlt == 3 || chosenModeAlt == 4 ) {
 
 					// set outbound submodes
@@ -923,6 +928,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 						hh.mandatoryTours[t].setSubmodeOB ( 6 );
 
 
+					//wu added for FTA restart
+					start=hh.mandatoryTours[t].getTimeOfDayAlt();
 					
 					// set inbound submodes
 					if (chosenModeAlt == 3) {
@@ -1352,7 +1359,12 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// set submode for transit modes
 				index.setOriginZone( hh.jointTours[t].getOrigTaz() );
 				index.setDestZone( hh.jointTours[t].getDestTaz() );
-
+				
+				//wu added for FTA restart
+				int tod=hh.jointTours[t].getTimeOfDayAlt();
+				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
+				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
+				
 				if ( chosenModeAlt == 3 || chosenModeAlt == 4 ) {
 
 					// set outbound submodes
@@ -2063,6 +2075,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// set submode for transit modes
 				index.setOriginZone( hh.indivTours[t].getOrigTaz() );
 				index.setDestZone( hh.indivTours[t].getDestTaz() );
+				
+				//wu added for FTA restart
+				int tod=hh.indivTours[t].getTimeOfDayAlt();
+				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
+				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
 
 				if ( chosenModeAlt == 3 || chosenModeAlt == 4 ) {
 
@@ -2611,7 +2628,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				index.setOriginZone( hh.mandatoryTours[t].subTours[s].getOrigTaz() );
 				index.setDestZone( hh.mandatoryTours[t].subTours[s].getDestTaz() );
 
-
+				//wu added for FTA restart
+				int tod=hh.mandatoryTours[t].subTours[s].getTimeOfDayAlt();
+				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
+				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
+				
 				if ( chosenModeAlt == 3 || chosenModeAlt == 4 ) {
 
 					// set outbound submodes
