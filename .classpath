@@ -4,6 +4,5 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/common-base"/>
 	<classpathentry kind="src" path="/common-daf-v1"/>
-	<classpathentry kind="src" path="/team-projectsets"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
