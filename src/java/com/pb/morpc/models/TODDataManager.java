@@ -116,7 +116,7 @@ public class TODDataManager implements java.io.Serializable {
 			timePeriod = 3;
 		else if ( hour <= 15 )
 			timePeriod = 4;
-		else if ( hour <= 19 )
+		else if ( hour <= 18 )
 			timePeriod = 5;
 		else if ( hour <= 21 )
 			timePeriod = 6;
