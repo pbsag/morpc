@@ -180,7 +180,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 		// loop over sampleSize, and select alternatives based on altProb[].
 		// may include duplicate alternative selections.
 		for (int i=1; i <= sampleSize; i++) {
-			chosenAlt = cm.getMonteCarloSelection( probabilitiesList[hh.getOrigTaz()] ) + 1;
+			chosenAlt = ChoiceModelApplication.getMonteCarloSelection( probabilitiesList[hh.getOrigTaz()] ) + 1;
 			altFreq[chosenAlt]++;
 		}
 
@@ -272,7 +272,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 		// loop over sampleSize, and select alternatives based on altProb[].
 		// may include duplicate alternative selections.
 		for (int i=1; i <= sampleSize; i++) {
-			chosenAlt = cm.getMonteCarloSelection( probabilitiesList[hh.getOrigTaz()] ) + 1;
+			chosenAlt = ChoiceModelApplication.getMonteCarloSelection( probabilitiesList[hh.getOrigTaz()] ) + 1;
 			altFreq[chosenAlt]++;
 		}
 

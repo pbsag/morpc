@@ -29,6 +29,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	
 	int shadowPricingIteration = 0;
 	
+	boolean logDebug = false;
+	
 	//Wu added for Summit Aggregation
 	protected Vector summitAggregationRecords=null;
 	
@@ -38,6 +40,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		super ( propertyMap, tourTypeCategory, tourTypes, zdm );
 
 		this.count = 1;
+
+        if (logger.isDebugEnabled()) {
+            logDebug = true;
+        }
 	}
     
 
@@ -49,6 +55,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 		this.count = 1;
 
+        if (logger.isDebugEnabled()) {
+            logDebug = true;
+        }
 	}
     
 
@@ -160,7 +169,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.mandatoryTours[t].setOrigTaz (hh_taz_id);
 				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
-				//logger.info("in DTM mandatory dc, setting orig short walk="+hh.getOriginWalkSegment());
+				if (logDebug)
+					logger.info("in DTM mandatory dc, setting orig short walk="+hh.getOriginWalkSegment());
 				
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -272,7 +282,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 				// check to make sure that the DC subzone selected has subzone proportion > 0.0.
-				if ( zdm.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f ) {
+				if ( ZonalDataManager.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f ) {
 					logger.fatal( TourType.TYPE_CATEGORY_LABELS[tourTypeCategory] + " " + TourType.TYPE_LABELS[tourTypeCategory][tourTypeIndex] + " tour " + t + " for person " + person + " in household " + hh_id);
 					logger.fatal( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
 					logger.fatal( "however, the selected subzone has proportion " + (chosenShrtWlk == 1 ? "short walk" : "long walk") + " equal to 0.0.");
@@ -383,7 +393,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.mandatoryTours[t].setOrigTaz ( hh_taz_id );
 				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
-				//logger.info("in DTM mandatory tc, setting orig short walk="+hh.getOriginWalkSegment());
+				if (logDebug)
+					logger.info("in DTM mandatory tc, setting orig short walk="+hh.getOriginWalkSegment());
 
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -800,7 +811,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.mandatoryTours[t].setOrigTaz ( hh_taz_id );
 				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
-				//logger.info("in DTM mandatory mc, setting orig short walk="+hh.getOriginWalkSegment());
+
+				if (logDebug)
+					logger.info("in DTM mandatory mc, setting orig short walk="+hh.getOriginWalkSegment());
 
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -1030,7 +1043,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.jointTours[t].setOrigTaz (hh_taz_id);
 				hh.jointTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
-				//logger.info("in DTM joint dc, setting orig short walk="+hh.getOriginWalkSegment());
+
+				if (logDebug)
+					logger.info("in DTM joint dc, setting orig short walk="+hh.getOriginWalkSegment());
 				
 				hh.setTourID ( t );
 
@@ -1137,7 +1152,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 				// check to make sure that the DC subzone selected has subzone proportion > 0.0.
-				if ( zdm.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f ) {
+				if ( ZonalDataManager.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f ) {
 					logger.fatal( TourType.TYPE_CATEGORY_LABELS[tourTypeCategory] + " " + TourType.TYPE_LABELS[tourTypeCategory][m] + " tour " + t + " for person " + person + " in household " + hh_id);
 					logger.fatal( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
 					logger.fatal( "however, the selected subzone has proportion " + (chosenDestAlt == 1 ? "short walk" : "long walk") + " equal to 0.0.");
@@ -1192,7 +1207,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.jointTours[t].setOrigTaz (hh_taz_id);
 				hh.jointTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
-				//logger.info("in DTM joint tc, setting orig short walk="+hh.getOriginWalkSegment());
+
+				if (logDebug)
+					logger.info("in DTM joint tc, setting orig short walk="+hh.getOriginWalkSegment());
 				
 				hh.setTourID ( t );
 
@@ -1314,7 +1331,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.jointTours[t].setOrigTaz (hh_taz_id);
 				hh.jointTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
-				//logger.info("in DTM joint mc, setting orig short walk="+hh.getOriginWalkSegment());
+
+				if (logDebug)
+					logger.info("in DTM joint mc, setting orig short walk="+hh.getOriginWalkSegment());
 				
 				hh.setTourID ( t );
 
@@ -1517,7 +1536,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
 				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
-				//logger.info("in DTM indi dc, setting orig short walk="+hh.getOriginWalkSegment());
+
+				if (logDebug)
+					logger.info("in DTM indi dc, setting orig short walk="+hh.getOriginWalkSegment());
 				
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -1620,7 +1641,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 				// check to make sure that the DC subzone selected has subzone proportion > 0.0.
-				if ( zdm.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f ) {
+				if ( ZonalDataManager.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f ) {
 					logger.fatal( TourType.TYPE_CATEGORY_LABELS[tourTypeCategory] + " " + TourType.TYPE_LABELS[tourTypeCategory][m] + " tour " + t + " for person " + person + " in household " + hh_id);
 					logger.fatal( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
 					logger.fatal( "however, the selected subzone has proportion " + (chosenDestAlt == 1 ? "short walk" : "long walk") + " equal to 0.0.");
@@ -1677,7 +1698,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
 				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
-				//logger.info("in DTM indi tc, setting orig short walk="+hh.getOriginWalkSegment());
+
+				if (logDebug)
+					logger.info("in DTM indi tc, setting orig short walk="+hh.getOriginWalkSegment());
 				
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -2033,7 +2056,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.indivTours[t].setOrigTaz (hh_taz_id);
 				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
-				//logger.info("in DTM indi mc, setting orig short walk="+hh.getOriginWalkSegment());
+
+				if (logDebug)
+					logger.info("in DTM indi mc, setting orig short walk="+hh.getOriginWalkSegment());
 				
 				hh.setPersonID ( person );
 				hh.setTourID ( t );
@@ -2210,6 +2235,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		int startP;
 		int endP;
 		
+		int hhOrigTaz = 0;
+		int hhOrigWalkSegment = 0;
+		
 		int m = 0;
 
 		if (useMessageWindow) mw.setMessage1 ("Destination Choice for At-work Tours");
@@ -2244,11 +2272,12 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 			person = hh.mandatoryTours[t].getTourPerson();
 
-			hh.mandatoryTours[t].setOrigTaz (hh_taz_id);
-			hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment());
 			
-			//logger.info("in DTM atwork dc, setting orig short walk="+hh.getOriginWalkSegment());
+			if (logDebug)
+				logger.info("in DTM atwork dc, setting orig short walk="+hh.getOriginWalkSegment());
 			
+
+
 			hh.setPersonID ( person );
 			hh.setTourID ( t );
 
@@ -2261,9 +2290,14 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.mandatoryTours[t].subTours[s].setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.mandatoryTours[t].subTours[s].setOriginShrtWlk ( hh.mandatoryTours[t].getDestShrtWlk() );
 				
-				//logger.info("in DTMHousehold atwork Tc, set "+hh.mandatoryTours[t].getOriginShrtWlk()+" to shrt wlk to tour");
+
+				if (logDebug)
+					logger.info("in DTMHousehold atwork Tc, set "+hh.mandatoryTours[t].getOriginShrtWlk()+" to shrt wlk to tour");
 				
 				
+				// set the Household object values that will be used as DMU for at-work tour choices
+				hhOrigTaz = hh.getTazID();
+				hhOrigWalkSegment = hh.getOriginWalkSegment();
 				hh.setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );
@@ -2362,7 +2396,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
         
 				// check to make sure that the DC subzone selected has subzone proportion > 0.0.
-				if ( zdm.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f) {
+				if ( ZonalDataManager.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f) {
 					logger.fatal( "At work subtour " + s + " in mandatory tour " + t + " for person " + person + " in household " + hh_id);
 					logger.fatal( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
 					logger.fatal( "however, the selected subzone has proportion " + (chosenDestAlt == 1 ? "short walk" : "long walk") + " equal to 0.0.");
@@ -2375,6 +2409,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
         		hh.mandatoryTours[t].subTours[s].setDestShrtWlk (chosenShrtWlk);
 				hh.mandatoryTours[t].subTours[s].setChosenPark (chosenDestAlt);
 
+				// reset the Household object data members to their original values
+				hh.setOrigTaz ( hhOrigTaz );
+				hh.setOriginWalkSegment( hhOrigWalkSegment );
 			}
 			
         }
@@ -2392,6 +2429,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		int todAlt;
 		int startP;
 		int endP;
+		
+		int hhOrigTaz = 0;
+		int hhOrigWalkSegment = 0;
 		
 		int m = 0;
 
@@ -2427,7 +2467,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 			person = hh.mandatoryTours[t].getTourPerson();
 
-			hh.mandatoryTours[t].setOrigTaz (hh_taz_id);
 			hh.setPersonID ( person );
 			hh.setTourID ( t );
 
@@ -2463,11 +2502,14 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.mandatoryTours[t].subTours[s].setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.mandatoryTours[t].subTours[s].setOriginShrtWlk ( hh.mandatoryTours[t].getDestShrtWlk() );
 				
-				//logger.info("in DTM atwork tc, setting orig short walk="+hh.getOriginWalkSegment());
+
+				if (logDebug)
+					logger.info("in DTM atwork tc, setting orig short walk="+hh.getOriginWalkSegment());
 				
+				hhOrigTaz = hh.getTazID();
+				hhOrigWalkSegment = hh.getOriginWalkSegment();
 				hh.setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
-				
 				hh.setSubtourID ( s );
 
         
@@ -2555,6 +2597,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// set chosen in alternative in DMU and tour objects
 				hh.mandatoryTours[t].subTours[s].setTimeOfDayAlt (chosenTODAlt);
 
+				// reset the Household object data members to their original values
+				hh.setOrigTaz ( hhOrigTaz );
+				hh.setOriginWalkSegment( hhOrigWalkSegment );
 			}
 					
 		}
@@ -2575,6 +2620,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		int todAlt;
 		int startP;
 		int endP;
+		
+		int hhOrigTaz = 0;
+		int hhOrigWalkSegment = 0;
 		
 		int m = 0;
 
@@ -2610,7 +2658,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 			person = hh.mandatoryTours[t].getTourPerson();
 
-			hh.mandatoryTours[t].setOrigTaz (hh_taz_id);
 			hh.setPersonID ( person );
 			hh.setTourID ( t );
 
@@ -2622,8 +2669,12 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.mandatoryTours[t].subTours[s].setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.mandatoryTours[t].subTours[s].setOriginShrtWlk ( hh.mandatoryTours[t].getDestShrtWlk() );
 				
-				//logger.info("in DTM atwork mc, setting orig short walk="+hh.getOriginWalkSegment());
+
+				if (logDebug)
+					logger.info("in DTM atwork mc, setting orig short walk="+hh.getOriginWalkSegment());
 				
+				hhOrigTaz = hh.getTazID();
+				hhOrigWalkSegment = hh.getOriginWalkSegment();
 				hh.setOrigTaz ( hh.mandatoryTours[t].getDestTaz() );
 				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );
@@ -2767,6 +2818,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					logger.warn ( "invalid submode for at-work subtour=" + t + ", subtour=" + s + " for hhid=" + hh.getID() + ", tour mode=" + hh.mandatoryTours[t].subTours[s].getMode() + ", ob submode=" + hh.mandatoryTours[t].subTours[s].getSubmodeOB() + " and ib submode=" + hh.mandatoryTours[t].subTours[s].getSubmodeIB() + "." );
 				}
 				
+				
+				// reset the Household object data members to their original values
+				hh.setOrigTaz ( hhOrigTaz );
+				hh.setOriginWalkSegment( hhOrigWalkSegment );
 			}
 			
 			
@@ -2908,6 +2963,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			if (tourTypeCategory == i) {
 				
 				logger.info ( "DTM Model Component Times for " + TourType.TYPE_CATEGORY_LABELS[i] + " tours:");
+				
 				logger.info ( "total seconds processing dtm dc sample of alternatives = " + (float)soaTime/1000);
 				logger.info ( "total seconds processing dtm dc logsums = " + (float)dcLogsumTime/1000);
 				logger.info ( "total seconds processing dtm tc logsums = " + (float)tcLogsumTime/1000);
