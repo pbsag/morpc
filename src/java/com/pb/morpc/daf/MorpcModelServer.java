@@ -187,45 +187,46 @@ public class MorpcModelServer extends MessageProcessingTask {
 			// build a synthetic population
 	        if (((String) propertyMap.get("RUN_POPULATION_SYNTHESIS_MODEL")).equalsIgnoreCase( "true"))
 	            runPopulationSynthesizer();
-		
-	        // call a C program to read the tpplus skims matrices and create the binary format skims matrices needed for the model run
-	        if (((String) propertyMap.get("RUN_TPPLUS_SKIMS_CONVERTER")).equalsIgnoreCase( "true")) {
-	
-	            String TPP_TO_BINARY_PROGRAM_DIRECTORY = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM_DIRECTORY");
-	            String TPP_TO_BINARY_PROGRAM = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM");
-		
-	            String tppDir = (String) propertyMap.get("SkimsDirectory.tpplus");
-	            String binDir = (String) propertyMap.get("SkimsDirectory.binary");
-	            runDOSCommand(TPP_TO_BINARY_PROGRAM_DIRECTORY + "\\" + TPP_TO_BINARY_PROGRAM + " " + tppDir + " " + binDir);
-	            logger.info("done converting tpplus to binary skim matrices");
-		
-	            MorpcMatrixAggregater ma = new MorpcMatrixAggregater(propertyMap);
-	            ma.aggregateSlcSkims();
-	            logger.info("done aggregating slc skim matrices");
-		
-	            MorpcMatrixZipper mx = new MorpcMatrixZipper(propertyMap);
-	            mx.convertHwyBinaryToZip();
-	            mx.convertWTBinaryToZip();
-	            mx.convertDTBinaryToZip();
-	            logger.info("done converting MORPC Binary matrices to Zip matrices");
-	
-	            copyFileToWorkers("zip");
-	            logger.info("done copying Zip matrices to workers");
-	
-	            ma = null;
-	            mx = null;
-	
-	            //update accessibily indices, and then write it to hard drive as a .csv file.
-	            AccessibilityIndices accInd = new AccessibilityIndices(iterationPropertyFiles[iteration]);
-	            accInd.writeIndices();
-	
-	            copyFileToWorkers("socec");
-	            logger.info("done copy socec files to workers");
-	
-				accInd = null;
-	            
-	        }
         }
+		
+	    // call a C program to read the tpplus skims matrices and create the binary format skims matrices needed for the model run
+	    if (((String) propertyMap.get("RUN_TPPLUS_SKIMS_CONVERTER")).equalsIgnoreCase( "true")) {
+	
+	        String TPP_TO_BINARY_PROGRAM_DIRECTORY = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM_DIRECTORY");
+	        String TPP_TO_BINARY_PROGRAM = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM");
+		
+	        String tppDir = (String) propertyMap.get("SkimsDirectory.tpplus");
+	        String binDir = (String) propertyMap.get("SkimsDirectory.binary");
+	        runDOSCommand(TPP_TO_BINARY_PROGRAM_DIRECTORY + "\\" + TPP_TO_BINARY_PROGRAM + " " + tppDir + " " + binDir);
+	        logger.info("done converting tpplus to binary skim matrices");
+		
+	        MorpcMatrixAggregater ma = new MorpcMatrixAggregater(propertyMap);
+	        ma.aggregateSlcSkims();
+	        logger.info("done aggregating slc skim matrices");
+		
+	        MorpcMatrixZipper mx = new MorpcMatrixZipper(propertyMap);
+	        mx.convertHwyBinaryToZip();
+	        mx.convertWTBinaryToZip();
+	        mx.convertDTBinaryToZip();
+	        logger.info("done converting MORPC Binary matrices to Zip matrices");
+	
+	        copyFileToWorkers("zip");
+	        logger.info("done copying Zip matrices to workers");
+	
+	        ma = null;
+	        mx = null;
+	
+	        //update accessibily indices, and then write it to hard drive as a .csv file.
+	        AccessibilityIndices accInd = new AccessibilityIndices(iterationPropertyFiles[iteration]);
+	        accInd.writeIndices();
+	
+	        copyFileToWorkers("socec");
+	        logger.info("done copy socec files to workers");
+	
+	        accInd = null;
+	            
+	    }
+        
 
         runCoreModel(iteration);
 
@@ -1280,11 +1281,14 @@ public class MorpcModelServer extends MessageProcessingTask {
 
 		    /*
 		    if(!scenario.equalsIgnoreCase(baseYearScenario)){
+		    	runDOSCommand(run_extfutureCmd);
+		    	/*
 		    //if(year>2000) {//if future year
 		        runDOSCommand(run_extfutureCmd+" Y");
 		    }
 		    else {//if not future year
 		        runDOSCommand(run_extfutureCmd+" N");
+		        */
 		    }
 		    */
 		    
