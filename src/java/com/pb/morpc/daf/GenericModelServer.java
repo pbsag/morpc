@@ -37,7 +37,7 @@ public class GenericModelServer extends MessageProcessingTask {
 	private HashMap zdmMap = null;
 	private HashMap tdmMap = null;
 	
-	private ArrayList workerTaskList = null;
+	private ArrayList workerTaskList = new ArrayList();
 	
 	private int activeWorkers = 0;
 	
