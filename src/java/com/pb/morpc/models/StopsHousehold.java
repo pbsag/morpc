@@ -158,6 +158,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			// if the primary mode for this mandatory tour is non-motorized or school bus, skip stop freq choice 
 			if (hh.mandatoryTours[t].getMode() == TourModeType.NONMOTORIZED ||
 				hh.mandatoryTours[t].getMode() == TourModeType.SCHOOLBUS) {
+				
+				//Wu added for FTA restart
+				hh.mandatoryTours[t].setStopFreqAlt(0);
+				hh.mandatoryTours[t].setStopLocOB(0);
+				hh.mandatoryTours[t].setStopLocIB(0);
 
 					continue;
 			}
@@ -724,6 +729,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 			// if the primary mode for this joint tour is non-motorized, skip stop freq choice 
 			if (hh.jointTours[t].getMode() == TourModeType.NONMOTORIZED) {
+				
+				//Wu added for FTA restart
+				hh.jointTours[t].setStopFreqAlt(0);
+				hh.jointTours[t].setStopLocOB(0);
+				hh.jointTours[t].setStopLocIB(0);
 
 					continue;
 			}
@@ -1282,6 +1292,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 			// if the primary mode for this indiv non-mandatory tour is non-motorized, skip stop freq choice 
 			if (hh.indivTours[t].getMode() == TourModeType.NONMOTORIZED) {
+				
+				//Wu added for FTA restart
+				hh.indivTours[t].setStopFreqAlt(0);
+				hh.indivTours[t].setStopLocOB(0);
+				hh.indivTours[t].setStopLocIB(0);
 
 					continue;
 			}
@@ -1870,7 +1885,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 				// if the primary mode for this at-work subtour is non-motorized, skip stop frequency choice 
 				if (hh.mandatoryTours[t].subTours[s].getMode() == TourModeType.NONMOTORIZED) {
-
+					//Wu added for FTA restart
+					hh.mandatoryTours[t].subTours[s].setStopFreqAlt(0);
+					hh.mandatoryTours[t].subTours[s].setStopLocOB(0);
+					hh.mandatoryTours[t].subTours[s].setStopLocIB(0);
+					
 					continue;
 				}
 			
