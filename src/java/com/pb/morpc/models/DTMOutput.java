@@ -988,6 +988,8 @@ public class DTMOutput implements java.io.Serializable {
 				it = hh[i].getMandatoryTours();
 				if (it != null) {
 					for (int t=0; t < it.length; t++) {
+						
+						logger.info("log="+it[t].getLogsum());
 				    
 						Arrays.fill ( tableData, 0.0f );
 				
@@ -1186,6 +1188,7 @@ public class DTMOutput implements java.io.Serializable {
 						}
 						
 						tableData[k+41]=(float)it[t].getLogsum();
+						logger.info("mandatory tour logsum="+tableData[k+41]+" column="+(k+41));
 
 
 						if (outputFileDTM != null) {
@@ -1212,7 +1215,9 @@ public class DTMOutput implements java.io.Serializable {
 				jt = hh[i].getJointTours();
 				if (jt != null) {
 					for (int t=0; t < jt.length; t++) {
-
+						
+						logger.info("jt log="+jt[t].getLogsum());
+						
 						Arrays.fill ( tableData, 0.0f );
 				
 						int[] jtPersons = jt[t].getJointTourPersons();
@@ -1415,6 +1420,7 @@ public class DTMOutput implements java.io.Serializable {
 						}
 
 						tableData[k+41]=(float)jt[t].getLogsum();
+						logger.info("joint tour logsum="+tableData[k+41]+" column="+(k+41));
 						
 						if (outputFileDTM != null) {
 
@@ -1440,6 +1446,7 @@ public class DTMOutput implements java.io.Serializable {
 				if (it != null) {
 					for (int t=0; t < it.length; t++) {
 
+						logger.info("ind t log="+it[t].getLogsum());
 				    
 						Arrays.fill ( tableData, 0.0f );
 				
@@ -1638,6 +1645,7 @@ public class DTMOutput implements java.io.Serializable {
 						}
 						
 						tableData[k+41]=(float)it[t].getLogsum();
+						logger.info("indi tour logsum="+tableData[k+41]+" column="+(k+41));
 
 						if (outputFileDTM != null) {
 
@@ -1669,7 +1677,7 @@ public class DTMOutput implements java.io.Serializable {
 								for (int s=0; s < st.length; s++) {
 
 									tlIndex = 15;
-
+									logger.info("st log="+st[s].getLogsum());
 								
 									Arrays.fill ( tableData, 0.0f );
 				
@@ -1851,6 +1859,7 @@ public class DTMOutput implements java.io.Serializable {
 									}
 									
 									tableData[k+41]=(float)st[s].getLogsum();
+									logger.info("work tour logsum="+tableData[k+41]+" column="+(k+41));
 
 
 									if (outputFileDTM != null) {

@@ -12,11 +12,12 @@ import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 
 public class MandatoryDTM implements java.io.Serializable {
 
-	
+	protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
 	private DTMHousehold dtmHH;
 	private HouseholdArrayManager hhMgr;
 
