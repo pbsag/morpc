@@ -352,7 +352,7 @@ public class SpecialEventModeChoiceModel {
     	}
 
     	float trips = inTrips.getValueAt(extPTaz,extATaz);
-        if(trips!=0){
+ //       if(trips!=0){
         	root.calculateProbabilities();
 	        double[] probabilities = root.getProbabilities();
 	
@@ -367,7 +367,7 @@ public class SpecialEventModeChoiceModel {
 	            //set exponentiated auto utility
 	            float tempAutoExp=0;
 	            for(int i=0; i<NoAutoModes; i++){
-	            	if(alts[findAltIndex(AutoModes[i])].getUtility()>-500)
+	            	if(alts[findAltIndex(AutoModes[i])].getUtility()>-900)
 	            		tempAutoExp=tempAutoExp+(float)Math.exp(alts[findAltIndex(AutoModes[i])].getUtility());
 	            }
 	            rec.setExpAuto(tempAutoExp);
@@ -386,10 +386,10 @@ public class SpecialEventModeChoiceModel {
                 	transitShareOfDriveTransit=transitShareOfDriveTransit+probabilities[tempIndex];
                 }
 	            
-                //check if walk to transit if available
+                //check if walk to transit is available
 	            boolean walkAvailable=false;
 	            for(int i=0; i<NoWalkTransitModes; i++){
-	            	if(alts[findAltIndex(WalkTransitModes[i])].getUtility()>-500)
+	            	if(alts[findAltIndex(WalkTransitModes[i])].getUtility()>-900)
 	            		walkAvailable=true;
 	            }
 	            
@@ -397,7 +397,7 @@ public class SpecialEventModeChoiceModel {
 	            boolean driveOnly=false;
 	            if(walkAvailable==false){
 		            for(int i=0; i<NoDriveTransitModes; i++){
-		            	if(alts[findAltIndex(DriveTransitModes[i])].getUtility()>-500)
+		            	if(alts[findAltIndex(DriveTransitModes[i])].getUtility()>-900)
 		            		driveOnly=true;
 		            }
 	            }
@@ -436,7 +436,7 @@ public class SpecialEventModeChoiceModel {
 	                System.exit(1);
 	            }
 	        }
-	    }
+//	    }
     }
     
     /**
