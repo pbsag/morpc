@@ -3,7 +3,7 @@ package com.pb.morpc.synpop.pums;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * The PUMSData class in the synpop.pums package is used to manage input
@@ -140,9 +140,9 @@ public class PUMSData {
         }
 
         if (index < 0) {
-            logger.severe("variable " + Variable + " not defined in list of attributes for pumsHH[0]");
-            logger.severe("exiting getAttribIndex() in PUMSData.");
-            logger.severe("exit (24)");
+            logger.fatal("variable " + Variable + " not defined in list of attributes for pumsHH[0]");
+            logger.fatal("exiting getAttribIndex() in PUMSData.");
+            logger.fatal("exit (24)");
             System.exit (24);
         }
 
@@ -165,7 +165,7 @@ public class PUMSData {
                 }
             }
         } catch (Exception e) {
-            logger.severe ("IO Exception caught reading data dictionary file: " + fileName);
+            logger.fatal ("IO Exception caught reading data dictionary file: " + fileName);
             e.printStackTrace();
         }
 
@@ -234,9 +234,9 @@ public class PUMSData {
 						for (int i=0; i < hh.attribs[personsField]; i++) {
 							s = in.readLine();
 							if (! getPUMSRecType(s).equals("P")) {
-								logger.severe("Expected P record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
-								logger.severe("exiting readData(" + fileName + ") in PUMSData.");
-								logger.severe("exit (21)");
+								logger.fatal("Expected P record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
+								logger.fatal("exiting readData(" + fileName + ") in PUMSData.");
+								logger.fatal("exit (21)");
 								System.exit (21);
 							}
 							age = getPUMSPersDataValue (s, "AGE");
@@ -284,9 +284,9 @@ public class PUMSData {
 						}
 					}
 					else {
-						logger.severe("Expected H record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
-						logger.severe("exiting readData(" + fileName + ") in PUMSData.");
-						logger.severe("exit (20)");
+						logger.fatal("Expected H record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
+						logger.fatal("exiting readData(" + fileName + ") in PUMSData.");
+						logger.fatal("exit (20)");
 						System.exit (20);
 					}
 				
@@ -316,7 +316,7 @@ public class PUMSData {
 				}
 			}
 		} catch (Exception e) {
-			logger.severe ("IO Exception caught reading data dictionary file: " + fileName);
+			logger.fatal ("IO Exception caught reading data dictionary file: " + fileName);
 			e.printStackTrace();
 		}
 

@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 public class HouseholdArrayManager implements java.io.Serializable {
@@ -59,7 +59,7 @@ public class HouseholdArrayManager implements java.io.Serializable {
     		}
     		totalHhsToProcess=bigHHArray.length;
     	}catch(IOException e){
-    		logger.severe("can not open disk object array file for reading.");
+    		logger.error("can not open disk object array file for reading.");
     	}
     }
 
@@ -98,7 +98,7 @@ public class HouseholdArrayManager implements java.io.Serializable {
         hh_idPosition = hhTable.getColumnPosition(SyntheticPopulation.HHID_FIELD);
 
         if (hh_idPosition <= 0) {
-            logger.severe(SyntheticPopulation.HHID_FIELD +
+            logger.fatal(SyntheticPopulation.HHID_FIELD +
                 " was not a field in the householdData TableDataSet.");
             System.exit(1);
         }
@@ -106,7 +106,7 @@ public class HouseholdArrayManager implements java.io.Serializable {
         hh_taz_idPosition = hhTable.getColumnPosition(SyntheticPopulation.HHTAZID_FIELD);
 
         if (hh_taz_idPosition <= 0) {
-            logger.severe(SyntheticPopulation.HHTAZID_FIELD +
+            logger.fatal(SyntheticPopulation.HHTAZID_FIELD +
                 " was not a field in the householdData TableDataSet.");
             System.exit(1);
         }
@@ -174,7 +174,7 @@ public class HouseholdArrayManager implements java.io.Serializable {
         hh_idPosition = personTable.getColumnPosition(SyntheticPopulation.HHID_FIELD);
 
         if (hh_idPosition <= 0) {
-            logger.severe(SyntheticPopulation.HHID_FIELD +
+            logger.fatal(SyntheticPopulation.HHID_FIELD +
                 " was not a field in the householdData TableDataSet.");
             System.exit(1);
         }
@@ -537,53 +537,53 @@ public class HouseholdArrayManager implements java.io.Serializable {
 
         // check for errors in properties file
         if ((numberOfHHs > 0) && (zonalPctOfHHs > 0.0)) {
-            logger.severe(
+            logger.fatal(
                 "Error in setting which households to process in morpc.properties file.");
-            logger.severe("Both numberOfHHs and zonalPctOfHHs have values set,");
-            logger.severe(
+            logger.fatal("Both numberOfHHs and zonalPctOfHHs have values set,");
+            logger.fatal(
                 "but only one should be set with the other commented out.");
-            logger.severe("allHHs = " + allHHs + ", numberOfHHs = " +
+            logger.fatal("allHHs = " + allHHs + ", numberOfHHs = " +
                 numberOfHHs + ", zonalPctOfHHs = " + zonalPctOfHHs);
-            logger.severe("");
+            logger.fatal("");
             System.exit(-1);
         }
 
         if (allHHs && (numberOfHHs > 0)) {
-            logger.severe(
+            logger.fatal(
                 "Error in setting which households to process in morpc.properties file.");
-            logger.severe(
+            logger.fatal(
                 "allHHs has been set to true and numberOfHHs has also been set.");
-            logger.severe(
+            logger.fatal(
                 "If allHHs is true, both numberOfHHs and zonalPctOfHHs should be commented out.");
-            logger.severe("allHHs = " + allHHs + ", numberOfHHs = " +
+            logger.fatal("allHHs = " + allHHs + ", numberOfHHs = " +
                 numberOfHHs + ", zonalPctOfHHs = " + zonalPctOfHHs);
-            logger.severe("");
+            logger.fatal("");
             System.exit(-1);
         }
 
         if (allHHs && (zonalPctOfHHs > 0)) {
-            logger.severe(
+            logger.fatal(
                 "Error in setting which households to process in morpc.properties file.");
-            logger.severe(
+            logger.fatal(
                 "allHHs has been set to true and zonalPctOfHHs has also been set.");
-            logger.severe(
+            logger.fatal(
                 "If allHHs is true, both numberOfHHs and zonalPctOfHHs should be commented out.");
-            logger.severe("allHHs = " + allHHs + ", numberOfHHs = " +
+            logger.fatal("allHHs = " + allHHs + ", numberOfHHs = " +
                 numberOfHHs + ", zonalPctOfHHs = " + zonalPctOfHHs);
-            logger.severe("");
+            logger.fatal("");
             System.exit(-1);
         }
 
         if (!allHHs && ((numberOfHHs < 0) && (zonalPctOfHHs < 0))) {
-            logger.severe(
+            logger.fatal(
                 "Error in setting which households to process in morpc.properties file.");
-            logger.severe(
+            logger.fatal(
                 "allHHs has been set to false and neither numberOfHHs or zonalPctOfHHs has been set.");
-            logger.severe(
+            logger.fatal(
                 "If allHHs is false, either numberOfHHs or zonalPctOfHHs must be set.");
-            logger.severe("allHHs = " + allHHs + ", numberOfHHs = " +
+            logger.fatal("allHHs = " + allHHs + ", numberOfHHs = " +
                 numberOfHHs + ", zonalPctOfHHs = " + zonalPctOfHHs);
-            logger.severe("");
+            logger.fatal("");
             System.exit(-1);
         }
 

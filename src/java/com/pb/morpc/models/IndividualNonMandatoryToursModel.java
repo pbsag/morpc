@@ -18,7 +18,7 @@ import java.io.BufferedWriter;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * @author Jim Hicks
@@ -147,10 +147,10 @@ public class IndividualNonMandatoryToursModel {
     
     
             for(int i=0;i<numberOfAlternatives;i++){
-                logger.fine("alternative "+(i+1)+" is "+alternativeNames[i] );
+                logger.debug("alternative "+(i+1)+" is "+alternativeNames[i] );
                 alts[i]  = new ConcreteAlternative(alternativeNames[i], new Integer(i+1));
                 root.addAlternative (alts[i]);
-                logger.fine(alternativeNames[i]+" has been added to the root");
+                logger.debug(alternativeNames[i]+" has been added to the root");
             }
     
             // set availabilities
@@ -805,7 +805,7 @@ public class IndividualNonMandatoryToursModel {
         }
 		catch (IOException e) {
 		    
-			   logger.severe ("error occured writing M41.csv file.");
+			   logger.error ("error occured writing M41.csv file.");
 			   
 		}
 
@@ -906,10 +906,10 @@ public class IndividualNonMandatoryToursModel {
     
     
             for(int i=0;i<numberOfAlternatives;i++){
-                logger.fine("alternative "+(i+1)+" is "+alternativeNames[i] );
+                logger.debug("alternative "+(i+1)+" is "+alternativeNames[i] );
                 alts[i]  = new ConcreteAlternative(alternativeNames[i], new Integer(i+1));
                 root.addAlternative (alts[i]);
-                logger.fine(alternativeNames[i]+" has been added to the root");
+                logger.debug(alternativeNames[i]+" has been added to the root");
             }
     
             // set availabilities
@@ -1166,7 +1166,7 @@ public class IndividualNonMandatoryToursModel {
         }
 		catch (IOException e) {
 		    
-			   logger.severe ("error occured writing M42.csv file.");
+			   logger.fatal ("error occured writing M42.csv file.");
 			   
 		}
 
@@ -1266,10 +1266,10 @@ public class IndividualNonMandatoryToursModel {
     
     
             for(int i=0;i<numberOfAlternatives;i++){
-                logger.fine("alternative "+(i+1)+" is "+alternativeNames[i] );
+                logger.debug("alternative "+(i+1)+" is "+alternativeNames[i] );
                 alts[i]  = new ConcreteAlternative(alternativeNames[i], new Integer(i+1));
                 root.addAlternative (alts[i]);
-                logger.fine(alternativeNames[i]+" has been added to the root");
+                logger.debug(alternativeNames[i]+" has been added to the root");
             }
     
             // set availabilities
@@ -1571,7 +1571,7 @@ public class IndividualNonMandatoryToursModel {
         }
 		catch (IOException e) {
 		    
-			   logger.severe ("error occured writing M431.csv file.");
+			   logger.error ("error occured writing M431.csv file.");
 			   
 		}
 
@@ -1676,10 +1676,10 @@ public class IndividualNonMandatoryToursModel {
     
     
             for(int i=0;i<numberOfAlternatives;i++){
-                logger.fine("alternative "+(i+1)+" is "+alternativeNames[i] );
+                logger.debug("alternative "+(i+1)+" is "+alternativeNames[i] );
                 alts[i]  = new ConcreteAlternative(alternativeNames[i], new Integer(i+1));
                 root.addAlternative (alts[i]);
-                logger.fine(alternativeNames[i]+" has been added to the root");
+                logger.debug(alternativeNames[i]+" has been added to the root");
             }
     
             // set availabilities
@@ -1979,7 +1979,7 @@ public class IndividualNonMandatoryToursModel {
         }
 		catch (IOException e) {
 		    
-			   logger.severe ("error occured writing M432.csv file.");
+			   logger.error ("error occured writing M432.csv file.");
 			   
 		}
 
@@ -2084,10 +2084,10 @@ public class IndividualNonMandatoryToursModel {
     
     
             for(int i=0;i<numberOfAlternatives;i++){
-                logger.fine("alternative "+(i+1)+" is "+alternativeNames[i] );
+                logger.debug("alternative "+(i+1)+" is "+alternativeNames[i] );
                 alts[i]  = new ConcreteAlternative(alternativeNames[i], new Integer(i+1));
                 root.addAlternative (alts[i]);
-                logger.fine(alternativeNames[i]+" has been added to the root");
+                logger.debug(alternativeNames[i]+" has been added to the root");
             }
     
             // set availabilities
@@ -2385,7 +2385,7 @@ public class IndividualNonMandatoryToursModel {
         }
 		catch (IOException e) {
 		    
-			   logger.severe ("error occured writing M433.csv file.");
+			   logger.error ("error occured writing M433.csv file.");
 			   
 		}
 
@@ -2486,10 +2486,10 @@ public class IndividualNonMandatoryToursModel {
 	
 	
 	        for(int i=0;i<numberOfAlternatives;i++){
-	            logger.fine("alternative "+(i+1)+" is "+alternativeNames[i] );
+	            logger.debug("alternative "+(i+1)+" is "+alternativeNames[i] );
 	            alts[i]  = new ConcreteAlternative(alternativeNames[i], new Integer(i+1));
 	            root.addAlternative (alts[i]);
-	            logger.fine(alternativeNames[i]+" has been added to the root");
+	            logger.debug(alternativeNames[i]+" has been added to the root");
 	        }
 	
 	        // set availabilities
@@ -2560,8 +2560,8 @@ public class IndividualNonMandatoryToursModel {
 	                tourMaker[t][1]=personType;
 	
 	                if (personType == 0) {
-	                    logger.fine ("error in IndividualNonMandatoryToursModel.runAtWorkFrequency()");
-	                    logger.fine ("no person in persons[] had participation == true");
+	                    logger.debug ("error in IndividualNonMandatoryToursModel.runAtWorkFrequency()");
+	                    logger.debug ("no person in persons[] had participation == true");
 	                    System.exit(1);
 	                }
 	
@@ -2748,7 +2748,7 @@ public class IndividualNonMandatoryToursModel {
         }
 		catch (IOException e) {
 		    
-			   logger.severe ("error occured writing M44.csv file.");
+			   logger.error ("error occured writing M44.csv file.");
 			   
 		}
 

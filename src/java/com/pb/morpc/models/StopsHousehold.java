@@ -228,7 +228,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 						k++;
 						if (k >= slcOBAvailability.length) {
-							logger.severe( slcOBAvailability.length + " mandatory slc OB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+							logger.fatal( slcOBAvailability.length + " mandatory slc OB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 							System.exit(-1);
 						}
 
@@ -335,7 +335,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 							k++;
 							if (k >= slcIBAvailability.length) {
-								logger.severe( slcIBAvailability.length + " mandatory slc IB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+								logger.fatal( slcIBAvailability.length + " mandatory slc IB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 								System.exit(-1);
 							}
 
@@ -424,7 +424,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+						logger.warn ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
 						hh.mandatoryTours[t].setStopFreqAlt ( 1 );
 						hh.mandatoryTours[t].setStopLocOB ( 0 );
 						hh.mandatoryTours[t].setStopLocIB ( 0 );
@@ -453,7 +453,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+						logger.warn ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
 						hh.mandatoryTours[t].setStopFreqAlt ( 1 );
 						hh.mandatoryTours[t].setStopLocOB ( 0 );
 						hh.mandatoryTours[t].setStopLocIB ( 0 );
@@ -481,7 +481,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+						logger.warn ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
 						hh.mandatoryTours[t].setStopFreqAlt ( 1 );
 						hh.mandatoryTours[t].setStopLocOB ( 0 );
 						hh.mandatoryTours[t].setStopLocIB ( 0 );
@@ -503,7 +503,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+						logger.warn ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
 						hh.mandatoryTours[t].setStopFreqAlt ( 1 );
 						hh.mandatoryTours[t].setStopLocOB ( 0 );
 						hh.mandatoryTours[t].setStopLocIB ( 0 );
@@ -521,7 +521,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 				default:
 
-					logger.severe ("invalid mandatory stop frequency choice = " + chosenAlt + " for household id=" + hh.getID() + " in non-mandatory stop frequency choice." );
+					logger.error ("invalid mandatory stop frequency choice = " + chosenAlt + " for household id=" + hh.getID() + " in non-mandatory stop frequency choice." );
 //					hh.writeContentToLogger(logger);
 					
 					break;
@@ -785,7 +785,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 						k++;
 						if (k >= slcIBAvailability.length) {
-							logger.severe( slcIBAvailability.length + " joint slc IB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+							logger.fatal( slcIBAvailability.length + " joint slc IB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 							System.exit(-1);
 						}
 
@@ -889,7 +889,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 							k++;
 							if (k >= slcOBAvailability.length) {
-								logger.severe( slcOBAvailability.length + " joint slc OB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+								logger.fatal( slcOBAvailability.length + " joint slc OB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 								System.exit(-1);
 							}
 
@@ -977,7 +977,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.warn ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 						hh.jointTours[t].setStopFreqAlt ( 1 );
 						hh.jointTours[t].setStopLocOB ( 0 );
 						hh.jointTours[t].setStopLocIB ( 0 );
@@ -1007,7 +1007,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.warn ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 						hh.jointTours[t].setStopFreqAlt ( 1 );
 						hh.jointTours[t].setStopLocOB ( 0 );
 						hh.jointTours[t].setStopLocIB ( 0 );
@@ -1037,7 +1037,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.warn ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 						hh.jointTours[t].setStopFreqAlt ( 1 );
 						hh.jointTours[t].setStopLocOB ( 0 );
 						hh.jointTours[t].setStopLocIB ( 0 );
@@ -1062,7 +1062,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.warn ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 						hh.jointTours[t].setStopFreqAlt ( 1 );
 						hh.jointTours[t].setStopLocOB ( 0 );
 						hh.jointTours[t].setStopLocIB ( 0 );
@@ -1081,7 +1081,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 				default:
 
-					logger.severe ("invalid joint stop frequency choice = " + chosenAlt + " for household id=" + hh.getID() + " in joint stop frequency choice." );
+					logger.error ("invalid joint stop frequency choice = " + chosenAlt + " for household id=" + hh.getID() + " in joint stop frequency choice." );
 //					hh.writeContentToLogger(logger);
 					
 					break;
@@ -1350,7 +1350,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 						k++;
 						if (k >= slcIBAvailability.length) {
-							logger.severe( slcIBAvailability.length + " indiv. non-mandatory slc IB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+							logger.fatal( slcIBAvailability.length + " indiv. non-mandatory slc IB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 							System.exit(-1);
 						}
 
@@ -1454,7 +1454,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 							k++;
 							if (k >= slcOBAvailability.length) {
-								logger.severe( slcOBAvailability.length + " indiv. non-mandatory slc OB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+								logger.fatal( slcOBAvailability.length + " indiv. non-mandatory slc OB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 								System.exit(-1);
 							}
 
@@ -1544,7 +1544,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosen = 1;
 						chosenDestAlt = 1;
 						chosenShrtWlk = 1;
-						logger.warning ( "no outbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.warn ( "no outbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 						hh.indivTours[t].setStopFreqAlt ( 1 );
 						hh.indivTours[t].setStopLocOB ( 0 );
 						hh.indivTours[t].setStopLocIB ( 0 );
@@ -1574,7 +1574,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no inbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.warn ( "no inbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 						hh.indivTours[t].setStopFreqAlt ( 1 );
 						hh.indivTours[t].setStopLocOB ( 0 );
 						hh.indivTours[t].setStopLocIB ( 0 );
@@ -1603,7 +1603,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no outbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.warn ( "no outbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 						hh.indivTours[t].setStopFreqAlt ( 1 );
 						hh.indivTours[t].setStopLocOB ( 0 );
 						hh.indivTours[t].setStopLocIB ( 0 );
@@ -1627,7 +1627,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warning ( "no inbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.warn ( "no inbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 						hh.indivTours[t].setStopFreqAlt ( 1 );
 						hh.indivTours[t].setStopLocOB ( 0 );
 						hh.indivTours[t].setStopLocIB ( 0 );
@@ -1645,7 +1645,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 				default:
 
-				    logger.severe ("invalid individual non-mandatory stop frequency choice = " + chosenAlt + " for household id=" + hh.getID() + " in non-mandatory stop frequency model");
+				    logger.error ("invalid individual non-mandatory stop frequency choice = " + chosenAlt + " for household id=" + hh.getID() + " in non-mandatory stop frequency model");
 //					hh.writeContentToLogger(logger);
 					
 					break;
@@ -1921,7 +1921,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				freqTime += (System.currentTimeMillis()-markTime);
 
 				if (chosenAlt == 0) {
-					logger.severe ("at-work stop frequency choice == 0 household id=" + hh.getID() );
+					logger.error ("at-work stop frequency choice == 0 household id=" + hh.getID() );
 //				    hh.writeContentToLogger(logger);
 				}
 			
@@ -1958,7 +1958,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						
 								k++;
 								if (k >= slcIBAvailability.length) {
-									logger.severe( slcIBAvailability.length + " at work slc IB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+									logger.fatal( slcIBAvailability.length + " at work slc IB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 									System.exit(-1);
 								}
 	
@@ -2039,7 +2039,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						
 								k++;
 								if (k >= slcOBAvailability.length) {
-									logger.severe( slcOBAvailability.length + " at work slc OB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+									logger.fatal( slcOBAvailability.length + " at work slc OB alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 									System.exit(-1);
 								}
 	
@@ -2127,7 +2127,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 							chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 						}
 						else {
-							logger.warning ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+							logger.warn ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 							hh.mandatoryTours[t].subTours[s].setStopFreqAlt ( 1 );
 							hh.mandatoryTours[t].subTours[s].setStopLocOB ( 0 );
 							hh.mandatoryTours[t].subTours[s].setStopLocIB ( 0 );
@@ -2156,7 +2156,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 							chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 						}
 						else {
-							logger.warning ( "no inbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+							logger.warn ( "no inbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 							hh.mandatoryTours[t].subTours[s].setStopFreqAlt ( 1 );
 							hh.mandatoryTours[t].subTours[s].setStopLocOB ( 0 );
 							hh.mandatoryTours[t].subTours[s].setStopLocIB ( 0 );
@@ -2185,7 +2185,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 							chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 						}
 						else {
-							logger.warning ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+							logger.warn ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 							hh.mandatoryTours[t].subTours[s].setStopFreqAlt ( 1 );
 							hh.mandatoryTours[t].subTours[s].setStopLocOB ( 0 );
 							hh.mandatoryTours[t].subTours[s].setStopLocIB ( 0 );
@@ -2209,7 +2209,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 							chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
 						}
 						else {
-							logger.warning ( "no inbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+							logger.warn ( "no inbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 							hh.mandatoryTours[t].subTours[s].setStopFreqAlt ( 1 );
 							hh.mandatoryTours[t].subTours[s].setStopLocOB ( 0 );
 							hh.mandatoryTours[t].subTours[s].setStopLocIB ( 0 );
@@ -2227,7 +2227,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 					default:
 
-						logger.severe ("invalid at-work stop frequency choice = " + chosenAlt + " for household id=" + hh.getID() + " in at-work stop frequency choice." );
+						logger.error ("invalid at-work stop frequency choice = " + chosenAlt + " for household id=" + hh.getID() + " in at-work stop frequency choice." );
 //						hh.writeContentToLogger(logger);
 					
 						break;

@@ -23,7 +23,7 @@ import com.pb.common.summit.ConcreteSummitRecord;
 import java.util.ResourceBundle;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.HashSet;
 import java.util.HashMap;
 
@@ -347,7 +347,7 @@ public class SpecialEventModeChoiceModel {
     	String [] AutoModes=reader.getAutoModes();
     	
     	if(inTrips==null){
-    		logger.severe("No inTrip table. Must set inTrip table before write summit records!");
+    		logger.fatal("No inTrip table. Must set inTrip table before write summit records!");
 			System.exit(-1);
     	}
 

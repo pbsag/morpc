@@ -11,7 +11,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * <p>Company: PB Consult, Parsons Brinckerhoff</p>
@@ -39,7 +39,7 @@ public class Derived {
 			reader.setDelimSet( " ,\t\n\r\f\"");
             zsed = reader.readFile(new File((String) propertyMap.get("TAZMainData.file")));
         } catch (IOException e) {
-            logger.severe(e.getMessage());
+            logger.error(e.getMessage());
         }
 
         try {
@@ -47,7 +47,7 @@ public class Derived {
 			reader.setDelimSet( " ,\t\n\r\f\"");
             accessi = reader.readFile(new File((String) propertyMap.get("TAZAccessibility.file")));
         } catch (IOException e) {
-            logger.severe(e.getMessage());
+            logger.error(e.getMessage());
         }
 
         NoOfZones = zsed.getRowCount();
@@ -83,7 +83,7 @@ public class Derived {
             CSVFileWriter writer = new CSVFileWriter();
             writer.writeFile(completeTable, AccessibilityIndicesFile, new DecimalFormat("#.00"));
         } catch (Exception e) {
-            logger.severe(e.getMessage());
+            logger.error(e.getMessage());
         }
     }
 

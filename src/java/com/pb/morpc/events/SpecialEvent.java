@@ -6,7 +6,7 @@
  */
 package com.pb.morpc.events;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.HashMap;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
@@ -195,7 +195,7 @@ public class SpecialEvent {
 						result[k].setValueAt(i,j,cellValue);
 					}
 				}else{
-					logger.severe("probabilities calculated are not valid.");
+					logger.fatal("probabilities calculated are not valid.");
 					System.exit(-1);
 				}				
 			}
@@ -272,31 +272,31 @@ public class SpecialEvent {
 		//get event name column position in taz table
 		int namePos=eventData.getColumnPosition("name");
 		if(namePos==-1){
-			logger.severe("name column not in event data file");
+			logger.error("name column not in event data file");
 		}
 		
 		//get taz column position in taz table
 		int tazPos=eventData.getColumnPosition("taz");
 		if(tazPos==-1){
-			logger.severe("taz column not in event data file");
+			logger.error("taz column not in event data file");
 		}
 		
 		//get attendance column position in taz table
 		int attendancePos=eventData.getColumnPosition("attendance");
 		if(attendancePos==-1){
-			logger.severe("attendance column not in event data file");
+			logger.error("attendance column not in event data file");
 		}
 		
 		//get TOD column position in event table
 		int TODPos=eventData.getColumnPosition("TOD");
 		if(TODPos==-1){
-			logger.severe("TOD column not in event data file");
+			logger.error("TOD column not in event data file");
 		}
 		
 		//get TOD column position in event table
 		int NoDaysPos=eventData.getColumnPosition("NoDays");
 		if(NoDaysPos==-1){
-			logger.severe("NoDays column not in event data file");
+			logger.error("NoDays column not in event data file");
 		}
 		
 		//loop over events to distribute special event trips
@@ -385,31 +385,31 @@ public class SpecialEvent {
 		//get event name column position in event table
 		int namePos=eventData.getColumnPosition("name");
 		if(namePos==-1){
-			logger.severe("name column not in event data file");
+			logger.error("name column not in event data file");
 		}
 		
 		//get taz column position in event table
 		int tazPos=eventData.getColumnPosition("taz");
 		if(tazPos==-1){
-			logger.severe("taz column not in event data file");
+			logger.error("taz column not in event data file");
 		}
 		
 		//get attendance column position in event table
 		int attendancePos=eventData.getColumnPosition("attendance");
 		if(attendancePos==-1){
-			logger.severe("attendance column not in event data file");
+			logger.error("attendance column not in event data file");
 		}
 		
 		//get TOD column position in event table
 		int TODPos=eventData.getColumnPosition("TOD");
 		if(TODPos==-1){
-			logger.severe("TOD column not in event data file");
+			logger.error("TOD column not in event data file");
 		}
 		
 		//get No of Days column position in event table
 		int NoDaysPos=eventData.getColumnPosition("NoDays");
 		if(NoDaysPos==-1){
-			logger.severe("NoDays column not in event data file");
+			logger.error("NoDays column not in event data file");
 		}
 		
 		//loop over events to distribute special event trips

@@ -41,7 +41,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.logging.Level;
 
 import java.io.FileInputStream;
@@ -1124,10 +1124,10 @@ public class MorpcModelServer extends MessageProcessingTask {
     public static void showMemory() {
 
         runningTime = System.currentTimeMillis() - markTime;
-        if (logger.isLoggable(Level.FINE)) {
-            logger.info("total running minutes = " + (float) ((runningTime / 1000.0) / 60.0));
-            logger.info("totalMemory()=" + Runtime.getRuntime().totalMemory() + " mb.");
-            logger.info("freeMemory()=" + Runtime.getRuntime().freeMemory() + " mb.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("total running minutes = " + (float) ((runningTime / 1000.0) / 60.0));
+            logger.debug("totalMemory()=" + Runtime.getRuntime().totalMemory() + " mb.");
+            logger.debug("freeMemory()=" + Runtime.getRuntime().freeMemory() + " mb.");
         }
 
     }
@@ -1155,11 +1155,11 @@ public class MorpcModelServer extends MessageProcessingTask {
             BufferedReader stderr = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
             while ((s = stdout.readLine()) != null) {
-                logger.warning(s);
+                logger.warn(s);
             }
 
             while ((s = stderr.readLine()) != null) {
-                logger.warning(s);
+                logger.warn(s);
             }
         }
         catch (IOException e) {
@@ -1238,7 +1238,7 @@ public class MorpcModelServer extends MessageProcessingTask {
             }
         }
         else {
-            logger.severe("illegal file type encountered when copy files to workers");
+            logger.error("illegal file type encountered when copy files to workers");
         }
     }
 
@@ -1372,7 +1372,7 @@ public class MorpcModelServer extends MessageProcessingTask {
         		diskObjectArray.add(i,hhs[i]);
         	}
     	}catch(IOException e){
-    		logger.severe("can not open disk object array file for writing");
+    		logger.fatal("can not open disk object array file for writing");
     	}
     }
         

@@ -3,7 +3,7 @@ package com.pb.morpc.report;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /**

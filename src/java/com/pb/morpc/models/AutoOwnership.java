@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Implements a test of the multinomial logit model for auto ownership choice
@@ -73,14 +73,14 @@ public class AutoOwnership {
         // get the household data table from the UEC control file
         TableDataSet hhTable = uec.getHouseholdData();
         if (hhTable == null) {
-            logger.severe(
+            logger.fatal(
                 "Could not get householdData TableDataSet from UEC in AutoOwnershipUEC.run().");
             System.exit(1);
         }
 
         int hh_idPosition = hhTable.getColumnPosition(SyntheticPopulation.HHID_FIELD);
         if (hh_idPosition <= 0) {
-            logger.severe(
+            logger.fatal(
                 SyntheticPopulation.HHID_FIELD
                     + " was not a field in the householdData TableDataSet returned from UEC in AutoOwnershipUEC.run().");
             System.exit(1);
@@ -88,7 +88,7 @@ public class AutoOwnership {
         int hh_taz_idPosition =
             hhTable.getColumnPosition(SyntheticPopulation.HHTAZID_FIELD);
         if (hh_taz_idPosition <= 0) {
-            logger.severe(
+            logger.fatal(
                 SyntheticPopulation.HHTAZID_FIELD
                     + " was not a field in the householdData TableDataSet returned from UEC in AutoOwnershipUEC.run().");
             System.exit(1);
@@ -205,7 +205,7 @@ public class AutoOwnership {
             hhTable.getColumnPosition("M1"));
 
 		if (useMessageWindow) mw.setMessage3("end of Auto Ownership Module");
-        logger.fine("end of AutoOwnership");
+        logger.debug("end of AutoOwnership");
 
 
 		if (useMessageWindow) mw.setVisible(false);

@@ -20,7 +20,7 @@ import com.pb.morpc.structures.TourType;
 //******************logsumlogsumlogsumlogsum**********************
 
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.Vector;
 
 
@@ -203,8 +203,8 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 						}
 						catch (java.lang.Exception e) {
 						    e.printStackTrace();
-							logger.severe ("runtime exception occurred in mandatory TcMc for household id=" + hhList[i].getID() + " in " + this.getName() );
-							logger.severe(e.getMessage());
+							logger.fatal ("runtime exception occurred in mandatory TcMc for household id=" + hhList[i].getID() + " in " + this.getName() );
+							logger.fatal(e.getMessage());
 							hhList[i].writeContentToLogger(logger);
 							System.exit(-1);
 						}

@@ -6,7 +6,7 @@
 package com.pb.morpc.events;
 
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * @author Wu Sun <sunw@pbworld.com>
@@ -40,7 +40,7 @@ public class TODIndex {
 		if(indexMap.containsKey(new Integer(index)))
 			result=(String)indexMap.get(new Integer(index));
 		else{
-			logger.severe("key "+index+" not found in TOD index map.");
+			logger.fatal("key "+index+" not found in TOD index map.");
 			System.exit(-1);
 		}
 		return result;
@@ -52,7 +52,7 @@ public class TODIndex {
 		if(indexMapR.containsKey(name))
 			result=((Integer)indexMapR.get(name)).intValue();
 		else{
-			logger.severe("key "+name+" not found in TOD index map.");
+			logger.fatal("key "+name+" not found in TOD index map.");
 			System.exit(-1);
 		}
 		return result;

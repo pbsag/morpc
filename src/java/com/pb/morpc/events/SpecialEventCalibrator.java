@@ -16,7 +16,7 @@ import jxl.write.*;
 import jxl.write.Number;
 
 import java.io.File;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.HashMap;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.matrix.Matrix;
@@ -83,7 +83,7 @@ public class SpecialEventCalibrator {
 			if(args.length==2){//if 2 arguments, 1st must be event name, 2nd TOD
 				runner.runModel(args[0],args[1]);
 			}else{
-				logger.severe("number of arguments not correct, for calibration run, there must be 2 arguments.");
+				logger.error("number of arguments not correct, for calibration run, there must be 2 arguments.");
 			}
 		
 			logger.info("calibration:"+i+" started!");	
@@ -137,7 +137,7 @@ public class SpecialEventCalibrator {
 		}else if(projectName.equalsIgnoreCase("MiamiEvent")){
 			NoUpdateCells=3;
 		}else{
-			logger.severe("in clibration, project name is invalid.");			
+			logger.error("in clibration, project name is invalid.");
 		}
 		
 		//update constant cells of all alternatives
@@ -149,7 +149,7 @@ public class SpecialEventCalibrator {
 			}else if(projectName.equalsIgnoreCase("MiamiEvent")){
 				cell = sheet.getWritableCell(7+i, 11);				
 			}else{
-				logger.severe("in clibration, project name is invalid.");
+				logger.error("in clibration, project name is invalid.");
 			}
 			
 			if (cell.getType() == CellType.NUMBER) 
@@ -162,7 +162,7 @@ public class SpecialEventCalibrator {
 				temp.trim();
 				lc.setString(temp);
 			}else{
-				logger.severe("cell is not a number.");			
+				logger.error("cell is not a number.");
 			}
 		}
 		
@@ -172,7 +172,7 @@ public class SpecialEventCalibrator {
 			copy.close(); 
 		}catch(Throwable t){
 			t.printStackTrace();
-			logger.severe("updating UEC control file failed.");
+			logger.fatal("updating UEC control file failed.");
 		}
 	}
 	
@@ -191,7 +191,7 @@ public class SpecialEventCalibrator {
 				calculatedTransitRidership=calculatedTransitRidership+(float)tripsByMode[i].getSum();
 			}			
 		}else{
-			logger.severe("in clibration, project name is invalid.");
+			logger.error("in clibration, project name is invalid.");
 		}
 		return calculatedTransitRidership;
 		
@@ -199,7 +199,7 @@ public class SpecialEventCalibrator {
 	
 	/**
 	 * Check if calibration converge.  Assume AUTO is the first mode in UEC.
-	 * @param runner
+	 * @param transitRidership
 	 * @return
 	 */
 	private boolean isConverged(double transitRidership){

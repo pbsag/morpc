@@ -3,7 +3,7 @@ package com.pb.morpc.structures;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * @author Freedman
@@ -177,10 +177,10 @@ public class JointTour extends Tour implements java.io.Externalizable {
     }
 
     public void writeContentToLogger(Logger logger){
-      logger.severe("adultsOnly:"+adultsOnly);
-      logger.severe("childrenOnly:"+childrenOnly);
-      logger.severe("adultsAndChildren:"+adultsAndChildren);
-      logger.severe("participate:"+participate);
+      logger.info("adultsOnly:"+adultsOnly);
+      logger.info("childrenOnly:"+childrenOnly);
+      logger.info("adultsAndChildren:"+adultsAndChildren);
+      logger.info("participate:"+participate);
     }
 
 }

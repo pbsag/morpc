@@ -3,7 +3,7 @@ package com.pb.morpc.structures;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.util.ObjectUtil;
 
@@ -669,18 +669,18 @@ public class Tour implements java.io.Externalizable {
 
     public void writeContentToLogger(Logger logger, String description){
 
-		logger.severe(description);
-		logger.severe("tourType:"+tourType);
-		logger.severe("subTourType:"+subTourType);
-		logger.severe("subTourPerson:"+subTourPerson);
+		logger.info(description);
+		logger.info("tourType:"+tourType);
+		logger.info("subTourType:"+subTourType);
+		logger.info("subTourPerson:"+subTourPerson);
 
 		if (personParticipation != null) {
 		      for(int i=0; i<personParticipation.length; i++){
-		        logger.severe("personParticipation["+i+"]="+personParticipation[i]);
+		        logger.info("personParticipation["+i+"]="+personParticipation[i]);
 		      }
 		}
 		else {
-		    logger.severe("personParticipation[]=null");
+		    logger.info("personParticipation[]=null");
 		}
 
 		if (subTours != null) {
@@ -690,41 +690,41 @@ public class Tour implements java.io.Externalizable {
 		    }
 		}
 		else {
-		    logger.severe("subTours[]=null");
+		    logger.info("subTours[]=null");
 		}
 
 	  if (subToursByType != null) {
 	      for(int i=0; i<subToursByType.length; i++){
-	        logger.severe("subToursByType["+i+"]="+subToursByType[i]);
+	        logger.info("subToursByType["+i+"]="+subToursByType[i]);
 	      }
 	  }
 	  else {
-	      logger.severe("subToursByType[]=null");
+	      logger.info("subToursByType[]=null");
 	  }
 
-      logger.severe("mode:"+mode);
-      logger.severe("submodeOB:"+submodeOB);
-      logger.severe("submodeIB:"+submodeIB);
-      logger.severe("timeOfDayAlt:"+timeOfDayAlt);
-      logger.severe("origTaz:"+origTaz);
-      logger.severe("destTaz:"+destTaz);
-      logger.severe("parkTaz:"+parkTaz);
-      logger.severe("destShrtWlk:"+destShrtWlk);
-      logger.severe("tourOrder:"+tourOrder);
-      logger.severe("numPersons:"+numPersons);
-      logger.severe("numAdults:"+numAdults);
-      logger.severe("numChildren:"+numChildren);
-      logger.severe("numPreschool:"+numPreschool);
-      logger.severe("numPredriv:"+numPredriv);
-      logger.severe("numUniv:"+numUniv);
-      logger.severe("stopFreqAlt:"+stopFreqAlt);
-      logger.severe("stopLocOB:"+stopLocOB);
-      logger.severe("stopLocIB:"+stopLocIB);
-      logger.severe("stopLocSubzoneOB:"+stopLocSubzoneOB);
-      logger.severe("stopLocSubzoneIB:"+stopLocSubzoneIB);
-      logger.severe("tripIkMode:"+tripIkMode);
-      logger.severe("tripKjMode:"+tripKjMode);
-      logger.severe("tripJkMode:"+tripJkMode);
-      logger.severe("tripKiMode:"+tripKiMode);
+      logger.info("mode:"+mode);
+      logger.info("submodeOB:"+submodeOB);
+      logger.info("submodeIB:"+submodeIB);
+      logger.info("timeOfDayAlt:"+timeOfDayAlt);
+      logger.info("origTaz:"+origTaz);
+      logger.info("destTaz:"+destTaz);
+      logger.info("parkTaz:"+parkTaz);
+      logger.info("destShrtWlk:"+destShrtWlk);
+      logger.info("tourOrder:"+tourOrder);
+      logger.info("numPersons:"+numPersons);
+      logger.info("numAdults:"+numAdults);
+      logger.info("numChildren:"+numChildren);
+      logger.info("numPreschool:"+numPreschool);
+      logger.info("numPredriv:"+numPredriv);
+      logger.info("numUniv:"+numUniv);
+      logger.info("stopFreqAlt:"+stopFreqAlt);
+      logger.info("stopLocOB:"+stopLocOB);
+      logger.info("stopLocIB:"+stopLocIB);
+      logger.info("stopLocSubzoneOB:"+stopLocSubzoneOB);
+      logger.info("stopLocSubzoneIB:"+stopLocSubzoneIB);
+      logger.info("tripIkMode:"+tripIkMode);
+      logger.info("tripKjMode:"+tripKjMode);
+      logger.info("tripJkMode:"+tripJkMode);
+      logger.info("tripKiMode:"+tripKiMode);
     }
 }

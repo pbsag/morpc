@@ -8,7 +8,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.HashMap;
 import com.pb.common.datafile.TableDataSet;
 import java.io.File;
@@ -68,7 +68,7 @@ public class SpecialEventSummit {
 		SpecialEventModeChoiceModel mcm=dataReader.getModeChoiceModel(TOD);
 		
 		if(mcm==null){
-			logger.severe("mode choice model is null for TOD:"+TOD+", when write summit file!");
+			logger.error("mode choice model is null for TOD:"+TOD+", when write summit file!");
 		}
 		
 		mcm.setWriteSummitFile(true);
@@ -89,7 +89,7 @@ public class SpecialEventSummit {
         if(propertyMap!=null){
         	tempLoc=(String)propertyMap.get("tripTable.file");
         }else{
-        	logger.severe("property map is null.");
+        	logger.error("property map is null.");
         }
         
         File tripTableFile = new File(tempLoc);
@@ -109,7 +109,7 @@ public class SpecialEventSummit {
         if(propertyMap!=null){
         	tempLoc=(String)propertyMap.get("tripTable.file");
         }else{
-        	logger.severe("property map is null.");
+        	logger.error("property map is null.");
         }
         
         File tripTableFile = new File(tempLoc);

@@ -14,7 +14,7 @@ import java.text.DecimalFormat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -124,7 +124,7 @@ public class AccessibilityIndices {
 			reader.setDelimSet( " ,\t\n\r\f\"");
             attraction = reader.readFile(new File((String) propertyMap.get("TAZMainData.file")));
         } catch (IOException e) {
-            logger.severe(e.getMessage());
+            logger.error(e.getMessage());
         }
 
         NoOfZones = attraction.getRowCount();
@@ -280,7 +280,7 @@ public class AccessibilityIndices {
             CSVFileWriter writer = new CSVFileWriter();
             writer.writeFile(completeTable, AccessibilityIndicesFile, new DecimalFormat("#.00"));
         } catch (Exception e) {
-            logger.severe(e.getMessage());
+            logger.error(e.getMessage());
         }
     }
 

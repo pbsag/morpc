@@ -21,7 +21,7 @@ import com.pb.morpc.structures.Household;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 public class HHArrayServer extends MessageProcessingTask {
@@ -237,7 +237,7 @@ public class HHArrayServer extends MessageProcessingTask {
 	private void writeLogsums(LogsumRecord [] records){
 		
 		if(records==null){
-			logger.severe("logsum records are empty.");
+			logger.error("logsum records are empty.");
 			return;
 		}
 		
@@ -301,7 +301,7 @@ public class HHArrayServer extends MessageProcessingTask {
                         outStream.print(logsumFormat.format(logsum));
                         break;
                     default:
-                        logger.severe("invalid column number: " + c);
+                        logger.error("invalid column number: " + c);
                     }
                 }
                 outStream.println();
@@ -309,7 +309,7 @@ public class HHArrayServer extends MessageProcessingTask {
             outStream.close();
         }
         catch (IOException e) {
-            logger.severe("failed writing logsum to disk.");
+            logger.fatal("failed writing logsum to disk.");
         }
 	}
 	*/

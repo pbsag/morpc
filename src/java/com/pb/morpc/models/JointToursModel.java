@@ -18,7 +18,7 @@ import java.io.PrintWriter;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -117,12 +117,12 @@ public class JointToursModel {
         ConcreteAlternative[] alts = new ConcreteAlternative[numberOfAlternatives];
 
         for (int i = 0; i < numberOfAlternatives; i++) {
-            logger.fine("alternative " + (i + 1) + " is " +
+            logger.debug("alternative " + (i + 1) + " is " +
                 alternativeNames[i]);
             alts[i] = new ConcreteAlternative(alternativeNames[i],
                     new Integer(i + 1));
             root.addAlternative(alts[i]);
-            logger.fine(alternativeNames[i] + " has been added to the root");
+            logger.debug(alternativeNames[i] + " has been added to the root");
         }
 
         // set availabilities
@@ -361,7 +361,7 @@ public class JointToursModel {
 
             outStream.close();
         } catch (IOException e) {
-            logger.severe("IO exception when writing M31.csv");
+            logger.error("IO exception when writing M31.csv");
         }
 
 		if (summaryOutput) {
@@ -417,12 +417,12 @@ public class JointToursModel {
         ConcreteAlternative[] alts = new ConcreteAlternative[numberOfAlternatives];
 
         for (int i = 0; i < numberOfAlternatives; i++) {
-            logger.fine("alternative " + (i + 1) + " is " +
+            logger.debug("alternative " + (i + 1) + " is " +
                 alternativeNames[i]);
             alts[i] = new ConcreteAlternative(alternativeNames[i],
                     new Integer(i + 1));
             root.addAlternative(alts[i]);
-            logger.fine(alternativeNames[i] + " has been added to the root");
+            logger.debug(alternativeNames[i] + " has been added to the root");
         }
 
         // set availabilities
@@ -552,7 +552,7 @@ public class JointToursModel {
 
                 outStream.close();
             } catch (IOException e) {
-                logger.severe("IO Exception when write M32.csv");
+                logger.error("IO Exception when write M32.csv");
             }
         }
 
@@ -614,12 +614,12 @@ public class JointToursModel {
         ConcreteAlternative[] alts = new ConcreteAlternative[numberOfAlternatives];
 
         for (int i = 0; i < numberOfAlternatives; i++) {
-            logger.fine("alternative " + (i + 1) + " is " +
+            logger.debug("alternative " + (i + 1) + " is " +
                 alternativeNames[i]);
             alts[i] = new ConcreteAlternative(alternativeNames[i],
                     new Integer(i + 1));
             root.addAlternative(alts[i]);
-            logger.fine(alternativeNames[i] + " has been added to the root");
+            logger.debug(alternativeNames[i] + " has been added to the root");
         }
 
         // set availabilities
@@ -878,7 +878,7 @@ public class JointToursModel {
                 }
               outStream.close();
             }catch(IOException e){
-              logger.severe("IO exception when write m33.csv");
+              logger.error("IO exception when write m33.csv");
             }
         }
 

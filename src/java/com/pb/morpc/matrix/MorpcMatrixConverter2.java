@@ -10,7 +10,7 @@ import java.awt.Container;
 import java.awt.GridLayout;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -191,7 +191,7 @@ public class MorpcMatrixConverter2 extends JFrame {
 		MorpcMatrixConverter2 mx = new MorpcMatrixConverter2 ();
         mx.convertMatrices();
                         
-        logger.fine("end of converting MORPC TP+ Matrices");
+        logger.debug("end of converting MORPC TP+ Matrices");
         System.exit (0);
         
     }

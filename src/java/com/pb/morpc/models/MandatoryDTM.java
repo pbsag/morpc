@@ -12,7 +12,7 @@ import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 public class MandatoryDTM implements java.io.Serializable {

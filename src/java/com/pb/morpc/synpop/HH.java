@@ -1,6 +1,6 @@
 package com.pb.morpc.synpop;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * The HH class defines HH objects for a population.
@@ -51,7 +51,7 @@ public class HH implements Cloneable{
             
             
         }catch(CloneNotSupportedException e){
-            logger.severe("Error: HH can't clone");
+            logger.fatal("Error: HH can't clone");
             System.exit(1);
         }
         //clone references

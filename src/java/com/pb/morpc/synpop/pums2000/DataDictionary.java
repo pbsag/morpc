@@ -7,7 +7,7 @@ import java.io.FileReader;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -150,11 +150,11 @@ public class DataDictionary {
         }
 
         if (index < 0) {
-            logger.severe("PUMS variable: " + PUMSVariable +
+            logger.fatal("PUMS variable: " + PUMSVariable +
                 " not found in data dictionary.");
-            logger.severe("exiting getPUMSVariableIndex(" + PUMSVariable +
+            logger.fatal("exiting getPUMSVariableIndex(" + PUMSVariable +
                 ") in DataDictionary.");
-            logger.severe("exit (10)");
+            logger.fatal("exit (10)");
             System.exit(10);
         }
 
@@ -191,14 +191,14 @@ public class DataDictionary {
                                     attrib = PersAttribs.size();
                                 }
 
-                                logger.severe("data definition for attrib " +
+                                logger.fatal("data definition for attrib " +
                                     attrib + " in data dictionary file " +
                                     fileName + " has " + st.countTokens() +
                                     " fields, but should have " + NUMFIELDS +
                                     ".");
-                                logger.severe("exiting readPUMSDataDictionary(" +
+                                logger.fatal("exiting readPUMSDataDictionary(" +
                                     fileName + ").");
-                                logger.severe("exit (11)");
+                                logger.fatal("exit (11)");
                                 System.exit(11);
                             } else {
                                 DataDictionaryRecord ddRecord = new DataDictionaryRecord();
@@ -223,7 +223,7 @@ public class DataDictionary {
                 }
             }
         } catch (Exception e) {
-            logger.severe(
+            logger.fatal(
                 "IO Exception caught reading data dictionary file: " +
                 fileName);
             e.printStackTrace();

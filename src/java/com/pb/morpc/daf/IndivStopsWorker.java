@@ -17,7 +17,7 @@ import com.pb.morpc.structures.Household;
 import com.pb.morpc.structures.TourType;
 
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 
@@ -169,8 +169,8 @@ public class IndivStopsWorker extends MessageProcessingTask implements java.io.S
 						}
 						catch (java.lang.Exception e) {
 						    e.printStackTrace();
-							logger.severe ("runtime exception occurred in indiv non-mandatory stop freq/loc for household id=" + hhList[i].getID() + "in " + this.getName() );
-							logger.severe(e.getMessage());
+							logger.fatal ("runtime exception occurred in indiv non-mandatory stop freq/loc for household id=" + hhList[i].getID() + "in " + this.getName() );
+							logger.fatal(e.getMessage());
 							hhList[i].writeContentToLogger(logger);
 							System.exit(-1);
 						}
@@ -188,8 +188,8 @@ public class IndivStopsWorker extends MessageProcessingTask implements java.io.S
 						}
 						catch (java.lang.Exception e) {
 							e.printStackTrace();
-							logger.severe ("runtime exception occurred in indiv non-mandatory stop mode choice for household id=" + hhList[i].getID() + "in " + this.getName() );
-							logger.severe(e.getMessage());
+							logger.fatal ("runtime exception occurred in indiv non-mandatory stop mode choice for household id=" + hhList[i].getID() + "in " + this.getName() );
+							logger.fatal(e.getMessage());
 							hhList[i].writeContentToLogger(logger);
 							System.exit(-1);
 						}

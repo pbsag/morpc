@@ -10,7 +10,7 @@ import com.pb.morpc.structures.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Created on Jul 22, 2003

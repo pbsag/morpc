@@ -8,7 +8,7 @@ package com.pb.morpc.events;
 
 import com.pb.common.summit.SummitFileReader;
 import java.io.IOException;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import com.pb.common.summit.SummitRecord;
 import com.pb.common.summit.SummitHeader;
 import com.pb.common.datafile.TableDataSet;
@@ -233,7 +233,7 @@ public class SpecialEventDebugger {
 	        StringBuffer tod = header.getTimeOfDay();
 	        StringBuffer title = header.getTitle();
 		}catch(IOException e){
-			logger.severe("failed reading header.");			
+			logger.error("failed reading header.");
 		}
 		
 		SummitRecord summitRecord;
@@ -355,7 +355,7 @@ public class SpecialEventDebugger {
 				table=TableDataSet.create(record);				
 				table.setColumnLabels(labels);
 			}catch(IOException e){
-				logger.severe("failed reading record:"+"origin-"+ptaz+" dest-"+ataz+" market-1");
+				logger.error("failed reading record:"+"origin-"+ptaz+" dest-"+ataz+" market-1");
 			}
 		}
 		try{
@@ -364,7 +364,7 @@ public class SpecialEventDebugger {
 			*/
 			writer.writeFile(table, new File("c:\\morpcEvent\\output\\table_baseline.csv"));
 		}catch(IOException e){
-			logger.severe("failed writing out table.");
+			logger.error("failed writing out table.");
 		}
 	}
 		

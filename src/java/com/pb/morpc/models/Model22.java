@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 public class Model22 {
 
@@ -55,8 +55,8 @@ public class Model22 {
         //open files  
         String controlFile =  (String)propertyMap.get( "Model22.controlFile" );
         String outputFile = (String)propertyMap.get( "Model22.outputFile" );
-        logger.fine(controlFile);
-        logger.fine(outputFile);
+        logger.debug(controlFile);
+        logger.debug(outputFile);
 
 
         // create a new UEC to get utilties for this logit model
@@ -72,9 +72,9 @@ public class Model22 {
         ConcreteAlternative[] alts= new ConcreteAlternative[numberOfAlternatives];
 
         for(int i=0;i<numberOfAlternatives;i++){
-            logger.fine("alternative "+(i+1)+" is "+alternativeNames[i] );
+            logger.debug("alternative "+(i+1)+" is "+alternativeNames[i] );
             alts[i]  = new ConcreteAlternative(alternativeNames[i], new Integer(i+1));
-            logger.fine(alternativeNames[i]+" has been added to the root");
+            logger.debug(alternativeNames[i]+" has been added to the root");
         }
         //nesting structure
 //		LogitModel school = new LogitModel("school");
@@ -95,24 +95,24 @@ public class Model22 {
         // get the household data table from the UEC control file
         TableDataSet hhTable = uec.getHouseholdData();
         if (hhTable == null) {
-            logger.fine ("Could not get householdData TableDataSet from UEC");
+            logger.debug ("Could not get householdData TableDataSet from UEC");
             System.exit(1);
         }
 
         int hh_idPosition = hhTable.getColumnPosition( SyntheticPopulation.HHID_FIELD );
         if (hh_idPosition <= 0) {
-            logger.fine (SyntheticPopulation.HHID_FIELD + " was not a field in the householdData TableDataSet. ");
+            logger.debug (SyntheticPopulation.HHID_FIELD + " was not a field in the householdData TableDataSet. ");
             System.exit(1);
         }
         int hh_taz_idPosition = hhTable.getColumnPosition( SyntheticPopulation.HHTAZID_FIELD );
         if (hh_taz_idPosition <= 0) {
-            logger.fine (SyntheticPopulation.HHTAZID_FIELD + " was not a field in the householdData TableDataSet.");
+            logger.debug (SyntheticPopulation.HHTAZID_FIELD + " was not a field in the householdData TableDataSet.");
             System.exit(1);
         }
 
         int schoolpred_idPosition = hhTable.getColumnPosition( SyntheticPopulation.SCHOOLPRED_FIELD );
         if (schoolpred_idPosition <= 0) {
-            logger.fine (SyntheticPopulation.SCHOOLPRED_FIELD + " was not a field in the householdData TableDataSet.");
+            logger.debug (SyntheticPopulation.SCHOOLPRED_FIELD + " was not a field in the householdData TableDataSet.");
             System.exit(1);
         }
 

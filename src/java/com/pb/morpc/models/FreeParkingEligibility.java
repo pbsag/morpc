@@ -12,7 +12,7 @@ import com.pb.morpc.structures.Person;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 
@@ -86,10 +86,10 @@ public class FreeParkingEligibility {
 
 
         for(int i=0;i<numberOfAlternatives;i++){
-            logger.fine("alternative "+(i+1)+" is "+alternativeNames[i] );
+            logger.debug("alternative "+(i+1)+" is "+alternativeNames[i] );
             alts[i]  = new ConcreteAlternative(alternativeNames[i], new Integer(i+1));
 	        root.addAlternative (alts[i]);
-            logger.fine(alternativeNames[i]+" has been added to the root");
+            logger.debug(alternativeNames[i]+" has been added to the root");
         }
 
         // set availabilities

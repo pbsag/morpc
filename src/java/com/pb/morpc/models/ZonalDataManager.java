@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * @author Jim Hicks
@@ -134,7 +134,7 @@ public class ZonalDataManager implements java.io.Serializable {
             CSVFileWriter writer = new CSVFileWriter();
             writer.writeFile(zoneTable, new File(zonalCombined));
         } catch (Exception e) {
-            logger.severe("can not open or save combined zonal file");
+            logger.error("can not open or save combined zonal file");
         }
 
         /*
@@ -195,7 +195,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int parkRateFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PARKRATE);
 
         if (parkRateFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.PARKRATE +
+            logger.fatal(ZoneTableFields.PARKRATE +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -208,7 +208,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int urbtypeFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.URBTYPE);
 
         if (urbtypeFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.URBTYPE +
+            logger.fatal(ZoneTableFields.URBTYPE +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -230,7 +230,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int cbdatypeFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.CBDATYPE);
 
         if (cbdatypeFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.CBDATYPE +
+            logger.fatal(ZoneTableFields.CBDATYPE +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -252,7 +252,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int parktotFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PARKTOT);
 
         if (parktotFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.PARKTOT +
+            logger.fatal(ZoneTableFields.PARKTOT +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -274,7 +274,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int parklngFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PARKLNG);
 
         if (parklngFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.PARKLNG +
+            logger.fatal(ZoneTableFields.PARKLNG +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -296,7 +296,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int propfreeFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PROPFREE);
 
         if (propfreeFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.PROPFREE +
+            logger.fatal(ZoneTableFields.PROPFREE +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -318,7 +318,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int parkrateFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PARKRATE);
 
         if (parkrateFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.PARKRATE +
+            logger.fatal(ZoneTableFields.PARKRATE +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -340,7 +340,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int areatypeFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.AREATYPE);
 
         if (areatypeFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.AREATYPE +
+            logger.fatal(ZoneTableFields.AREATYPE +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -354,7 +354,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int nonw_au_op_FieldPosition = zoneTable.getColumnPosition(ZoneTableFields.NONWORKAUOP);
 
         if (nonw_au_op_FieldPosition <= 0) {
-            logger.severe(ZoneTableFields.NONWORKAUOP +
+            logger.fatal(ZoneTableFields.NONWORKAUOP +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -369,7 +369,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int zonal_nonw_walk_FieldPosition = zoneTable.getColumnPosition(ZoneTableFields.NONWORKWALK);
 
         if (zonal_nonw_walk_FieldPosition <= 0) {
-            logger.severe(ZoneTableFields.NONWORKWALK +
+            logger.fatal(ZoneTableFields.NONWORKWALK +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -384,7 +384,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int countyFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.COUNTY);
 
         if (countyFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.COUNTY +
+            logger.fatal(ZoneTableFields.COUNTY +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -406,7 +406,7 @@ public class ZonalDataManager implements java.io.Serializable {
 		int ringsPosition = zoneTable.getColumnPosition(ZoneTableFields.RINGS);
 
 		if (ringsPosition <= 0) {
-			logger.severe(ZoneTableFields.RINGS +
+			logger.fatal(ZoneTableFields.RINGS +
 				" was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
@@ -428,7 +428,7 @@ public class ZonalDataManager implements java.io.Serializable {
 		int suprdistPosition = zoneTable.getColumnPosition(ZoneTableFields.SUPRDIST);
 
 		if (suprdistPosition <= 0) {
-			logger.severe(ZoneTableFields.SUPRDIST +
+			logger.fatal(ZoneTableFields.SUPRDIST +
 				" was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
@@ -450,7 +450,7 @@ public class ZonalDataManager implements java.io.Serializable {
 		int schdistFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.SCHDIST);
 
 		if (schdistFieldPosition <= 0) {
-			logger.severe(ZoneTableFields.SCHDIST +
+			logger.fatal(ZoneTableFields.SCHDIST +
 				" was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
@@ -491,7 +491,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int tazPosition = wa.getColumnPosition("TAZ");
 
                 if (tazPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "TAZ was not a field in the walk access TableDataSet built from " +
                         walkAccessFile + ".");
                     System.exit(1);
@@ -500,7 +500,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int shrtPosition = wa.getColumnPosition("SHRT");
 
                 if (shrtPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "SHRT was not a field in the walk access TableDataSet built from " +
                         walkAccessFile + ".");
                     System.exit(1);
@@ -509,7 +509,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int longPosition = wa.getColumnPosition("LONG");
 
                 if (longPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "LONG was not a field in the walk access TableDataSet built from " +
                         walkAccessFile + ".");
                     System.exit(1);
@@ -529,7 +529,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 System.exit(1);
             }
         } else {
-            logger.severe(
+            logger.fatal(
                 "no walk access zonal data file was named in properties file.");
             System.exit(1);
         }
@@ -557,7 +557,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int cntyFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.COUNTY);
 
         if (cntyFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.COUNTY +
+            logger.fatal(ZoneTableFields.COUNTY +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -565,7 +565,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int earningsFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.WORKEARN);
 
         if (earningsFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.WORKEARN +
+            logger.fatal(ZoneTableFields.WORKEARN +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -573,7 +573,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int empoffFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPOFF);
 
         if (empoffFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.EMPOFF +
+            logger.fatal(ZoneTableFields.EMPOFF +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -581,7 +581,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int empotherFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPOTHER);
 
         if (empotherFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.EMPOTHER +
+            logger.fatal(ZoneTableFields.EMPOTHER +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -589,7 +589,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int empretgdsFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPRETGDS);
 
         if (empretgdsFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.EMPRETGDS +
+            logger.fatal(ZoneTableFields.EMPRETGDS +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -597,7 +597,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int empretsrvFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPRETSRV);
 
         if (empretsrvFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.EMPRETSRV +
+            logger.fatal(ZoneTableFields.EMPRETSRV +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1217,7 +1217,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int purpFieldPosition = am.getColumnPosition("purpose");
 
                 if (purpFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "purpose was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1225,7 +1225,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int utFieldPosition = am.getColumnPosition("urbtype");
 
                 if (utFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "urbtype was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1233,7 +1233,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int atFieldPosition = am.getColumnPosition("areatype");
 
                 if (atFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "areatype was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1241,7 +1241,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int totpopFieldPosition = am.getColumnPosition("totalpop");
 
                 if (totpopFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "totalpop was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1249,7 +1249,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int totempFieldPosition = am.getColumnPosition("totemp");
 
                 if (totempFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "totemp was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1257,7 +1257,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int empretgFieldPosition = am.getColumnPosition("retail_g");
 
                 if (empretgFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "retail_g was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1265,7 +1265,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int empretsFieldPosition = am.getColumnPosition("retail_s");
 
                 if (empretsFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "retail_s was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1273,7 +1273,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int empoffFieldPosition = am.getColumnPosition("office_e");
 
                 if (empoffFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "office_e was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1281,7 +1281,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int schenrFieldPosition = am.getColumnPosition("sch_enrol");
 
                 if (schenrFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "sch_enrol was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1289,7 +1289,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int unienrFieldPosition = am.getColumnPosition("uni_enrol");
 
                 if (unienrFieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "uni_enrol was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1297,7 +1297,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 int totpop50FieldPosition = am.getColumnPosition("totpop_50");
 
                 if (totpop50FieldPosition <= 0) {
-                    logger.severe(
+                    logger.fatal(
                         "totpop_50 was not a field in the attraction model TableDataSet.");
                     System.exit(1);
                 }
@@ -1329,7 +1329,7 @@ public class ZonalDataManager implements java.io.Serializable {
                 System.exit(1);
             }
         } else {
-            logger.severe(
+            logger.fatal(
                 "no attraction model specification file was named in properties file.");
             System.exit(1);
         }
@@ -1338,7 +1338,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int utFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.URBTYPE);
 
         if (utFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.URBTYPE +
+            logger.fatal(ZoneTableFields.URBTYPE +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1346,7 +1346,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int atFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.AREATYPE);
 
         if (atFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.AREATYPE +
+            logger.fatal(ZoneTableFields.AREATYPE +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1354,7 +1354,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int hhpopFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.POP);
 
         if (hhpopFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.POP +
+            logger.fatal(ZoneTableFields.POP +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1362,7 +1362,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int empoffFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPOFF);
 
         if (empoffFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.EMPOFF +
+            logger.fatal(ZoneTableFields.EMPOFF +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1370,7 +1370,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int empotherFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPOTHER);
 
         if (empotherFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.EMPOTHER +
+            logger.fatal(ZoneTableFields.EMPOTHER +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1378,7 +1378,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int empretgFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPRETGDS);
 
         if (empretgFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.EMPRETGDS +
+            logger.fatal(ZoneTableFields.EMPRETGDS +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1386,7 +1386,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int empretsFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPRETSRV);
 
         if (empretsFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.EMPRETSRV +
+            logger.fatal(ZoneTableFields.EMPRETSRV +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1394,7 +1394,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int elenrFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.ELENROLL);
 
         if (elenrFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.ELENROLL +
+            logger.fatal(ZoneTableFields.ELENROLL +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1402,7 +1402,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int hsenrFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.HSENROLL);
 
         if (hsenrFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.HSENROLL +
+            logger.fatal(ZoneTableFields.HSENROLL +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1410,7 +1410,7 @@ public class ZonalDataManager implements java.io.Serializable {
         int unenrFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.UNENROLL);
 
         if (unenrFieldPosition <= 0) {
-            logger.severe(ZoneTableFields.UNENROLL +
+            logger.fatal(ZoneTableFields.UNENROLL +
                 " was not a field in the zoneData TableDataSet.");
             System.exit(1);
         }
@@ -1693,7 +1693,7 @@ public class ZonalDataManager implements java.io.Serializable {
 
             //            tds.saveFile(file,"%8.2f");
         } catch (Exception e) {
-            logger.severe("can not open or save file");
+            logger.error("can not open or save file");
         }
     }
 

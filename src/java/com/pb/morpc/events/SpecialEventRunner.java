@@ -10,7 +10,7 @@ package com.pb.morpc.events;
  *
  */
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.HashMap;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.matrix.Matrix;
@@ -106,7 +106,7 @@ public class SpecialEventRunner {
 		}else if(args.length==0){//if no argument, must be for FTA summit
 			runner.runModel();
 		}else{
-			logger.severe("number of arguments not correct.");
+			logger.error("number of arguments not correct.");
 		}
 		
 		logger.info("Success!");

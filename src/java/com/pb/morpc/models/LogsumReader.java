@@ -8,7 +8,7 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.CSVFileReader;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.IOException;
 ;
 /**
@@ -28,7 +28,7 @@ public class LogsumReader {
     	try{
     		logsumTable=reader.readTable(logsumFile);
     	}catch(IOException e){
-    		logger.severe("failed opening logsum table:"+logsumFile);
+    		logger.error("failed opening logsum table:"+logsumFile);
     	}
     }
     

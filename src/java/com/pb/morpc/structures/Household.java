@@ -7,7 +7,7 @@ import com.pb.morpc.models.ZonalDataManager;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.ArrayList;
 
 /**
@@ -2716,29 +2716,29 @@ public class Household implements java.io.Externalizable {
     }
 
     public void writeContentToLogger(Logger logger){
-      logger.severe("Contents of Household object with Index:"+ID);
-      logger.severe("taz:"+taz);
-      logger.severe("origTaz:"+origTaz);
-      logger.severe("tourCategory:"+tourCategory);
-      logger.severe("personID:"+personID);
-      logger.severe("tourID:"+tourID);
-      logger.severe("subtourID:"+subtourID);
-      logger.severe("chosenDest:"+chosenDest);
-      logger.severe("chosenWalkSegment:"+chosenWalkSegment);
-      logger.severe("chosenTodAlt:"+chosenTodAlt);
-      logger.severe("income:"+income);
-      logger.severe("size:"+size);
-      logger.severe("autoOwnership:"+autoOwnership);
-      logger.severe("hhType:"+hhType);
-      logger.severe("maxAdultOverlaps:"+maxAdultOverlaps);
-      logger.severe("maxChildOverlaps:"+maxChildOverlaps);
-      logger.severe("maxMixedOverlaps:"+maxMixedOverlaps);
-      logger.severe("maxAdultWindow:"+maxAdultWindow);
-      logger.severe("maxChildWindow:"+maxChildWindow);
-      logger.severe("travellingAdults:"+travellingAdults);
-      logger.severe("travellingChildren:"+travellingChildren);
-      logger.severe("travellingNonPreschool:"+travellingNonPreschool);
-      logger.severe("maxChildOverlaps:"+maxChildOverlaps);
+      logger.info("Contents of Household object with Index:"+ID);
+      logger.info("taz:"+taz);
+      logger.info("origTaz:"+origTaz);
+      logger.info("tourCategory:"+tourCategory);
+      logger.info("personID:"+personID);
+      logger.info("tourID:"+tourID);
+      logger.info("subtourID:"+subtourID);
+      logger.info("chosenDest:"+chosenDest);
+      logger.info("chosenWalkSegment:"+chosenWalkSegment);
+      logger.info("chosenTodAlt:"+chosenTodAlt);
+      logger.info("income:"+income);
+      logger.info("size:"+size);
+      logger.info("autoOwnership:"+autoOwnership);
+      logger.info("hhType:"+hhType);
+      logger.info("maxAdultOverlaps:"+maxAdultOverlaps);
+      logger.info("maxChildOverlaps:"+maxChildOverlaps);
+      logger.info("maxMixedOverlaps:"+maxMixedOverlaps);
+      logger.info("maxAdultWindow:"+maxAdultWindow);
+      logger.info("maxChildWindow:"+maxChildWindow);
+      logger.info("travellingAdults:"+travellingAdults);
+      logger.info("travellingChildren:"+travellingChildren);
+      logger.info("travellingNonPreschool:"+travellingNonPreschool);
+      logger.info("maxChildOverlaps:"+maxChildOverlaps);
 
 	  if (persons != null) {
 	      for(int i=1; i<persons.length; i++){
@@ -2748,16 +2748,16 @@ public class Household implements java.io.Externalizable {
 	      }
 	  }
 	  else {
-		  logger.severe("persons[]=null");
+		  logger.info("persons[]=null");
 	  }
 
 	  if (personsByType != null) {
 	      for(int i=0; i<personsByType.length; i++){
-	          logger.severe("personsByType["+i+"]="+personsByType[i]);
+	          logger.info("personsByType["+i+"]="+personsByType[i]);
 	      }
 	  }
 	  else {
-		  logger.severe("personsByType[]=null");
+		  logger.info("personsByType[]=null");
 	  }
 
 	  if (personsByPersonTypeArray != null) {
@@ -2767,15 +2767,15 @@ public class Household implements java.io.Externalizable {
 		    if(personsByPersonTypeArray[i]!=null){
 		        nCols = personsByPersonTypeArray[i].length;
 		    }else{
-				logger.severe("personsByPersonTypeArray["+i+"]=null");
+				logger.info("personsByPersonTypeArray["+i+"]=null");
 		    }
 		    for(int j=0; j<nCols; j++){
-		        logger.severe("personsByPersonTypeArray["+i+"]["+j+"]="+personsByPersonTypeArray[i][j]);
+		        logger.info("personsByPersonTypeArray["+i+"]["+j+"]="+personsByPersonTypeArray[i][j]);
 		    }
 	      }
 	  }
 	  else {
-		  logger.severe("personsByPersonTypeArray[]=null");
+		  logger.info("personsByPersonTypeArray[]=null");
 	  }
 
 	 if (jointTours != null) {
@@ -2786,16 +2786,16 @@ public class Household implements java.io.Externalizable {
 	     }
 	 }
 	 else {
-		 logger.severe("jointTours[]=null");
+		 logger.info("jointTours[]=null");
 	 }
 
 	 if (jointToursByType != null) {
 	     for(int i=0; i<jointToursByType.length; i++){
-	       logger.severe("jointToursByType["+i+"]="+jointToursByType[i]);
+	       logger.info("jointToursByType["+i+"]="+jointToursByType[i]);
 	     }
 	 }
 	 else {
-		logger.severe("jointToursByType[]=null");
+		logger.info("jointToursByType[]=null");
 	 }
 
 	 if (indivTours != null) {
@@ -2806,16 +2806,16 @@ public class Household implements java.io.Externalizable {
 	     }
 	 }
 	 else {
-		logger.severe("indivTours[]=null");
+		logger.info("indivTours[]=null");
 	 }
 
 	 if (indivToursByType != null) {
 	     for(int i=0; i<indivToursByType.length; i++){
-	       logger.severe("indivToursByType["+i+"]="+indivToursByType[i]);
+	       logger.info("indivToursByType["+i+"]="+indivToursByType[i]);
 	     }
 	 }
 	 else {
-		logger.severe("indivToursByType[]=null");
+		logger.info("indivToursByType[]=null");
 	 }
 
 	 if (mandatoryTours != null) {
@@ -2826,20 +2826,20 @@ public class Household implements java.io.Externalizable {
 	     }
 	 }
 	 else {
-	     logger.severe("mandatoryTours[]=null");
+	     logger.info("mandatoryTours[]=null");
 	 }
 
 	 if (mandatoryToursByType != null) {
 	     for(int i=0; i<mandatoryToursByType.length; i++){
-	       logger.severe("mandatoryToursByType["+i+"]="+mandatoryToursByType[i]);
+	       logger.info("mandatoryToursByType["+i+"]="+mandatoryToursByType[i]);
 	     }
 	 }
 	 else {
-		 logger.severe("mandatoryToursByType[]=null");
+		 logger.info("mandatoryToursByType[]=null");
 	 }
 
-     logger.severe("district:"+district);
-     logger.severe("processorId:"+processorId);
+     logger.info("district:"+district);
+     logger.info("processorId:"+processorId);
     }
 
 }

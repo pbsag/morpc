@@ -10,7 +10,7 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.*;
 
 
@@ -71,13 +71,13 @@ public class TODDataManager implements java.io.Serializable {
 
 		startPosition = todAltsTable.getColumnPosition( "start" );
 		if (startPosition <= 0) {
-			logger.severe( "start was not a field in the tod choice alternatives TableDataSet.");
+			logger.fatal( "start was not a field in the tod choice alternatives TableDataSet.");
 			System.exit(1);
 		}
 
 		endPosition = todAltsTable.getColumnPosition( "end" );
 		if (endPosition <= 0) {
-			logger.severe( "end was not a field in the tod choice alternatives TableDataSet.");
+			logger.fatal( "end was not a field in the tod choice alternatives TableDataSet.");
 			System.exit(1);
 		}
 

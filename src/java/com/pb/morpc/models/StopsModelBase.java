@@ -18,7 +18,7 @@ import com.pb.morpc.structures.ZoneTableFields;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.*;
 
 
@@ -622,7 +622,7 @@ public class StopsModelBase implements java.io.Serializable {
 
 		int parkRateFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.PARKRATE );
 		if (parkRateFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.PARKRATE + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.PARKRATE + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
@@ -633,7 +633,7 @@ public class StopsModelBase implements java.io.Serializable {
 
 		int urbtypeFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.URBTYPE );
 		if (urbtypeFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.URBTYPE + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.URBTYPE + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
@@ -651,7 +651,7 @@ public class StopsModelBase implements java.io.Serializable {
 
 		int countyFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.COUNTY );
 		if (countyFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.COUNTY + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.COUNTY + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
@@ -669,7 +669,7 @@ public class StopsModelBase implements java.io.Serializable {
 
 		int schdistFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.SCHDIST );
 		if (schdistFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.SCHDIST + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.SCHDIST + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
@@ -706,19 +706,19 @@ public class StopsModelBase implements java.io.Serializable {
 
 				int tazPosition = wa.getColumnPosition( "TAZ" );
 				if (tazPosition <= 0) {
-					logger.severe( "TAZ was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
+					logger.fatal( "TAZ was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
 					System.exit(1);
 				}
 
 				int shrtPosition = wa.getColumnPosition( "SHRT" );
 				if (shrtPosition <= 0) {
-					logger.severe( "SHRT was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
+					logger.fatal( "SHRT was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
 					System.exit(1);
 				}
 
 				int longPosition = wa.getColumnPosition( "LONG" );
 				if (longPosition <= 0) {
-					logger.severe( "LONG was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
+					logger.fatal( "LONG was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
 					System.exit(1);
 				}
 
@@ -737,7 +737,7 @@ public class StopsModelBase implements java.io.Serializable {
 			}
 		}
 		else {
-			logger.severe( "no walk access zonal data file was named in properties file.");
+			logger.fatal( "no walk access zonal data file was named in properties file.");
 			System.exit(1);
 		}
 
@@ -785,61 +785,61 @@ public class StopsModelBase implements java.io.Serializable {
 
 				int purpFieldPosition = sd.getColumnPosition( "purpose" );
 				if (purpFieldPosition <= 0) {
-					logger.severe( "purpose was not a field in the stop density model TableDataSet.");
+					logger.fatal( "purpose was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
 				int utFieldPosition = sd.getColumnPosition( "urbtype" );
 				if (utFieldPosition <= 0) {
-					logger.severe( "urbtype was not a field in the stop density model TableDataSet.");
+					logger.fatal( "urbtype was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
 				int atFieldPosition = sd.getColumnPosition( "areatype" );
 				if (atFieldPosition <= 0) {
-					logger.severe( "areatype was not a field in the stop density model TableDataSet.");
+					logger.fatal( "areatype was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
 				int totpopFieldPosition = sd.getColumnPosition( "totalpop" );
 				if (totpopFieldPosition <= 0) {
-					logger.severe( "totalpop was not a field in the stop density model TableDataSet.");
+					logger.fatal( "totalpop was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
 				int totempFieldPosition = sd.getColumnPosition( "totemp" );
 				if (totempFieldPosition <= 0) {
-					logger.severe( "totemp was not a field in the stop density model TableDataSet.");
+					logger.fatal( "totemp was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
 				int empretgFieldPosition = sd.getColumnPosition( "retail_g" );
 				if (empretgFieldPosition <= 0) {
-					logger.severe( "retail_g was not a field in the stop density model TableDataSet.");
+					logger.fatal( "retail_g was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
 				int empretsFieldPosition = sd.getColumnPosition( "retail_s" );
 				if (empretsFieldPosition <= 0) {
-					logger.severe( "retail_s was not a field in the stop density model TableDataSet.");
+					logger.fatal( "retail_s was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
 				int empoffFieldPosition = sd.getColumnPosition( "office_e" );
 				if (empoffFieldPosition <= 0) {
-					logger.severe( "office_e was not a field in the stop density model TableDataSet.");
+					logger.fatal( "office_e was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
 				int schenrFieldPosition = sd.getColumnPosition( "sch_enrol" );
 				if (schenrFieldPosition <= 0) {
-					logger.severe( "sch_enrol was not a field in the stop density model TableDataSet.");
+					logger.fatal( "sch_enrol was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
 				int unienrFieldPosition = sd.getColumnPosition( "uni_enrol" );
 				if (unienrFieldPosition <= 0) {
-					logger.severe( "uni_enrol was not a field in the stop density model TableDataSet.");
+					logger.fatal( "uni_enrol was not a field in the stop density model TableDataSet.");
 					System.exit(1);
 				}
 
@@ -866,7 +866,7 @@ public class StopsModelBase implements java.io.Serializable {
 			}
 		}
 		else {
-			logger.severe( "no stop density model specification file was named in properties file.");
+			logger.fatal( "no stop density model specification file was named in properties file.");
 			System.exit(1);
 		}
 
@@ -875,61 +875,61 @@ public class StopsModelBase implements java.io.Serializable {
 		// read the zoneTable TableDataSet to get zonal fields for the stop density models
 		int utFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.URBTYPE );
 		if (utFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.URBTYPE + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.URBTYPE + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
 		int atFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.AREATYPE );
 		if (atFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.AREATYPE + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.AREATYPE + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
 		int hhpopFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.POP );
 		if (hhpopFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.POP + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.POP + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
 		int empoffFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.EMPOFF );
 		if (empoffFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.EMPOFF + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.EMPOFF + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
 		int empotherFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.EMPOTHER );
 		if (empotherFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.EMPOTHER + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.EMPOTHER + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
 		int empretgFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.EMPRETGDS );
 		if (empretgFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.EMPRETGDS + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.EMPRETGDS + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
 		int empretsFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.EMPRETSRV );
 		if (empretsFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.EMPRETSRV + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.EMPRETSRV + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
 		int elenrFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.ELENROLL );
 		if (elenrFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.ELENROLL + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.ELENROLL + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
 		int hsenrFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.HSENROLL );
 		if (hsenrFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.HSENROLL + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.HSENROLL + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 
 		int unenrFieldPosition = zoneTable.getColumnPosition( ZoneTableFields.UNENROLL );
 		if (unenrFieldPosition <= 0) {
-			logger.severe( ZoneTableFields.UNENROLL + " was not a field in the zoneData TableDataSet.");
+			logger.fatal( ZoneTableFields.UNENROLL + " was not a field in the zoneData TableDataSet.");
 			System.exit(1);
 		}
 

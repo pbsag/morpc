@@ -7,7 +7,7 @@
 
 package com.pb.morpc.events;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import com.pb.common.util.ResourceUtil;
@@ -59,19 +59,19 @@ public class SpecialEventDataReader {
 		try{
 			tazData=reader.readFile(new File(tazDataFile),true);//what is true?
 		}catch(IOException e){
-			logger.severe("can not open taz data file:"+tazDataFile);
+			logger.error("can not open taz data file:"+tazDataFile);
 		}
 		
 		try{
 			parkingData=reader.readFile(new File(parkingDataFile),true);//what is true?
 		}catch(IOException e){
-			logger.severe("can not open parking data file:"+parkingDataFile);
+			logger.error("can not open parking data file:"+parkingDataFile);
 		}
 		
 		try{
 			eventData=reader.readFile(new File(eventDataFile),true);//what is true?
 		}catch(IOException e){
-			logger.severe("can not open event data file:"+eventDataFile);
+			logger.error("can not open event data file:"+eventDataFile);
 		}
 		
 		//read lambada and theta from morpc property file

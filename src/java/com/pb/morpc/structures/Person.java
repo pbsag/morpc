@@ -3,7 +3,7 @@ package com.pb.morpc.structures;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.util.ObjectUtil;
 
@@ -569,59 +569,59 @@ public class Person implements java.io.Externalizable {
     }
 
     public void writeContentToLogger(Logger logger){
-      logger.severe("Contents of Person object with index:"+ID);
-      logger.severe("personType:"+personType);
-      logger.severe("patternType:"+patternType);
-      logger.severe("freeParking:"+freeParking);
+      logger.info("Contents of Person object with index:"+ID);
+      logger.info("personType:"+personType);
+      logger.info("patternType:"+patternType);
+      logger.info("freeParking:"+freeParking);
 
 	  if (available != null) {
 	      for(int i=0; i<available.length; i++){
-	          logger.severe("available["+i+"]="+available[i]);
+	          logger.info("available["+i+"]="+available[i]);
 	      }
 	  }
 	  else {
-		  logger.severe("available[]=null");
+		  logger.info("available[]=null");
 	  }
 
-      logger.severe("maxAdultOverlaps:"+maxAdultOverlaps);
-      logger.severe("maxChildOverlaps:"+maxChildOverlaps);
-      logger.severe("availWindow:"+availWindow);
+      logger.info("maxAdultOverlaps:"+maxAdultOverlaps);
+      logger.info("maxChildOverlaps:"+maxChildOverlaps);
+      logger.info("availWindow:"+availWindow);
 
       if (jointTourParticipation != null) {
           for(int i=0; i<jointTourParticipation.length; i++){
-              logger.severe("jointTourParticipation["+i+"]="+jointTourParticipation[i]);
+              logger.info("jointTourParticipation["+i+"]="+jointTourParticipation[i]);
           }
       }
       else {
-          logger.severe("jointTourParticipation[]=null");
+          logger.info("jointTourParticipation[]=null");
       }
 
 	  if (individualTourParticipation != null) {
 	      for(int i=0; i<individualTourParticipation.length; i++){
-	        logger.severe("individualTourParticipation["+i+"]="+individualTourParticipation[i]);
+	        logger.info("individualTourParticipation["+i+"]="+individualTourParticipation[i]);
 	      }
 	  }
 	  else {
-		  logger.severe("individualTourParticipation[]=null");
+		  logger.info("individualTourParticipation[]=null");
 	  }
 
 	  if (mandatoryTourParticipation != null) {
 		  for(int i=0; i<mandatoryTourParticipation.length; i++){
-			logger.severe("mandatoryTourParticipation["+i+"]="+mandatoryTourParticipation[i]);
+			logger.info("mandatoryTourParticipation["+i+"]="+mandatoryTourParticipation[i]);
 		  }
 	  }
 	  else {
-		  logger.severe("mandatoryTourParticipation[]=null");
+		  logger.info("mandatoryTourParticipation[]=null");
 	  }
 
 	  
-      logger.severe("numMandTours:"+numMandTours);
-      logger.severe("numJointTours:"+numJointTours);
-      logger.severe("numIndNonMandTours:"+numIndNonMandTours);
-      logger.severe("numIndNonMandInceTours:"+numIndNonMandInceTours);
-      logger.severe("numIndNonMandShopTours:"+numIndNonMandShopTours);
-      logger.severe("numIndNonMandMaintTours:"+numIndNonMandMaintTours);
-      logger.severe("numIndNonMandDiscrTours:"+numIndNonMandDiscrTours);
-      logger.severe("numIndNonMandEatTours:"+numIndNonMandEatTours);
+      logger.info("numMandTours:"+numMandTours);
+      logger.info("numJointTours:"+numJointTours);
+      logger.info("numIndNonMandTours:"+numIndNonMandTours);
+      logger.info("numIndNonMandInceTours:"+numIndNonMandInceTours);
+      logger.info("numIndNonMandShopTours:"+numIndNonMandShopTours);
+      logger.info("numIndNonMandMaintTours:"+numIndNonMandMaintTours);
+      logger.info("numIndNonMandDiscrTours:"+numIndNonMandDiscrTours);
+      logger.info("numIndNonMandEatTours:"+numIndNonMandEatTours);
     }
 }

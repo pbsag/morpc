@@ -16,7 +16,7 @@ import java.io.InputStreamReader;
 import java.lang.Runtime;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.ResourceBundle;
 import com.pb.common.util.ResourceUtil;
 
@@ -483,7 +483,7 @@ public class MorpcMatrixConverter {
 
 		}
                         
-        logger.fine("end of converting MORPC TP+ Matrices");
+        logger.debug("end of converting MORPC TP+ Matrices");
         mx.mw.setMessage3 ("end of converting MORPC TP+ Matrices");
         
 		logger.info( "end of converting MORPC TP+ Matrices" );				

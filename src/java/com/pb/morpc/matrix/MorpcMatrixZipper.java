@@ -9,7 +9,7 @@ package com.pb.morpc.matrix;
 import java.io.File;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixReader;

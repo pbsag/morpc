@@ -209,7 +209,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					
 						k++;
 						if (k >= dcAvailability.length) {
-							logger.severe( dcAvailability.length + " mandatory dc alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+							logger.fatal( dcAvailability.length + " mandatory dc alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 							System.exit(-1);
 						}
 
@@ -293,9 +293,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// check to make sure that the DC subzone selected has subzone proportion > 0.0.
 				if ( zdm.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f ) {
-					logger.severe( TourType.TYPE_CATEGORY_LABELS[tourTypeCategory] + " " + TourType.TYPE_LABELS[tourTypeCategory][tourTypeIndex] + " tour " + t + " for person " + person + " in household " + hh_id);
-					logger.severe( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
-					logger.severe( "however, the selected subzone has proportion " + (chosenShrtWlk == 1 ? "short walk" : "long walk") + " equal to 0.0.");
+					logger.fatal( TourType.TYPE_CATEGORY_LABELS[tourTypeCategory] + " " + TourType.TYPE_LABELS[tourTypeCategory][tourTypeIndex] + " tour " + t + " for person " + person + " in household " + hh_id);
+					logger.fatal( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
+					logger.fatal( "however, the selected subzone has proportion " + (chosenShrtWlk == 1 ? "short walk" : "long walk") + " equal to 0.0.");
 					System.exit(1);
 				}
 				
@@ -987,7 +987,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				
 				if ( (hh.mandatoryTours[t].getMode() == 3 || hh.mandatoryTours[t].getMode() == 4) && (hh.mandatoryTours[t].getSubmodeOB() == 6 || hh.mandatoryTours[t].getSubmodeIB() == 6) ) {
-					logger.warning ( "invalid submode for mandatory tour=" + t + " for hhid=" + hh.getID() + ", tour mode=" + hh.mandatoryTours[t].getMode() + ", ob submode=" + hh.mandatoryTours[t].getSubmodeOB() + " and ib submode=" + hh.mandatoryTours[t].getSubmodeIB() + "." );
+					logger.warn ( "invalid submode for mandatory tour=" + t + " for hhid=" + hh.getID() + ", tour mode=" + hh.mandatoryTours[t].getMode() + ", ob submode=" + hh.mandatoryTours[t].getSubmodeOB() + " and ib submode=" + hh.mandatoryTours[t].getSubmodeIB() + "." );
 				}
 				
 				
@@ -1043,7 +1043,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				jtPersons = hh.jointTours[t].getJointTourPersons();
 				
 				if (jtPersons.length < 2) {
-					logger.severe( "fewer than 2 persons participating in joint tour for household " + hh_id + ", joint tour number " + t);
+					logger.fatal( "fewer than 2 persons participating in joint tour for household " + hh_id + ", joint tour number " + t);
 					System.exit(1);
 				}
 
@@ -1071,7 +1071,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					
 						k++;
 						if (k >= dcAvailability.length) {
-							logger.severe( dcAvailability.length + " mandatory dc alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+							logger.fatal( dcAvailability.length + " mandatory dc alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 							System.exit(-1);
 						}
 
@@ -1143,9 +1143,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// check to make sure that the DC subzone selected has subzone proportion > 0.0.
 				if ( zdm.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f ) {
-					logger.severe( TourType.TYPE_CATEGORY_LABELS[tourTypeCategory] + " " + TourType.TYPE_LABELS[tourTypeCategory][m] + " tour " + t + " for person " + person + " in household " + hh_id);
-					logger.severe( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
-					logger.severe( "however, the selected subzone has proportion " + (chosenDestAlt == 1 ? "short walk" : "long walk") + " equal to 0.0.");
+					logger.fatal( TourType.TYPE_CATEGORY_LABELS[tourTypeCategory] + " " + TourType.TYPE_LABELS[tourTypeCategory][m] + " tour " + t + " for person " + person + " in household " + hh_id);
+					logger.fatal( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
+					logger.fatal( "however, the selected subzone has proportion " + (chosenDestAlt == 1 ? "short walk" : "long walk") + " equal to 0.0.");
 					System.exit(1);
 				}
 
@@ -1201,7 +1201,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				jtPersons = hh.jointTours[t].getJointTourPersons();
 				
 				if (jtPersons.length < 2) {
-					logger.severe( "fewer than 2 persons participating in joint tour for household " + hh_id + ", joint tour number " + t);
+					logger.fatal( "fewer than 2 persons participating in joint tour for household " + hh_id + ", joint tour number " + t);
 					System.exit(1);
 				}
 
@@ -1318,7 +1318,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				jtPersons = hh.jointTours[t].getJointTourPersons();
 				
 				if (jtPersons.length < 2) {
-					logger.severe( "fewer than 2 persons participating in joint tour for household " + hh_id + ", joint tour number " + t);
+					logger.fatal( "fewer than 2 persons participating in joint tour for household " + hh_id + ", joint tour number " + t);
 					System.exit(1);
 				}
 
@@ -1462,7 +1462,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 			
 				if ( (hh.jointTours[t].getMode() == 3 || hh.jointTours[t].getMode() == 4) && (hh.jointTours[t].getSubmodeOB() == 6 || hh.jointTours[t].getSubmodeOB() == 6) ) {
-					logger.warning ( "invalid submode for joint tour=" + t + " for hhid=" + hh.getID() + ", tour mode=" + hh.jointTours[t].getMode() + ", ob submode=" + hh.jointTours[t].getSubmodeOB() + " and ib submode=" + hh.jointTours[t].getSubmodeIB() + "." );
+					logger.warn ( "invalid submode for joint tour=" + t + " for hhid=" + hh.getID() + ", tour mode=" + hh.jointTours[t].getMode() + ", ob submode=" + hh.jointTours[t].getSubmodeOB() + " and ib submode=" + hh.jointTours[t].getSubmodeIB() + "." );
 				}
 				
 			}
@@ -1541,7 +1541,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					
 						k++;
 						if (k >= dcAvailability.length) {
-							logger.severe( dcAvailability.length + " mandatory dc alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+							logger.fatal( dcAvailability.length + " mandatory dc alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 							System.exit(-1);
 						}
 
@@ -1616,9 +1616,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// check to make sure that the DC subzone selected has subzone proportion > 0.0.
 				if ( zdm.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f ) {
-					logger.severe( TourType.TYPE_CATEGORY_LABELS[tourTypeCategory] + " " + TourType.TYPE_LABELS[tourTypeCategory][m] + " tour " + t + " for person " + person + " in household " + hh_id);
-					logger.severe( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
-					logger.severe( "however, the selected subzone has proportion " + (chosenDestAlt == 1 ? "short walk" : "long walk") + " equal to 0.0.");
+					logger.fatal( TourType.TYPE_CATEGORY_LABELS[tourTypeCategory] + " " + TourType.TYPE_LABELS[tourTypeCategory][m] + " tour " + t + " for person " + person + " in household " + hh_id);
+					logger.fatal( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
+					logger.fatal( "however, the selected subzone has proportion " + (chosenDestAlt == 1 ? "short walk" : "long walk") + " equal to 0.0.");
 					System.exit(1);
 				}
 
@@ -2181,7 +2181,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 			
 				if ( (hh.indivTours[t].getMode() == 3 || hh.indivTours[t].getMode() == 4) && (hh.indivTours[t].getSubmodeOB() == 6 || hh.indivTours[t].getSubmodeOB() == 6) ) {
-					logger.warning ( "invalid submode for individual non-mandatory tour=" + t + " for hhid=" + hh.getID() + ", tour mode=" + hh.indivTours[t].getMode() + ", ob submode=" + hh.indivTours[t].getSubmodeOB() + " and ib submode=" + hh.indivTours[t].getSubmodeIB() + "." );
+					logger.warn ( "invalid submode for individual non-mandatory tour=" + t + " for hhid=" + hh.getID() + ", tour mode=" + hh.indivTours[t].getMode() + ", ob submode=" + hh.indivTours[t].getSubmodeOB() + " and ib submode=" + hh.indivTours[t].getSubmodeIB() + "." );
 				}
 				
 			}
@@ -2281,7 +2281,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					
 						k++;
 						if (k >= dcAvailability.length) {
-							logger.severe( dcAvailability.length + " mandatory dc alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
+							logger.fatal( dcAvailability.length + " mandatory dc alternatives checked, but fewer than preSampleSize=" + preSampleSize + " alternatives are available for sample of alternatives.");
 							System.exit(-1);
 						}
 
@@ -2344,9 +2344,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
         
 				// check to make sure that the DC subzone selected has subzone proportion > 0.0.
 				if ( zdm.getWalkPct ( chosenShrtWlk, chosenDestAlt ) == 0.0f) {
-					logger.severe( "At work subtour " + s + " in mandatory tour " + t + " for person " + person + " in household " + hh_id);
-					logger.severe( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
-					logger.severe( "however, the selected subzone has proportion " + (chosenDestAlt == 1 ? "short walk" : "long walk") + " equal to 0.0.");
+					logger.fatal( "At work subtour " + s + " in mandatory tour " + t + " for person " + person + " in household " + hh_id);
+					logger.fatal( "selected DC alternative " + chosen + " which translates to Dest TAZ " + chosenDestAlt + " and subzone " + chosenShrtWlk);
+					logger.fatal( "however, the selected subzone has proportion " + (chosenDestAlt == 1 ? "short walk" : "long walk") + " equal to 0.0.");
 					System.exit(1);
 				}
 
@@ -2737,7 +2737,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 			
 				if ( (hh.mandatoryTours[t].subTours[s].getMode() == 3 || hh.mandatoryTours[t].subTours[s].getMode() == 4) && (hh.mandatoryTours[t].subTours[s].getSubmodeOB() == 6 || hh.mandatoryTours[t].subTours[s].getSubmodeOB() == 6) ) {
-					logger.warning ( "invalid submode for at-work subtour=" + t + ", subtour=" + s + " for hhid=" + hh.getID() + ", tour mode=" + hh.mandatoryTours[t].subTours[s].getMode() + ", ob submode=" + hh.mandatoryTours[t].subTours[s].getSubmodeOB() + " and ib submode=" + hh.mandatoryTours[t].subTours[s].getSubmodeIB() + "." );
+					logger.warn ( "invalid submode for at-work subtour=" + t + ", subtour=" + s + " for hhid=" + hh.getID() + ", tour mode=" + hh.mandatoryTours[t].subTours[s].getMode() + ", ob submode=" + hh.mandatoryTours[t].subTours[s].getSubmodeOB() + " and ib submode=" + hh.mandatoryTours[t].subTours[s].getSubmodeIB() + "." );
 				}
 				
 			}

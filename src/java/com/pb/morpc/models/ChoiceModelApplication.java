@@ -13,7 +13,7 @@ import com.pb.common.util.SeededRandom;
 import com.pb.morpc.structures.*;
 
 import java.io.File;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;

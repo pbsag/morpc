@@ -7,7 +7,7 @@ import com.pb.common.datafile.TableDataSet;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 public class TestSaveFile {
 
