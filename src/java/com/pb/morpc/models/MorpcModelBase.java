@@ -47,7 +47,7 @@ public class MorpcModelBase {
 	protected HouseholdArrayManager hhMgr = null;
 	protected ZonalDataManager zdm = null;
 
-    
+    static final String PROPERTIES_FILE_BASENAME = "morpc_bench";
 	
 	
     public MorpcModelBase () {
@@ -55,7 +55,7 @@ public class MorpcModelBase {
 		boolean SKIP_CREATE_DISK_OBJECT_ARRAY = false;
 
 		
-        propertyMap = ResourceUtil.getResourceBundleAsHashMap ("morpc_bench" );
+        propertyMap = ResourceUtil.getResourceBundleAsHashMap ( PROPERTIES_FILE_BASENAME );
 /*
     	String TPP_TO_BINARY_PROGRAM_DIRECTORY = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM_DIRECTORY");
         String BINARY_TO_TPP_PROGRAM_DIRECTORY = (String) propertyMap.get("BINARY_TO_TPP_PROGRAM_DIRECTORY");
@@ -113,7 +113,7 @@ public class MorpcModelBase {
 		if ( ((String)propertyMap.get("RUN_AUTO_OWNERSHIP_MODEL")).equalsIgnoreCase("true") ) {
 
 			//update accessibily indices, and then write it to hard drive as a .csv file.
-			AccessibilityIndices accInd=new AccessibilityIndices("morpc");
+			AccessibilityIndices accInd=new AccessibilityIndices( PROPERTIES_FILE_BASENAME );
 			accInd.writeIndices();
 	
 			logger.info ("Memory after computing accessibilities");
