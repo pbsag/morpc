@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import org.apache.log4j.Logger;
-import java.util.logging.Level;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;

@@ -84,12 +84,18 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 		if ( messageReturnType > 0 ) {
 
 			//Send a response back to the server
+			if (messageReturnType == MessageID.RESULTS_ID){
+				newMessage = createResultsMessage();
+			}
+//			******************logsumlogsumlogsumlogsum**********************			
 			//Wu changed for handling logsum in Message
+			/*
 			if (messageReturnType == MessageID.RESULTS_LOGSUMS_ID){
-			//if (messageReturnType == MessageID.RESULTS_ID)
 				logger.info("in TcMcWorker before create result message.");
 				newMessage = createResultsMessage();
 			}
+			*/
+//			******************logsumlogsumlogsumlogsum**********************
 			else if (messageReturnType == MessageID.FINISHED_ID)
 				newMessage = createFinishedMessage();
 			else if (messageReturnType == MessageID.EXIT_ID)
@@ -210,9 +216,11 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 						}
 					}
 
+//					******************logsumlogsumlogsumlogsum**********************
 					//Wu modified for writing out logsum table
-					returnValue = MessageID.RESULTS_LOGSUMS_ID;
-					//returnValue = MessageID.RESULTS_ID;
+					//returnValue = MessageID.RESULTS_LOGSUMS_ID;
+//					******************logsumlogsumlogsumlogsum**********************
+					returnValue = MessageID.RESULTS_ID;
 
 				}
 				else {
@@ -249,7 +257,10 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 	private Message createResultsMessage () {
 
 		Message newMessage = createMessage();
-		newMessage.setId( MessageID.RESULTS_LOGSUMS);
+		newMessage.setId( MessageID.RESULTS);
+//		******************logsumlogsumlogsumlogsum**********************	
+		//newMessage.setId( MessageID.RESULTS_LOGSUMS);
+//		******************logsumlogsumlogsumlogsum**********************
 		newMessage.setIntValue( MessageID.TOUR_CATEGORY_KEY, TourType.MANDATORY_CATEGORY );
 		newMessage.setValue( MessageID.TOUR_TYPES_KEY, TourType.MANDATORY_TYPES );
 		newMessage.setValue( MessageID.HOUSEHOLD_LIST_KEY, hhList );

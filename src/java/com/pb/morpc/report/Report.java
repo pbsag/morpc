@@ -258,15 +258,15 @@ public class Report {
                 //write table to hard drive
                 table.writeTable(rLocation, format, type, formatLine);
             }
-            */
-            /*
-                  if(mName.equals("Mandatory Travel By District")){
-                    matrix = populateMandatoryTravelDistrictMatrix(emptyMatrix, shape, sValues);
-                    //create table from matrix
-                    Table table=new Table(matrix, mName, dTitles, sTitles);
-                    //write table to hard drive
-                    table.writeTable(rLocation, format, type,formatLine);
-                  }
+            
+            
+            if(mName.equals("Mandatory Travel By District")){
+                matrix = populateMandatoryTravelDistrictMatrix(emptyMatrix, shape, sValues);
+                //create table from matrix
+                Table table=new Table(matrix, mName, dTitles, sTitles);
+                //write table to hard drive
+                table.writeTable(rLocation, format, type,formatLine);
+            }
             */
             if (mName.equals("Origin District By Destination District")) {
                 matrix = populateDistrict_oDistrict_dMatrix(emptyMatrix, shape,

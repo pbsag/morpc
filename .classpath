@@ -4,5 +4,6 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="src" path="/common-base"/>
 	<classpathentry exported="true" kind="src" path="/common-daf-v1"/>
+	<classpathentry kind="lib" path="D:/development/cmf/common-base/lib/log4j-1.2.9.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -143,7 +143,9 @@ public class HHArrayServer extends MessageProcessingTask {
 		//The hh array server gets a SEND_START_INFO message from the fpWorkers
 		//saying they're ready to begin work.
 		else {
-			logger.info("in HHArrayServer, message ID="+msg.getId());
+//			******************logsumlogsumlogsumlogsum**********************
+			//logger.info("in HHArrayServer, message ID="+msg.getId());
+//			******************logsumlogsumlogsumlogsum**********************
 			
 			if ( hhServerStarted ) {
 		        
