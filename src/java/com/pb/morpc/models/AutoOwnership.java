@@ -32,7 +32,6 @@ public class AutoOwnership {
 
     public AutoOwnership( HashMap propertyMap ) {
         
-
 		this.propertyMap = propertyMap;
 
 		String useMessageWindowString = (String)propertyMap.get( "MessageWindow" );
@@ -47,7 +46,7 @@ public class AutoOwnership {
 
 
     public void runAutoOwnership() {
-
+    	
         int hh_id;
         int hh_taz_id;
         double[] utilities;
@@ -61,12 +60,11 @@ public class AutoOwnership {
         boolean discretize = false;
         if (discretizeOption.equalsIgnoreCase("true"))
             discretize = true;
-
-
+        
         // create a new UEC to get utilties for this logit model
         AutoOwnershipUEC uec = new AutoOwnershipUEC(controlFile, propertyMap);
         uec.setDebug(false);
-
+        
         // create a new auto ownership logit model object 
         AutoOwnershipLM model = new AutoOwnershipLM();
 
@@ -97,7 +95,7 @@ public class AutoOwnership {
         double[][] fractions = new double[hhTable.getRowCount()][];
         float[][] altUtilities =
             new float[uec.getNumberOfAlternatives()][hhTable.getRowCount()];
-
+        
         float[] chosenAlternatives = new float[hhTable.getRowCount()];
         // loop over all households in the hh table
         float tot = 0.0f;

@@ -9,19 +9,20 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.morpc.models.HouseholdArrayManager;
 import com.pb.morpc.structures.Household;
-//******************logsumlogsumlogsumlogsum**********************
-//import com.pb.morpc.structures.LogsumRecord;
-//import java.text.DecimalFormat;
-//import java.io.BufferedWriter;
-//import java.io.FileWriter;
-//import java.io.IOException;
-//import java.io.PrintWriter;
-//import java.io.File;
-//******************logsumlogsumlogsumlogsum**********************
+
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import org.apache.log4j.Logger;
+
+//Wu added for Summit Aggregation
+import com.pb.morpc.structures.SummitAggregationRecord;
+//import java.text.DecimalFormat;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.File;
 
 
 public class HHArrayServer extends MessageProcessingTask {
@@ -143,9 +144,8 @@ public class HHArrayServer extends MessageProcessingTask {
 		//The hh array server gets a SEND_START_INFO message from the fpWorkers
 		//saying they're ready to begin work.
 		else {
-//			******************logsumlogsumlogsumlogsum**********************
+			//Wu added for Summit Aggregation
 			//logger.info("in HHArrayServer, message ID="+msg.getId());
-//			******************logsumlogsumlogsumlogsum**********************
 			
 			if ( hhServerStarted ) {
 		        
@@ -174,31 +174,21 @@ public class HHArrayServer extends MessageProcessingTask {
 
 					sendWork ( category, types );
 				}
-//				******************logsumlogsumlogsumlogsum**********************
-				//Wu added for handling logsums.  Following if block get RESULTS_LOGSUMS message from
-				//TcMcWorker, IndivDTMWorker, JointDTMWorker, and AtWorkDTMWorker
 				/*
-				else if(msg.getId().equals(MessageID.RESULTS_LOGSUMS)){
+				Wu added for Summit Aggregation.
+				next if block get SUMMIT_AGGREGATION message from
+				TcMcWorker, IndivDTMWorker, JointDTMWorker, and AtWorkDTMWorker
+				*/
+				else if(msg.getId().equals(MessageID.SUMMIT_AGGREGATION)){
 					// retrieve the contents of the message.
-					short category = (short)msg.getIntValue( MessageID.TOUR_CATEGORY_KEY );
-					short[] types = (short[])msg.getValue( MessageID.TOUR_TYPES_KEY );	
-									
-					hhMgr.sendResults ( (Household[])msg.getValue( MessageID.HOUSEHOLD_LIST_KEY ) );
-
-					sendWork ( category, types );	
-					
-					logger.info("in HHArrayServer before writeLogsums");
-					
-					//append logsum records in message to file on disk
-					writeLogsums((LogsumRecord [])msg.getValue(MessageID.LOGSUM_LIST_KEY));
+					logger.info("in HHArrayServer before writeLogsums");	
+					//write Summit aggregation records to file on disk
+					writeRecords((SummitAggregationRecord[])msg.getValue(MessageID.SUMMIT_LIST_KEY));
 					
 				}
-				*/
-//				******************logsumlogsumlogsumlogsum**********************
 				
 			}
 			else {
-		        
 				// queue the messages until FpModelServer is told to start
 				hhServerQueue.add( msg );
 				
@@ -231,6 +221,50 @@ public class HHArrayServer extends MessageProcessingTask {
 		//Send this message back to worker
 		replyToSender(newMessage);
 		
+	}
+	
+	/*
+	 * Wu added for Summit Aggregation
+	 * Write out records (including utilities and probabilities) as CSV file
+	 */
+	private void writeRecords(SummitAggregationRecord [] records){
+		
+        String fileName=(String)propertyMap.get("summitAggregationFile");
+        File file=null;
+                        
+        try {
+            file=new File(fileName);       	
+            PrintWriter outStream = new PrintWriter (new BufferedWriter( new FileWriter(file, true) ) );
+            
+            for(int i=0; i<records.length; i++){
+    	        double [] probs=records[i].getProbs();
+    	        double [] expUtils=records[i].getExpUtils();
+    	        int NoAlts=probs.length;
+    	                 
+    	        outStream.print(records[i].getHouseholdID());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getPersonID());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getTourID());
+    	        outStream.print(",");
+    	        outStream.print(records[i].getTourCategory());
+    	        outStream.print(",");
+    	            
+    	        for(int j=0; j<NoAlts; j++){
+    	        	outStream.print(probs[j]);
+    	            outStream.print(",");
+    	        }
+    	            
+    	        for(int j=0; j<NoAlts; j++){
+    	            outStream.print(probs[j]);
+    	            if(j!=NoAlts-1)
+    	            	outStream.print(",");
+    	        }
+    	        outStream.println();
+            }
+        }catch(IOException e){
+        	logger.fatal("failed open file:"+fileName+", or failed writing record to:"+fileName);
+        }
 	}
 	
 //	******************logsumlogsumlogsumlogsum**********************

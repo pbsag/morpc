@@ -48,26 +48,25 @@ public class Model25 {
 
 
     public void runWorkerFtDailyActivityPatternChoice() {
-
+    	
         int hh_id;
         int hh_taz_id;
 
-          
         //open files  
         String controlFile = (String)propertyMap.get( "Model25.controlFile" );
         String outputFile = (String)propertyMap.get( "Model25.outputFile" );
         logger.debug(controlFile);
         logger.debug(outputFile);
 
-
         // create a new UEC to get utilties for this logit model
 		UtilityExpressionCalculator uec = new UtilityExpressionCalculator ( new File(controlFile), MODEL_25_SHEET, DATA_25_SHEET, propertyMap, Household.class );
-        int numberOfAlternatives=uec.getNumberOfAlternatives();
+		
+		int numberOfAlternatives=uec.getNumberOfAlternatives();
         String[] alternativeNames = uec.getAlternativeNames();
 
 		sample = new int[uec.getNumberOfAlternatives()+1];
 		
-        // create and define a new LogitModel object
+        // create and define a new LogitModel object		
         LogitModel root= new LogitModel("root", numberOfAlternatives);
         ConcreteAlternative[] alts= new ConcreteAlternative[numberOfAlternatives];
 
@@ -81,7 +80,7 @@ public class Model25 {
         // set availabilities
         root.computeAvailabilities();
         root.writeAvailabilities();
-
+        
         // get the household data table from the UEC control file
         TableDataSet hhTable = uec.getHouseholdData();
         if (hhTable == null) {
@@ -114,7 +113,7 @@ public class Model25 {
         float[] workersFullUniv1=new float[hhTable.getRowCount()];
         float[] workersFullNonMand=new float[hhTable.getRowCount()];
         float[] workersFullAtHome=new float[hhTable.getRowCount()];
-
+        
         // loop over all households and all full-time workers in household
         //to make alternative choice.
 		for (int i=0; i < hhTable.getRowCount(); i++) {
@@ -129,8 +128,10 @@ public class Model25 {
 				index.setZoneIndex( hh_taz_id );
 				index.setHHIndex( hh_id );
         
+				//logger.info("in model 2.5, in loop, before calculate uec");
 				Arrays.fill(sample, 1);
 				double[] utilities = uec.solve( index, new Object(), sample );
+				//logger.info("in model 2.5, in loop, after calculate uec");
 
 				//set utility for each alternative
 				for(int a=0;a < numberOfAlternatives;a++){
@@ -142,9 +143,10 @@ public class Model25 {
 				// set availabilities
 				root.computeAvailabilities();
 
-
+				//logger.info("in model 2.5, in loop, before calulate probabilty");
 				root.getUtility();
 				root.calculateProbabilities();
+				//logger.info("in model 2.5, in loop, after probability");
 
 
                 //loop over number of full-time workers in household

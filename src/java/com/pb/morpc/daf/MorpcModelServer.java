@@ -36,6 +36,7 @@ import com.pb.morpc.structures.ZDMTDM;
 import com.pb.morpc.synpop.SyntheticPopulation;
 import com.pb.morpc.synpop.pums2000.PUMSData;
 //import com.pb.morpc.report.Report;
+import com.pb.morpc.models.MorpcFileWriter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -141,6 +142,7 @@ public class MorpcModelServer extends MessageProcessingTask {
         	showMemory();
         	tdm=zdmtdm.getTDM();
         	showMemory();
+
         }else{
         	// build the zonal data table
         	zdm = new ZonalDataManager(propertyMap);
@@ -150,12 +152,17 @@ public class MorpcModelServer extends MessageProcessingTask {
     		showMemory();
         }
 
-        for (int i = 0; i < numberOfIterations; i++) {
-            runModelIteration(i);
+        if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+	        MorpcFileWriter.openWriter();
+	        for (int i = 0; i < numberOfIterations; i++) {
+	            runModelIteration(i);
+	        }
+	        MorpcFileWriter.closeWriter();
+        }else{
+	        for (int i = 0; i < numberOfIterations; i++) {
+	            runModelIteration(i);
+	        }        	
         }
-
-        //		Report report=new Report();
-        //		report.generateReports();
 
         if (LOGGING) {
             logger.info("Memory after running reports - end of program");
@@ -1061,6 +1068,8 @@ public class MorpcModelServer extends MessageProcessingTask {
 
 
     private void runAutoOwnershipModel() {
+    	
+    	logger.info("beginning of runAutoOwnershipModel");
 
         // run the hh auto ownership choice model
         AutoOwnership ao = new AutoOwnership(propertyMap);

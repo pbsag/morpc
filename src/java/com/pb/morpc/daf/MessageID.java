@@ -126,11 +126,12 @@ public final class MessageID implements Serializable {
 	public static final short RELEASE_MATRIX_MEMORY_ID = 39;
 	public static final String RELEASE_MATRIX_MEMORY = "ReleaseWorkerMatrixMemory";
 	
-	//Wu added for attaching logsum to Message
-	public static final short RESULTS_LOGSUMS_ID=40;
-	public static final String RESULTS_LOGSUMS="ResultsLogsums";
+	//Wu added for attaching Summit aggregation fields (utilites and probabilities) to Message
+	public static final short SUMMIT_AGGREGATION_ID=40;
+	public static final String SUMMIT_AGGREGATION="SummitAggregation";
 	
-	public static final short LOGSUM_LIST_KEY_ID=41;
-	public static final String LOGSUM_LIST_KEY="LogsumListKey";
+	//Wu added for attaching Summit aggregation fields (utilites and probabilities) to Message
+	public static final short SUMMIT_LIST_KEY_ID=41;
+	public static final String SUMMIT_LIST_KEY="SummitListKey";
 		
 }

@@ -250,7 +250,7 @@ public class ChoiceModelApplication implements java.io.Serializable {
 		
 		// calculate logit probabilities
 		root.calculateProbabilities();
-
+		
 		return root;
 	}
 

@@ -15,9 +15,9 @@ import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.models.TODDataManager;
 import com.pb.morpc.structures.Household;
 import com.pb.morpc.structures.TourType;
-//******************logsumlogsumlogsumlogsum**********************
-//import com.pb.morpc.structures.LogsumRecord;
-//******************logsumlogsumlogsumlogsum**********************
+
+import com.pb.morpc.structures.SummitAggregationRecord;
+import com.pb.morpc.util.VectorToArrayConvertor;
 
 import java.util.HashMap;
 import org.apache.log4j.Logger;
@@ -31,12 +31,7 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 	private static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 	private Household[] hhList = null;
-//	******************logsumlogsumlogsumlogsum**********************
-	//Wu added for attaching logsums to Message
-	//private LogsumRecord [] logsumRecords=null;
-//	******************logsumlogsumlogsumlogsum**********************
 	private DTMHousehold dtmHH = null;
-
 	private ZonalDataManager zdm = 	null;
 	private TODDataManager tdm = 	null;
 	private HashMap propertyMap = null;
@@ -46,12 +41,14 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 	private String modelServer = "TcMcModelServer";
 
 	private int processorId = 0;
+	
+	//Wu added for Summit Aggregation
+	private SummitAggregationRecord [] summitAggregationArray;
+	private boolean writeSummitAggregationFields;
 
 
     public TcMcWorker () {
     }
-
-
 
 	public void onStart() {
 
@@ -71,7 +68,15 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 	public void onMessage(Message msg) {
 
-
+		propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
+		
+		//Wu added for Summit Aggregation
+		if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+			writeSummitAggregationFields=true;
+		}else{
+			writeSummitAggregationFields=false;
+		}
+		
 		if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
 
@@ -87,15 +92,13 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 			if (messageReturnType == MessageID.RESULTS_ID){
 				newMessage = createResultsMessage();
 			}
-//			******************logsumlogsumlogsumlogsum**********************			
-			//Wu changed for handling logsum in Message
-			/*
-			if (messageReturnType == MessageID.RESULTS_LOGSUMS_ID){
-				logger.info("in TcMcWorker before create result message.");
-				newMessage = createResultsMessage();
+			
+			//Wu added for Summit Aggregation
+			if (messageReturnType == MessageID.SUMMIT_AGGREGATION_ID){
+				//logger.info("in TcMcWorker before create result message.");
+				newMessage = createSummitAggregationMessage();
 			}
-			*/
-//			******************logsumlogsumlogsumlogsum**********************
+
 			else if (messageReturnType == MessageID.FINISHED_ID)
 				newMessage = createFinishedMessage();
 			else if (messageReturnType == MessageID.EXIT_ID)
@@ -119,7 +122,6 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 			if (msg.getId().equals(MessageID.START_INFO)) {
 
-				propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 				zdm = (ZonalDataManager)msg.getValue( MessageID.ZONAL_DATA_MANAGER_KEY );
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
@@ -169,9 +171,10 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 				// retrieve the contents of the message:
 				hhList = (Household[])msg.getValue( MessageID.HOUSEHOLD_LIST_KEY );
 
-				//Wu added for handling logsums
-				Vector logsums=new Vector();
-				Vector currentLogsums=null;
+				//Wu added for Summit Aggregation
+				Vector summitRecords=new Vector();
+				Vector currentSummitRecords=null;
+				VectorToArrayConvertor convertor=null;
 
 				// if the list is null, no more hhs left to process;
 				// otherwise, put the household objects from the message into an array for processing.
@@ -198,14 +201,13 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 							dtmHH.resetHouseholdCount();
 							dtmHH.mandatoryTourMc (hhList[i]);
 							dtmHH.updateTimeWindows (hhList[i]);
-//							******************logsumlogsumlogsumlogsum**********************					
-							//Wu added for writing out logsums
-							//currentLogsums=dtmHH.getLogsumRecords();
-							//logsums.addAll(currentLogsums);
+				
+							//Wu added for Summit Aggregation
+							if(writeSummitAggregationFields){
+								currentSummitRecords=dtmHH.getSummitAggregationRecords();
+								summitRecords.addAll(currentSummitRecords);
+							}
 							//logger.info("in TcMcWorker before create logsum records.");
-							//logsumRecords=createLogsumRecords(logsums);
-//							******************logsumlogsumlogsumlogsum**********************
-
 						}
 						catch (java.lang.Exception e) {
 						    e.printStackTrace();
@@ -216,11 +218,14 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 						}
 					}
 
-//					******************logsumlogsumlogsumlogsum**********************
-					//Wu modified for writing out logsum table
-					//returnValue = MessageID.RESULTS_LOGSUMS_ID;
-//					******************logsumlogsumlogsumlogsum**********************
-					returnValue = MessageID.RESULTS_ID;
+					//Wu added for Summit Aggregation
+					if(writeSummitAggregationFields){
+						convertor=new VectorToArrayConvertor(summitRecords);
+						summitAggregationArray=convertor.getSummitAggregationArray();
+						returnValue = MessageID.SUMMIT_AGGREGATION_ID;
+					}else{
+						returnValue = MessageID.RESULTS_ID;
+					}
 
 				}
 				else {
@@ -258,30 +263,20 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 		Message newMessage = createMessage();
 		newMessage.setId( MessageID.RESULTS);
-//		******************logsumlogsumlogsumlogsum**********************	
-		//newMessage.setId( MessageID.RESULTS_LOGSUMS);
-//		******************logsumlogsumlogsumlogsum**********************
 		newMessage.setIntValue( MessageID.TOUR_CATEGORY_KEY, TourType.MANDATORY_CATEGORY );
 		newMessage.setValue( MessageID.TOUR_TYPES_KEY, TourType.MANDATORY_TYPES );
 		newMessage.setValue( MessageID.HOUSEHOLD_LIST_KEY, hhList );
-//		******************logsumlogsumlogsumlogsum**********************
-		//Wu added for wrting out logsum tables
-		//newMessage.setValue(MessageID.LOGSUM_LIST_KEY, logsumRecords);
-//		******************logsumlogsumlogsumlogsum**********************
-
 		return newMessage;
 	}
 	
-//	******************logsumlogsumlogsumlogsum**********************
-	//Wu added for writing logsums out
-	//private LogsumRecord [] createLogsumRecords(Vector logsums){
-		//LogsumRecord [] result=new LogsumRecord[logsums.size()];
-		//for(int i=0; i<logsums.size(); i++){
-			//result[i]=(LogsumRecord)logsums.get(i);
-		//}
-		//return result;
-		
-	//}
-//	******************logsumlogsumlogsumlogsum**********************
+	//Wu added for Summit Aggregation
+	private Message createSummitAggregationMessage () {
 
+		Message newMessage = createMessage();	
+		newMessage.setId( MessageID.SUMMIT_AGGREGATION);
+		newMessage.setIntValue( MessageID.TOUR_CATEGORY_KEY, TourType.MANDATORY_CATEGORY );
+		newMessage.setValue( MessageID.TOUR_TYPES_KEY, TourType.MANDATORY_TYPES );
+		newMessage.setValue(MessageID.SUMMIT_LIST_KEY, summitAggregationArray);
+		return newMessage;
+	}
 }

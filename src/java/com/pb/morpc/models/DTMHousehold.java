@@ -11,10 +11,13 @@ import com.pb.common.model.ModelException;
 import com.pb.common.util.SeededRandom;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
+
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Arrays;
-import java.util.Vector;
+import com.pb.common.model.LogitModel;
 
+import java.util.Vector;
 
 public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
@@ -28,11 +31,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	long mcTime = 0;
 	
 	int shadowPricingIteration = 0;
-//	******************logsumlogsumlogsumlogsum**********************	
-	//Wu added for writing logsum out
-	//protected Vector logsum;
-//	******************logsumlogsumlogsumlogsum**********************	
-
+	
+	//Wu added for Summit Aggregation
+	protected Vector summitAggregationRecords=null;
+	
 	// this constructor used in non-distributed application
 	public DTMHousehold ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes, ZonalDataManager zdm ) {
 
@@ -49,6 +51,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		super ( processorId, propertyMap, tourTypeCategory, tourTypes, zdm );
 
 		this.count = 1;
+
 	}
     
 
@@ -64,31 +67,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
         }
             
 	}
-    
-//  ******************logsumlogsumlogsumlogsum**********************    
-    /**
-     * get logsum records for one tour category of this HH
-     * which tour category? it depends on which MC method is called before this getter method
-     * @return
-     */
-    /*
-    public Vector getLogsumRecords(){
-    	return logsum;
-    }
-    */
- 
-    /**
-     * clear logsum records
-     *
-     */
-    /*
-    public void cleanLogsumRecords(){
-    	logsum=null;
-    }
-    */
-		    
-//  ******************logsumlogsumlogsumlogsum**********************
-    
+        
 	public void mandatoryTourDc ( Household hh ) {
 
 		int soaIndex = 0;
@@ -720,9 +699,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	public void mandatoryTourMc ( Household hh ) {
-//	  ******************logsumlogsumlogsumlogsum**********************		
-		//logsum=new Vector();
-//	  ******************logsumlogsumlogsumlogsum**********************
+		
+		//Wu added for Summit Aggregation
+		summitAggregationRecords=new Vector();
+
 		int soaIndex = 0;
 		long markTime=0;
 
@@ -837,25 +817,28 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					mcSample[4] = 0;
 					mcAvailability[4] = false;
 				}
-				mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
+				
+				//this is the original by Jim				
+				//mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
+				//int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
+								
+				//Wu added for Summit Aggregation
+				LogitModel root=mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 				
-//			  ******************logsumlogsumlogsumlogsum**********************
-				//Wu added for writing logsum out
-				/*
-				logger.info("in DTMHousehold mandatory MC, making logsumRecord");
-				double chosenLogsum=mc[tourTypeIndex].getLogsum();
-				LogsumRecord logsumRecord=new LogsumRecord();
-				logsumRecord.setHouseholdID(hh.getID());
-				logsumRecord.setPersonID(person);
-				logsumRecord.setTourCategory(TourType.MANDATORY_CATEGORY);
-				logsumRecord.setTourID(hh.getTourID());
-				logsumRecord.setSubtourID(-1);
-				logsumRecord.setLogsum(chosenLogsum);				
-				logsum.add(logsumRecord);
-				*/
-//			  ******************logsumlogsumlogsumlogsum**********************
-								
+				//Wu added for Summit Aggregation
+				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+					SummitAggregationRecord record=new SummitAggregationRecord();
+					record.setExpUtils(root.getExponentiatedUtilities());
+					record.setProbs(root.getProbabilities());
+					record.setHouseholdID(hh.getID());
+					record.setPersonID(person);
+					record.setTourCategory(TourType.MANDATORY_CATEGORY);
+					record.setTourID(hh.getTourID());
+					
+					summitAggregationRecords.add(record);
+				}
+																
 				mcTime += (System.currentTimeMillis()-markTime);
 
 				// set chosen in alternative in tour objects
@@ -1274,9 +1257,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	public void jointTourMc ( Household hh ) {
-//	  ******************logsumlogsumlogsumlogsum**********************	
-		//logsum=new Vector();
-//	  ******************logsumlogsumlogsumlogsum**********************
+		
+		//Wu added for Summit Aggregation
+		summitAggregationRecords=new Vector();
+
 		int[] jtPersons;
 		
 		long markTime=0;
@@ -1342,24 +1326,28 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					mcSample[4] = 0;
 					mcAvailability[4] = false;
 				}
-				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
+				
+				//Jim's original
+				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
+				//int chosenModeAlt = mc[m].getChoiceResult();
+				
+				//Wu added for Summit Aggregation
+				LogitModel root=mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
-//			  ******************logsumlogsumlogsumlogsum**********************	
-				//Wu added for writing logsum out
-				/*
-				double chosenLogsum=mc[m].getLogsum();
-				LogsumRecord logsumRecord=new LogsumRecord();
-				logsumRecord.setHouseholdID(hh.getID());
-				logsumRecord.setPersonID(-1);
-				logsumRecord.setTourCategory(TourType.JOINT_CATEGORY);
-				logsumRecord.setTourID(hh.getTourID());
-				logsumRecord.setSubtourID(-1);
-				logsumRecord.setLogsum(chosenLogsum);				
-				logsum.add(logsumRecord);
-				*/
-//			  ******************logsumlogsumlogsumlogsum**********************
-				
+				//Wu added for Summit Aggregation
+				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+					SummitAggregationRecord record=new SummitAggregationRecord();
+					record.setExpUtils(root.getExponentiatedUtilities());
+					record.setProbs(root.getProbabilities());
+					record.setHouseholdID(hh.getID());
+					record.setPersonID(person);
+					record.setTourCategory(TourType.MANDATORY_CATEGORY);
+					record.setTourID(hh.getTourID());
+					
+					summitAggregationRecords.add(record);
+				}
+								
 				mcTime += (System.currentTimeMillis() - markTime);
 
 				// set chosen in alternative in tour objects
@@ -1982,9 +1970,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	public void indivNonMandatoryTourMc ( Household hh ) {
-//	  ******************logsumlogsumlogsumlogsum**********************		
-		//logsum=new Vector();
-//	  ******************logsumlogsumlogsumlogsum**********************
+		
+		//Wu added for Summit Aggregation
+		summitAggregationRecords=new Vector();
+		
 		long markTime=0;
 		long startTime = System.currentTimeMillis();
 
@@ -2045,23 +2034,27 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					mcSample[4] = 0;
 					mcAvailability[4] = false;
 				}
-				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
+				
+				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
+				//int chosenModeAlt = mc[m].getChoiceResult();
+				
+				//Wu added for Summit Aggregation
+				LogitModel root=mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
-//			  ******************logsumlogsumlogsumlogsum**********************			
-				//Wu added for writing logsum out
-				/*
-				double chosenLogsum=mc[m].getLogsum();
-				LogsumRecord logsumRecord=new LogsumRecord();
-				logsumRecord.setHouseholdID(hh.getID());
-				logsumRecord.setPersonID(person);
-				logsumRecord.setTourCategory(TourType.NON_MANDATORY_CATEGORY);
-				logsumRecord.setTourID(hh.getTourID());
-				logsumRecord.setSubtourID(-1);
-				logsumRecord.setLogsum(chosenLogsum);				
-				logsum.add(logsumRecord);
-				*/
-//			  ******************logsumlogsumlogsumlogsum**********************				
+				//Wu added for Summit Aggregation
+				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+					SummitAggregationRecord record=new SummitAggregationRecord();
+					record.setExpUtils(root.getExponentiatedUtilities());
+					record.setProbs(root.getProbabilities());
+					record.setHouseholdID(hh.getID());
+					record.setPersonID(person);
+					record.setTourCategory(TourType.MANDATORY_CATEGORY);
+					record.setTourID(hh.getTourID());
+					
+					summitAggregationRecords.add(record);
+				}
+								
 				mcTime += (System.currentTimeMillis()-markTime);
 
 				// set chosen in alternative in tour objects
@@ -2540,9 +2533,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 	
 	public void atWorkTourMc ( Household hh ) {
-//	  ******************logsumlogsumlogsumlogsum**********************
-		//logsum=new Vector();
-//	  ******************logsumlogsumlogsumlogsum**********************
+		
+		//Wu added for Summit Aggregation
+		summitAggregationRecords=new Vector();
+
 		long markTime=0;
 		int soaIndex = 0;
 		Tour[] st;
@@ -2616,23 +2610,28 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					mcSample[4] = 0;
 					mcAvailability[4] = false;
 				}
-				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
+				
+				//Jim's original
+				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
+				//int chosenModeAlt = mc[m].getChoiceResult();
+				
+				//Wu added for Summit Aggregation
+				LogitModel root=mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
-//			  ******************logsumlogsumlogsumlogsum**********************				
-				//Wu added for writing logsum out
-				/*
-				double chosenLogsum=mc[m].getLogsum();
-				LogsumRecord logsumRecord=new LogsumRecord();
-				logsumRecord.setHouseholdID(hh.getID());
-				logsumRecord.setPersonID(person);
-				logsumRecord.setTourCategory(TourType.JOINT_CATEGORY);
-				logsumRecord.setTourID(hh.getTourID());
-				logsumRecord.setSubtourID(s);
-				logsumRecord.setLogsum(chosenLogsum);				
-				logsum.add(logsumRecord);
-				*/
-//			  ******************logsumlogsumlogsumlogsum**********************				
+				//Wu added for Summit Aggregation
+				if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
+					SummitAggregationRecord record=new SummitAggregationRecord();
+					record.setExpUtils(root.getExponentiatedUtilities());
+					record.setProbs(root.getProbabilities());
+					record.setHouseholdID(hh.getID());
+					record.setPersonID(person);
+					record.setTourCategory(TourType.MANDATORY_CATEGORY);
+					record.setTourID(hh.getTourID());
+					
+					summitAggregationRecords.add(record);
+				}
+							
 				mcTime += (System.currentTimeMillis() - markTime);
     
 				// set chosen in alternative in tour objects
@@ -2640,8 +2639,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// set park zone to zero, not used for at-work.
 				hh.mandatoryTours[t].subTours[s].setChosenPark (0);
-
-
 
 				// set submode for transit modes
 				index.setOriginZone( hh.mandatoryTours[t].subTours[s].getOrigTaz() );
@@ -2892,5 +2889,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			}
 		}
 							
+	}
+	
+	//Wu added for Summit Aggregation
+	public Vector getSummitAggregationRecords(){
+		return summitAggregationRecords;
 	}
 }
