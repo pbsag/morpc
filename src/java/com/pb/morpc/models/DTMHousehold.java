@@ -13,6 +13,7 @@ import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Vector;
 
 
 public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
@@ -28,7 +29,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	
 	int shadowPricingIteration = 0;
 	
-	
+	//Wu added for writing logsum out
+	protected Vector logsum;
 	
 
 	// this constructor used in non-distributed application
@@ -62,7 +64,23 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
         }
             
 	}
-		    
+    
+    /**
+     * get logsum records for one tour category of this HH
+     * which tour category? it depends on which MC method is called before this getter method
+     * @return
+     */
+    public Vector getLogsumRecords(){
+    	return logsum;
+    }
+    
+    /**
+     * clear logsum records
+     *
+     */
+    public void cleanLogsumRecords(){
+    	logsum=null;
+    }
 		    
 
 	public void mandatoryTourDc ( Household hh ) {
@@ -696,6 +714,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	public void mandatoryTourMc ( Household hh ) {
+		
+		logsum=new Vector();
 
 		int soaIndex = 0;
 		long markTime=0;
@@ -813,9 +833,19 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
-//				double chosenLogsum=mc[tourTypeIndex].getLogsum();
 				
-//				logger.info("man chosenLogsum "+hh_id+":"+chosenLogsum);
+				//Wu added for writing logsum out
+				logger.info("in DTMHousehold mandatory MC, making logsumRecord");
+				double chosenLogsum=mc[tourTypeIndex].getLogsum();
+				LogsumRecord logsumRecord=new LogsumRecord();
+				logsumRecord.setHouseholdID(hh.getID());
+				logsumRecord.setPersonID(person);
+				logsumRecord.setTourCategory(TourType.MANDATORY_CATEGORY);
+				logsumRecord.setTourID(hh.getTourID());
+				logsumRecord.setSubtourID(-1);
+				logsumRecord.setLogsum(chosenLogsum);				
+				logsum.add(logsumRecord);
+
 								
 				mcTime += (System.currentTimeMillis()-markTime);
 
@@ -1228,6 +1258,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	public void jointTourMc ( Household hh ) {
+		
+		logsum=new Vector();
 
 		int[] jtPersons;
 		
@@ -1296,9 +1328,17 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
-//				double chosenLogsum=mc[m].getLogsum();
-				
-//				logger.info("joint chosenLogsum "+hh_id+":"+chosenLogsum);
+		
+				//Wu added for writing logsum out
+				double chosenLogsum=mc[m].getLogsum();
+				LogsumRecord logsumRecord=new LogsumRecord();
+				logsumRecord.setHouseholdID(hh.getID());
+				logsumRecord.setPersonID(-1);
+				logsumRecord.setTourCategory(TourType.JOINT_CATEGORY);
+				logsumRecord.setTourID(hh.getTourID());
+				logsumRecord.setSubtourID(-1);
+				logsumRecord.setLogsum(chosenLogsum);				
+				logsum.add(logsumRecord);
 				
 				mcTime += (System.currentTimeMillis() - markTime);
 
@@ -1917,6 +1957,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	public void indivNonMandatoryTourMc ( Household hh ) {
+		
+		logsum=new Vector();
 
 		long markTime=0;
 		long startTime = System.currentTimeMillis();
@@ -1980,9 +2022,17 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
-//				double chosenLogsum=mc[m].getLogsum();
 				
-//				logger.info("indi chosenLogsum "+hh_id+":"+chosenLogsum);
+				//Wu added for writing logsum out
+				double chosenLogsum=mc[m].getLogsum();
+				LogsumRecord logsumRecord=new LogsumRecord();
+				logsumRecord.setHouseholdID(hh.getID());
+				logsumRecord.setPersonID(person);
+				logsumRecord.setTourCategory(TourType.NON_MANDATORY_CATEGORY);
+				logsumRecord.setTourID(hh.getTourID());
+				logsumRecord.setSubtourID(-1);
+				logsumRecord.setLogsum(chosenLogsum);				
+				logsum.add(logsumRecord);
 				
 				mcTime += (System.currentTimeMillis()-markTime);
 
@@ -2457,6 +2507,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 	
 	public void atWorkTourMc ( Household hh ) {
+		
+		logsum=new Vector();
 
 		long markTime=0;
 		int soaIndex = 0;
@@ -2533,9 +2585,17 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 				mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
-//				double chosenLogsum=mc[m].getLogsum();
 				
-//				logger.info("at work chosenLogsum "+hh_id+":"+chosenLogsum);
+				//Wu added for writing logsum out
+				double chosenLogsum=mc[m].getLogsum();
+				LogsumRecord logsumRecord=new LogsumRecord();
+				logsumRecord.setHouseholdID(hh.getID());
+				logsumRecord.setPersonID(person);
+				logsumRecord.setTourCategory(TourType.JOINT_CATEGORY);
+				logsumRecord.setTourID(hh.getTourID());
+				logsumRecord.setSubtourID(s);
+				logsumRecord.setLogsum(chosenLogsum);				
+				logsum.add(logsumRecord);
 				
 				mcTime += (System.currentTimeMillis() - markTime);
     

@@ -9,7 +9,14 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.morpc.models.HouseholdArrayManager;
 import com.pb.morpc.structures.Household;
+import com.pb.morpc.structures.LogsumRecord;
+import java.text.DecimalFormat;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -135,7 +142,8 @@ public class HHArrayServer extends MessageProcessingTask {
 		//The hh array server gets a SEND_START_INFO message from the fpWorkers
 		//saying they're ready to begin work.
 		else {
-
+			logger.info("in HHArrayServer, message ID="+msg.getId());
+			
 			if ( hhServerStarted ) {
 		        
 				if ( msg.getId().equals( MessageID.SEND_WORK ) ) {		
@@ -162,6 +170,23 @@ public class HHArrayServer extends MessageProcessingTask {
 					hhMgr.sendResults ( (Household[])msg.getValue( MessageID.HOUSEHOLD_LIST_KEY ) );
 
 					sendWork ( category, types );
+				}
+				//Wu added for handling logsums.  Following if block get RESULTS_LOGSUMS message from
+				//TcMcWorker, IndivDTMWorker, JointDTMWorker, and AtWorkDTMWorker
+				else if(msg.getId().equals(MessageID.RESULTS_LOGSUMS)){
+					// retrieve the contents of the message.
+					short category = (short)msg.getIntValue( MessageID.TOUR_CATEGORY_KEY );
+					short[] types = (short[])msg.getValue( MessageID.TOUR_TYPES_KEY );	
+									
+					hhMgr.sendResults ( (Household[])msg.getValue( MessageID.HOUSEHOLD_LIST_KEY ) );
+
+					sendWork ( category, types );	
+					
+					logger.info("in HHArrayServer before writeLogsums");
+					
+					//append logsum records in message to file on disk
+					writeLogsums((LogsumRecord [])msg.getValue(MessageID.LOGSUM_LIST_KEY));
+					
 				}
 				
 			}
@@ -201,5 +226,83 @@ public class HHArrayServer extends MessageProcessingTask {
 		
 	}
 	
+	//Wu added for writing out logsums
+	private void writeLogsums(LogsumRecord [] records){
+		
+		if(records==null){
+			logger.severe("logsum records are empty.");
+			return;
+		}
+		
+        String logsumPattern="#####.####";
+        String keyPattern="##########";
+        DecimalFormat logsumFormat=new DecimalFormat(logsumPattern);
+        DecimalFormat keyFormat=new DecimalFormat(keyPattern);
 
+        PrintWriter outStream = null;
+
+        int nCols = 6;
+        int nRows = records.length;
+        String[] columnLabels = {"HH_ID","Person_ID","Tour_ID","TourCategory","Subtour_ID","Logsum"};
+        String fileName=(String)propertyMap.get("logsumFile");
+        File file;
+                        
+        try {
+        	
+            file=new File(fileName);       	
+            outStream = new PrintWriter (new BufferedWriter( new FileWriter(file, true) ) );
+            
+            //Print titles
+            logger.info("in HHArrayServer, printing column labels");
+            for (int i = 0; i < columnLabels.length; i++) {
+                if (i != 0)
+                    outStream.print(",");
+                outStream.print( columnLabels[i] );
+            }
+            outStream.println();
+
+            //Print data
+            logger.info("in HHArrayServer, printing logsum records.");
+            for (int r=0; r < nRows; r++) {                
+                for (int c=0; c < nCols; c++) {
+                    if (c != 0)
+                        outStream.print(",");
+
+                    switch(c) {
+                    case 0:
+                        int hh_id = records[r].getHouseholdID();
+                        outStream.print( keyFormat.format(hh_id));
+                        break;
+                    case 1:
+                        int person_id = records[r].getPersonID();
+                        outStream.print(keyFormat.format(person_id));
+                        break;
+                    case 2:
+                        int tour_id = records[r].getTourID();
+                        outStream.print( keyFormat.format(tour_id));
+                        break;
+                    case 3:
+                        int tourCat = records[r].getTourCategory();
+                        outStream.print(keyFormat.format(tourCat));
+                        break;
+                    case 4:
+                        int subtour_id = records[r].getSubtourID();
+                        outStream.print( keyFormat.format(subtour_id));
+                        break;
+                    case 5:
+                        double logsum = records[r].getLogsum();
+                        outStream.print(logsumFormat.format(logsum));
+                        break;
+                    default:
+                        logger.severe("invalid column number: " + c);
+                    }
+                }
+                outStream.println();
+            }
+            outStream.close();
+        }
+        catch (IOException e) {
+            logger.severe("failed writing logsum to disk.");
+        }
+	}
 }

@@ -15,9 +15,11 @@ import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.models.TODDataManager;
 import com.pb.morpc.structures.Household;
 import com.pb.morpc.structures.TourType;
+import com.pb.morpc.structures.LogsumRecord;
 
 import java.util.HashMap;
 import java.util.logging.Logger;
+import java.util.Vector;
 
 
 
@@ -27,6 +29,8 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 	private static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 	private Household[] hhList = null;
+	//Wu added for attaching logsums to Message
+	private LogsumRecord [] logsumRecords=null;
 	private DTMHousehold dtmHH = null;
 
 	private ZonalDataManager zdm = 	null;
@@ -76,8 +80,12 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 		if ( messageReturnType > 0 ) {
 
 			//Send a response back to the server
-			if (messageReturnType == MessageID.RESULTS_ID)
+			//Wu changed for handling logsum in Message
+			if (messageReturnType == MessageID.RESULTS_LOGSUMS_ID){
+			//if (messageReturnType == MessageID.RESULTS_ID)
+				logger.info("in TcMcWorker before create result message.");
 				newMessage = createResultsMessage();
+			}
 			else if (messageReturnType == MessageID.FINISHED_ID)
 				newMessage = createFinishedMessage();
 			else if (messageReturnType == MessageID.EXIT_ID)
@@ -151,7 +159,9 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 				// retrieve the contents of the message:
 				hhList = (Household[])msg.getValue( MessageID.HOUSEHOLD_LIST_KEY );
 
-
+				//Wu added for handling logsums
+				Vector logsums=new Vector();
+				Vector currentLogsums=null;
 
 				// if the list is null, no more hhs left to process;
 				// otherwise, put the household objects from the message into an array for processing.
@@ -178,6 +188,12 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 							dtmHH.resetHouseholdCount();
 							dtmHH.mandatoryTourMc (hhList[i]);
 							dtmHH.updateTimeWindows (hhList[i]);
+							
+							//Wu added for writing out logsums
+							currentLogsums=dtmHH.getLogsumRecords();
+							logsums.addAll(currentLogsums);
+							logger.info("in TcMcWorker before create logsum records.");
+							logsumRecords=createLogsumRecords(logsums);
 
 						}
 						catch (java.lang.Exception e) {
@@ -189,7 +205,9 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 						}
 					}
 
-					returnValue = MessageID.RESULTS_ID;
+					//Wu modified for writing out logsum table
+					returnValue = MessageID.RESULTS_LOGSUMS_ID;
+					//returnValue = MessageID.RESULTS_ID;
 
 				}
 				else {
@@ -226,12 +244,24 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 	private Message createResultsMessage () {
 
 		Message newMessage = createMessage();
-		newMessage.setId( MessageID.RESULTS );
+		newMessage.setId( MessageID.RESULTS_LOGSUMS);
 		newMessage.setIntValue( MessageID.TOUR_CATEGORY_KEY, TourType.MANDATORY_CATEGORY );
 		newMessage.setValue( MessageID.TOUR_TYPES_KEY, TourType.MANDATORY_TYPES );
 		newMessage.setValue( MessageID.HOUSEHOLD_LIST_KEY, hhList );
+		//Wu added for wrting out logsum tables
+		newMessage.setValue(MessageID.LOGSUM_LIST_KEY, logsumRecords);
 
 		return newMessage;
+	}
+	
+	//Wu added for writing logsums out
+	private LogsumRecord [] createLogsumRecords(Vector logsums){
+		LogsumRecord [] result=new LogsumRecord[logsums.size()];
+		for(int i=0; i<logsums.size(); i++){
+			result[i]=(LogsumRecord)logsums.get(i);
+		}
+		return result;
+		
 	}
 
 }
