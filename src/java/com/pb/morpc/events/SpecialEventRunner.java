@@ -96,7 +96,7 @@ public class SpecialEventRunner {
 	//for testing purpose only
 	public static void main(String [] args){
 			
-		SpecialEventRunner runner=new SpecialEventRunner("binary", "MiamiEvent");
+		SpecialEventRunner runner=new SpecialEventRunner("binary", "MorpcEvent");
 		Matrix inTrips=null;
 		
 		if(args.length==2){//if 2 arguments, 1st must be event name, 2nd TOD

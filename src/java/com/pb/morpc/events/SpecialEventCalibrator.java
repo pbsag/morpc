@@ -147,7 +147,7 @@ public class SpecialEventCalibrator {
 			if(projectName.equalsIgnoreCase("morpc1")){
 				cell = sheet.getWritableCell(7+i, 13); 
 			}else if(projectName.equalsIgnoreCase("MiamiEvent")){
-				cell = sheet.getWritableCell(7+i, 5);				
+				cell = sheet.getWritableCell(7+i, 11);				
 			}else{
 				logger.severe("in clibration, project name is invalid.");
 			}

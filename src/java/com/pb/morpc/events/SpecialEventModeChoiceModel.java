@@ -93,7 +93,7 @@ public class SpecialEventModeChoiceModel {
 
         //write summit file header
         if(writeSummitFile)
-            writeSummitHeader(externalTazs.length,(float)-0.0212);
+            writeSummitHeader(externalTazs.length,new Float((String)propertyMap.get("events.beta")).floatValue());
         
         //initialize logsums
         if(writeLogsums)
@@ -112,13 +112,20 @@ public class SpecialEventModeChoiceModel {
             //start looping on destinations
             for(int aTaz = 0; aTaz<externalTazs.length;++aTaz){
                 int extATaz = externalTazs[aTaz];
-               
+                
                 double [] util=calUtilities(avail, extPTaz, extATaz);
+                        
+	            if(extPTaz==3&&extATaz==59){
+	            	logger.info("ok, stop here.");
+	            }
+	            
+                root = new LogitModel("Root");
                 
                 for(int i=0; i<NoAlts; i++){
                 	alts[i].setUtility(util[i]);
+                	root.addAlternative(alts[i]);
                 }
-                
+                                
                 root.setAvailability(true);
                 root.writeAvailabilities();
                 
@@ -145,13 +152,13 @@ public class SpecialEventModeChoiceModel {
      * @param extATaz represents attraction taz (destination)
      */
     public double [] calUtilities(int [] avail, int extPTaz, int extATaz){
-    	
+        
         IndexValues iv = new IndexValues();
     	iv.setOriginZone(extPTaz);
     	iv.setZoneIndex(extATaz);
         iv.setDestZone(extATaz);
         
-        double[] util = uec.solve(iv, null,avail);  
+        double[] util = uec.solve(iv, null,avail);
     
         return util;
     }
@@ -357,6 +364,7 @@ public class SpecialEventModeChoiceModel {
 	            rec.setMotorizedTrips(trips);
 	            rec.setTrips(trips);
 	
+	            //set exponentiated auto utility
 	            float tempAutoExp=0;
 	            for(int i=0; i<NoAutoModes; i++){
 	            	if(alts[findAltIndex(AutoModes[i])].getUtility()>-500)
@@ -364,26 +372,28 @@ public class SpecialEventModeChoiceModel {
 	            }
 	            rec.setExpAuto(tempAutoExp);
 	            
+	            //calculate transit share of walk to transit
+                double transitShareOfWalkTransit=0f; 
+                for(int i=0; i<NoWalkTransitModes; i++){
+                	int tempIndex=findAltIndex(WalkTransitModes[i]);
+                	transitShareOfWalkTransit=transitShareOfWalkTransit+probabilities[tempIndex];
+                }
+                
+                //calculate transit share of drive to transit
+                double transitShareOfDriveTransit=0f;
+                for(int i=0; i<NoDriveTransitModes; i++){
+                	int tempIndex=findAltIndex(DriveTransitModes[i]);
+                	transitShareOfDriveTransit=transitShareOfDriveTransit+probabilities[tempIndex];
+                }
+	            
+                //check if walk to transit if available
 	            boolean walkAvailable=false;
 	            for(int i=0; i<NoWalkTransitModes; i++){
 	            	if(alts[findAltIndex(WalkTransitModes[i])].getUtility()>-500)
 	            		walkAvailable=true;
 	            }
-	            	
-	            if(walkAvailable){
-	                rec.setWalkTransitAvailableShare((float)1.0);
-	                double transitShareOfWalkTransit=0f;
-	                
-	                for(int i=0; i<NoWalkTransitModes; i++){
-	                	int tempIndex=findAltIndex(WalkTransitModes[i]);
-	                	transitShareOfWalkTransit=transitShareOfWalkTransit+probabilities[tempIndex];
-	                }
-	                rec.setTransitShareOfWalkTransit((float)transitShareOfWalkTransit);
-	            }else{
-	                rec.setWalkTransitAvailableShare((float)0.0);
-	                rec.setTransitShareOfWalkTransit((float)0.0);
-	            }
-	
+	            
+	            //check if only drive to transit is available
 	            boolean driveOnly=false;
 	            if(walkAvailable==false){
 		            for(int i=0; i<NoDriveTransitModes; i++){
@@ -392,28 +402,41 @@ public class SpecialEventModeChoiceModel {
 		            }
 	            }
 	            
+	            //set walk to transit available share
+	            if(walkAvailable){
+	                rec.setWalkTransitAvailableShare((float)1.0);
+	            }else{
+	                rec.setWalkTransitAvailableShare((float)0.0);
+	            }
+	     
+	            //set drive to transit only available share
 	            if(driveOnly){
 	                rec.setDriveTransitOnlyShare((float)1.0);
-	                double transitShareOfDriveTransitOnly=0f;
-	                
-	                for(int i=0; i<NoDriveTransitModes; i++){
-	                	int tempIndex=findAltIndex(DriveTransitModes[i]);
-	                	transitShareOfDriveTransitOnly=transitShareOfDriveTransitOnly+probabilities[tempIndex];
-	                }
-	                rec.setTransitShareOfDriveTransitOnly((float)transitShareOfDriveTransitOnly);
 	            }else{
 	                rec.setDriveTransitOnlyShare((float)0.0);
-	                rec.setTransitShareOfDriveTransitOnly((float)0.0);
 	            }
-	
+	            	            
+	            //set transit share when walk to transit available
+	            //set transit share when drive to transit only available
+	            if(driveOnly){
+	                rec.setTransitShareOfWalkTransit(0f);
+	                rec.setTransitShareOfDriveTransitOnly((float)transitShareOfDriveTransit);	            	
+	            }else if(walkAvailable){
+	            	rec.setTransitShareOfWalkTransit((float)(transitShareOfWalkTransit+transitShareOfDriveTransit));
+	            	rec.setTransitShareOfDriveTransitOnly(0f);
+	            }else{
+	            	rec.setTransitShareOfWalkTransit(0f);
+	            	rec.setTransitShareOfDriveTransitOnly(0f);
+	            }
+	            	
 	            try{
 	                summitFile.writeRecord(rec);
 	            } catch (IOException e) {
 	                e.printStackTrace();
 	                System.exit(1);
 	            }
-	        }//end if(writeSummitFile)
-	    }//end if(tips!=0)
+	        }
+	    }
     }
     
     /**

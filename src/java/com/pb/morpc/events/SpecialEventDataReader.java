@@ -106,6 +106,10 @@ public class SpecialEventDataReader {
 		return propertyMap;
 	}
 	
+	public Logger getLogger(){
+		return logger;
+	}
+	
 	public TableDataSet getTazData(){
 		return tazData;
 	}
@@ -178,6 +182,22 @@ public class SpecialEventDataReader {
 		return result;
 	}
 	
+	/**
+	 * Populate utility expression calculators.
+	 * 		TOD name----UEC
+	 * 
+	 * Assume UEC control file structure:
+	 * 		sheet 1: model sheet
+	 * 		sheet 2: AM
+	 * 		sheet 3: MD
+	 * 		sheet 4: PM
+	 * 		sheet 5: NT
+	 * 
+	 * Note: 
+	 * 		sheet index in UEC is 0-based
+	 * 			
+	 * @return
+	 */
 	private HashMap populateUecMap(){
 		HashMap result=new HashMap();
 		int NoTOD=TODIndex.getNoTODs();
@@ -190,6 +210,20 @@ public class SpecialEventDataReader {
         return result;
 	}
 	
+	/**
+	 * Populate mode choice model map:
+	 * 		TOD name----mode choice model
+	 * 
+	 * Note: 
+	 * 		1) same assumption as in populateUecMap()
+	 * 		2) TOD, uec, and model choice model has a default one-to-one mapping
+	 * 			TOD		UEC			Model Choice Model
+	 * 	 		AM		uec_am		mcm_am
+	 * 			MD		uec_md		mcm_md
+	 * 			PM		uec_pm		mcm_pm
+	 * 			NT		uec_nt		mcm_nt
+	 * @return
+	 */
 	private HashMap populateModeChoiceModelMap(){
 		HashMap result=new HashMap();
 		int NoTOD=TODIndex.getNoTODs();

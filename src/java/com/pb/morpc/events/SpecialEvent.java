@@ -176,7 +176,11 @@ public class SpecialEvent {
 				
 				extCol=extTaz[j];
 				//get trip between current od
-				tripTemp=tripTable.getValueAt(i,j);
+				tripTemp=tripTable.getValueAt(i+1,j+1);
+				
+				if(extRow==255&&extCol==128){
+					logger.info("stop");
+				}
 				
 				//get mode probabilities of current od
 				probabilityTemp=calMCProbabilities(extRow, extCol);
@@ -466,6 +470,9 @@ public class SpecialEvent {
 		//calculate mode choice utilities
 		double [] util=mcm.calUtilities(avail, ptaz, ataz);
 
+		if(ptaz==255&&ataz==128){
+			logger.info("stop");
+		}
 		//add alternatives to logit model
 		for(int i=0; i<NoAlts; i++){
 			alts[i].setUtility(util[i]);
@@ -495,6 +502,20 @@ public class SpecialEvent {
 		
 		float totpopsum=tazData.getColumnTotal(tazData.getColumnPosition("totpop"));
 		float [] totpop=tazData.getColumnAsFloat("totpop");
+		float [] hotelpop=new float[noRows];
+		
+		//check if hotelpop is a column in tazData
+		//if so, populate hotelpop [] with column "hotelpop", otherwise set hotelpop[] to 0
+		int hotelPopPosition=tazData.getColumnPosition("hotelpop");
+		if(hotelPopPosition<0){
+			for(int i=0; i<noRows; i++){
+				hotelpop[i]=0f;
+			}
+		}else{
+			hotelpop=tazData.getColumnAsFloat("hotelpop");
+			totpopsum=totpopsum+tazData.getColumnTotal(tazData.getColumnPosition("hotelpop"));
+		}
+		
 		float empoffsum=tazData.getColumnTotal(tazData.getColumnPosition("empoff"));
 		float [] empoff=tazData.getColumnAsFloat("empoff");
 		float empretgdssum=tazData.getColumnTotal(tazData.getColumnPosition("empretgds"));
@@ -504,7 +525,8 @@ public class SpecialEvent {
 		float [] hhinc=tazData.getColumnAsFloat("hhinc");
 
 		for(int i=0; i<noRows; i++){
-			poppr[i]=totpop[i]/totpopsum;
+			//add totpop and hotelpop up, to get popupation term in calculating attrctiveness
+			poppr[i]=(totpop[i]+hotelpop[i])/totpopsum;
 			emppr[i]=(empoff[i]+empretgds[i]+empretsrv[i])/(empoffsum+empretgdssum+empretsrvsum);
 			hipr[i]=hhinc[i]/110000f;
 			result[i]=(float)(0.4456*poppr[i]+0.1265*emppr[i]+0.004635*hipr[i]);

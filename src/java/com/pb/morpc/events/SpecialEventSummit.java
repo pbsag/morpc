@@ -20,9 +20,8 @@ import java.io.File;
 public class SpecialEventSummit {
 	
 	private static Logger logger = Logger.getLogger("com.pb.morpc.events");
-	private Matrix [] inTripsByTOD=null;
 	private Matrix inTrips=null;
-	private HashMap events=null;
+	private SpecialEvent event=null;
 	private SpecialEventDataReader dataReader;
     private HashMap propertyMap = null;
     private String UECFileName=null;
@@ -39,7 +38,7 @@ public class SpecialEventSummit {
 		TOD=(String)propertyMap.get("TOD");
 		
 		if(baseline.equalsIgnoreCase("true")){
-			events=initSpecialEvents();
+			event=initSpecialEvents(TOD);
 		}else{
 			inTrips=readTripTable();
 			setInTrips(inTrips);
@@ -55,8 +54,7 @@ public class SpecialEventSummit {
 				
 		//if inTrips hasn't been set, calculate it.  Otherwise, must set it first.
 		if(inTrips==null){
-			inTripsByTOD=initTripTables();
-			inTrips=combineTripTables(inTripsByTOD);	
+			inTrips=initTripTables(TOD);	
 		}
 		
 		//if is baseline write out trip tables to hard drive
@@ -129,52 +127,29 @@ public class SpecialEventSummit {
 	 * @return
 	 */
 	public Matrix getInTrips(){
-		if(inTrips==null)
-			return combineTripTables(initTripTables());
-		else
-			return inTrips;
+		return inTrips;
 	}
 	
 	/**
 	 * initialize special event for all time of day periods
 	 * @return
 	 */
-	private HashMap initSpecialEvents(){
-		HashMap result=new HashMap();
+	private SpecialEvent initSpecialEvents(String TOD){
 		int noTODs=TODIndex.getNoTODs();
 		SpecialEvent event=null;
 		
 		for(int i=0; i<noTODs; i++){
-			event=new SpecialEvent(dataReader, TODIndex.getNameByIndex(i+1));
-			result.put(TODIndex.getNameByIndex(i+1),event);
+			if(TOD.equalsIgnoreCase(TODIndex.getNameByIndex(i+1)))
+				event=new SpecialEvent(dataReader, TODIndex.getNameByIndex(i+1));
 		}
-		return result;
+		return event;
 	}
 	
 	/**
 	 * Initialize trip tables by TOD.
 	 *
 	 */
-	private Matrix [] initTripTables(){
-		Matrix [] result=new Matrix[TODIndex.getNoTODs()];
-		String TOD=null;
-		for(int i=0; i<result.length; i++){
-			TOD=TODIndex.getNameByIndex(i+1);
-			//Assume Summit requires an average daily special event trips
-			result[i]=((SpecialEvent)(events.get(TOD))).getSETripTable("total");
-		}
-		return result;
-	}
-	
-	/**
-	 * Combine TOD trip tables.
-	 * @return combined trip table.
-	 */
-	private Matrix combineTripTables(Matrix [] inTripsByTOD){
-		Matrix result=inTripsByTOD[0];
-		for(int i=1; i<inTripsByTOD.length; i++){
-			result=result.add(inTripsByTOD[i]);
-		}
-		return result;
+	private Matrix initTripTables(String TOD){
+		return event.getSETripTable("total");
 	}
 }

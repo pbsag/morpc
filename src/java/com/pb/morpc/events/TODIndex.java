@@ -19,21 +19,18 @@ public class TODIndex {
 	private static HashMap indexMapR;
 	
 	static{
+		//Assume data sheet orders in UEC control file are: AM, MD, PM, NT
 		indexMap=new HashMap();
-		indexMap.put(new Integer(1),"MD");
-		/*
+		indexMap.put(new Integer(1),"AM");
 		indexMap.put(new Integer(2),"MD");
 		indexMap.put(new Integer(3),"PM");
 		indexMap.put(new Integer(4),"NT");
-		*/
 		
 		indexMapR=new HashMap();
-		indexMapR.put("MD",new Integer(1));
-		/*
+		indexMapR.put("AM",new Integer(1));
 		indexMapR.put("MD",new Integer(2));
 		indexMapR.put("PM",new Integer(3));
 		indexMapR.put("NT",new Integer(4));
-		*/
 	}
 	
 	static String getNameByIndex(int index){
