@@ -200,13 +200,13 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 							if( FTA_Restart_run == null || !FTA_Restart_run.equalsIgnoreCase("true") ){
 								dtmHH.resetHouseholdCount();
 								
-								logger.info("in tcmc worker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
+								//logger.info("in tcmc worker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
 								
 								dtmHH.mandatoryTourTc (hhList[i]);
 							}
 							dtmHH.resetHouseholdCount();
 							
-							logger.info("in tcmc worker, before mc , hh walk access="+hhList[i].getOriginWalkSegment());
+							//logger.info("in tcmc worker, before mc , hh walk access="+hhList[i].getOriginWalkSegment());
 							
 							dtmHH.mandatoryTourMc (hhList[i]);
 							dtmHH.updateTimeWindows (hhList[i]);
@@ -228,10 +228,10 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 					//Wu added for Summit Aggregation
 					if(writeSummitAggregationFields){
-						logger.info("in TcMcWorker, original records="+summitRecords.size());
+						//logger.info("in TcMcWorker, original records="+summitRecords.size());
 						convertor=new VectorToArrayConvertor(summitRecords);
 						summitAggregationArray=convertor.getSummitAggregationArray();
-						logger.info("converted records="+summitAggregationArray.length);
+						//logger.info("converted records="+summitAggregationArray.length);
 						returnValue = MessageID.SUMMIT_AGGREGATION_ID;
 					}else{
 						returnValue = MessageID.RESULTS_ID;

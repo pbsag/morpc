@@ -92,13 +92,8 @@ public class Tour implements java.io.Externalizable {
 	/**
 	 * set tour origin short walk segment for this Tour object
 	 */
-	public void setOriginShrtWlk (int arg) {
-		
-		logger.info("in set arg="+arg);
-		
+	public void setOriginShrtWlk (int arg) {	
 		this.originShortWalk = (short)arg;
-		
-		logger.info("in set result="+this.originShortWalk);
 	}
 
 	public int getOriginShrtWlk () {

@@ -221,18 +221,18 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 							if( FTA_Restart_run == null || !FTA_Restart_run.equalsIgnoreCase("true") ){
 								dtmHH.resetHouseholdCount();
 								
-								logger.info("in atworkDTMWorker, before dc , hh walk access="+hhList[i].getOriginWalkSegment());
+								//logger.info("in atworkDTMWorker, before dc , hh walk access="+hhList[i].getOriginWalkSegment());
 								
 								dtmHH.atWorkTourDc (hhList[i]);
 								dtmHH.resetHouseholdCount();
 								
-								logger.info("in atworkDTMWorker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
+								//logger.info("in atworkDTMWorker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
 								
 								dtmHH.atWorkTourTc (hhList[i]);
 							}
 							dtmHH.resetHouseholdCount();
 							
-							logger.info("in atworkDTMWorker, before mc , hh walk access="+hhList[i].getOriginWalkSegment());
+							//logger.info("in atworkDTMWorker, before mc , hh walk access="+hhList[i].getOriginWalkSegment());
 							
 							dtmHH.atWorkTourMc (hhList[i]);
 							
@@ -253,10 +253,10 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 					}
 					//Wu added for Summit Aggregation
 					if(writeSummitAggregationFields){
-						logger.info("in AtWorkWorker, original records="+summitRecords.size());
+						//logger.info("in AtWorkWorker, original records="+summitRecords.size());
 						convertor=new VectorToArrayConvertor(summitRecords);
 						summitAggregationArray=convertor.getSummitAggregationArray();
-						logger.info("converted records="+summitAggregationArray.length);
+						//logger.info("converted records="+summitAggregationArray.length);
 						returnValue = MessageID.SUMMIT_AGGREGATION_ID;
 					}else{
 						returnValue = MessageID.RESULTS_ID;

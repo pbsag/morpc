@@ -168,7 +168,7 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 
 						    hhList[i].setProcessorId (processorId);		
 						    
-							logger.info("in dc worker, hh walk access="+hhList[i].getOriginWalkSegment());
+							//logger.info("in dc worker, hh walk access="+hhList[i].getOriginWalkSegment());
 						    
 						    dtmHH.mandatoryTourDc (hhList[i]);
 						}

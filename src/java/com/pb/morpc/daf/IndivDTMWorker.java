@@ -203,18 +203,18 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 							if( FTA_Restart_run == null || !FTA_Restart_run.equalsIgnoreCase("true") ){
 								dtmHH.resetHouseholdCount();
 								
-								logger.info("in indiDTMWorker, before dc , hh walk access="+hhList[i].getOriginWalkSegment());
+								//logger.info("in indiDTMWorker, before dc , hh walk access="+hhList[i].getOriginWalkSegment());
 								
 								dtmHH.indivNonMandatoryTourDc (hhList[i]);
 								dtmHH.resetHouseholdCount();
 								
-								logger.info("in indiDTMWorker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
+								//logger.info("in indiDTMWorker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
 								
 								dtmHH.indivNonMandatoryTourTc (hhList[i]);
 							}
 							dtmHH.resetHouseholdCount();
 							
-							logger.info("in indiDTMWorker, before mc , hh walk access="+hhList[i].getOriginWalkSegment());
+							//logger.info("in indiDTMWorker, before mc , hh walk access="+hhList[i].getOriginWalkSegment());
 							
 							dtmHH.indivNonMandatoryTourMc (hhList[i]);
 							
@@ -237,10 +237,10 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 					
 					//Wu added for Summit Aggregation
 					if(writeSummitAggregationFields){
-						logger.info("in indivDTMWorker, original records="+summitRecords.size());
+						//logger.info("in indivDTMWorker, original records="+summitRecords.size());
 						convertor=new VectorToArrayConvertor(summitRecords);
 						summitAggregationArray=convertor.getSummitAggregationArray();
-						logger.info("converted records="+summitAggregationArray.length);
+						//logger.info("converted records="+summitAggregationArray.length);
 						returnValue = MessageID.SUMMIT_AGGREGATION_ID;
 					}else{
 						returnValue = MessageID.RESULTS_ID;
