@@ -1244,7 +1244,8 @@ public class MorpcModelServer extends MessageProcessingTask {
     private void executeAssignmentSkimming(int iteration){
 
         String scenario=(String)propertyMap.get("scenario");
-		int year=Integer.parseInt(scenario.substring(0,4));
+        String baseYearScenario=(String)propertyMap.get("BaseYearScenario");
+		//int year=Integer.parseInt(scenario.substring(0,4));
 		
 		String RUN_TRANSIT_ASSIGNMENT_SKIMMING=(String)propertyMap.get("RUN_TRANSIT_ASSIGNMENT_SKIMMING");
 		String RUN_HIGHWAY_ASSIGNMENT_SKIMMING=(String)propertyMap.get("RUN_HIGHWAY_ASSIGNMENT_SKIMMING");
@@ -1276,7 +1277,8 @@ public class MorpcModelServer extends MessageProcessingTask {
 		    runDOSCommand(run_cmvCmd);
 		    runDOSCommand(run_extCmd);
 		
-		    if(year>2000) {//if future year
+		    if(!scenario.equalsIgnoreCase(baseYearScenario)){
+		    //if(year>2000) {//if future year
 		        runDOSCommand(run_extfutureCmd+" Y");
 		    }
 		    else {//if not future year
