@@ -271,6 +271,7 @@ public class SpecialEventDebugger {
 				record[i][9]=record[i][3]*record[i][6];
 				
 				//input skims
+				
 				for(int j=0; j<NoSkims; j++){
 					if(currentA>=0&&currentP>=0){
 						data=skimReader[j].getSkim();
@@ -281,7 +282,8 @@ public class SpecialEventDebugger {
 					}
 				}
 				
-				/************for MIAMI special event******************
+				/*
+				// * ***********for MIAMI special event******************
 				//auto utility
 				if(currentA>=0&&currentP>=0){
 					record[i][30]=-0.0212f*record[i][11]/100.0f-0.008f*18*record[i][10]/100.0f-0.008f*500f;
