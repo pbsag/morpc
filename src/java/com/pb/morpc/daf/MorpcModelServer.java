@@ -304,8 +304,11 @@ public class MorpcModelServer extends MessageProcessingTask {
         // clear the household data from the TableDataSetManager for the next iteration
 		com.pb.common.calculator.UtilityExpressionCalculator.clearData();
                
-        //write disk object array to hard drive if not FTA restart run
-        if ( !FtaRestartRun && numberOfIterations==(iteration+1) ){
+        String createDiskObjectArray=(String)propertyMap.get("CreateDiskObjectArray");
+        
+		//write disk object array to hard drive if not FTA restart run, 
+        //and if CreateDiskObjectArray is set to true, then write object array to disk
+        if ( !FtaRestartRun && createDiskObjectArray.equalsIgnoreCase("true") ){
             //write big disk object array to disk
         	writeDiskObjectArray(hhs);
         	hhs=null;
