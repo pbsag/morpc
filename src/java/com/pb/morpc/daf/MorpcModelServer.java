@@ -79,6 +79,8 @@ public class MorpcModelServer extends MessageProcessingTask {
 
     Household[] hhs = null;
 
+    private boolean FtaRestartRun = false;
+    
     public MorpcModelServer() {
     }
 
@@ -131,7 +133,16 @@ public class MorpcModelServer extends MessageProcessingTask {
         // set the global number of iterations read from the properties file
         numberOfIterations = (Integer.parseInt((String) propertyMap.get( "GlobalIterations")));
 
-        if(((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("true")){
+        
+        // determine whether this model run is for an FTA Summit analysis or not
+        if( (String)propertyMap.get("FTA_Restart_run") != null )
+        	FtaRestartRun = ((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("true");
+        else
+        	FtaRestartRun = false;
+
+        
+        
+        if(FtaRestartRun){
         	ZDMTDM zdmtdm=readDiskObjectZDMTDM(propertyMap);
         	//instantiate ZonalDataManager and TODDataManager object so that their static members are available to other classes (eg. DTMOutput)
         	zdm=new ZonalDataManager(propertyMap);
@@ -140,7 +151,6 @@ public class MorpcModelServer extends MessageProcessingTask {
         	showMemory();
         	tdm=zdmtdm.getTDM();
         	showMemory();
-
         }else{
         	// build the zonal data table
         	zdm = new ZonalDataManager(propertyMap);
@@ -177,14 +187,16 @@ public class MorpcModelServer extends MessageProcessingTask {
 
 		CMD_LOCATION = (String) propertyMap.get("CMD_LOCATION");
 
-		//if FTA_Restart_run skip PopSyn and Matrix Convertion steps
-        if (((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("false") ){
+		//if FTA_Restart_run is false, run PopSyn, otherwise skip it.
+        if (!FtaRestartRun){
 		
 			// build a synthetic population
 	        if (((String) propertyMap.get("RUN_POPULATION_SYNTHESIS_MODEL")).equalsIgnoreCase( "true"))
 	            runPopulationSynthesizer();
+	        
         }
 		
+        
 	    // call a C program to read the tpplus skims matrices and create the binary format skims matrices needed for the model run
 	    if (((String) propertyMap.get("RUN_TPPLUS_SKIMS_CONVERTER")).equalsIgnoreCase( "true")) {
 	
@@ -293,7 +305,7 @@ public class MorpcModelServer extends MessageProcessingTask {
 		com.pb.common.calculator.UtilityExpressionCalculator.clearData();
                
         //write disk object array to hard drive if not FTA restart run
-        if (((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("false")&&numberOfIterations==(iteration+1) ){
+        if ( !FtaRestartRun && numberOfIterations==(iteration+1) ){
             //write big disk object array to disk
         	writeDiskObjectArray(hhs);
         	hhs=null;
@@ -313,8 +325,8 @@ public class MorpcModelServer extends MessageProcessingTask {
 
     private void runCoreModel(int iteration) {
     	
-		//if FTA_Restart_run skip AutoOwnership and Daily Pattern steps
-        if (((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("false") ){
+		//if FTA_Restart_run is false, run AutoOwnership and Daily Pattern steps, otherwise skip them
+        if ( !FtaRestartRun ){
 	        // assign auto ownership attributes to population
 	        if (((String) propertyMap.get("RUN_AUTO_OWNERSHIP_MODEL")).equalsIgnoreCase( "true")) {
 	
@@ -373,8 +385,8 @@ public class MorpcModelServer extends MessageProcessingTask {
             waitMsg = receivePort.receive();
         }
                 
-		//if FTA_Restart_run skip Free Parking
-        if (((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("false") ){
+		//if FTA_Restart_run is false, run Free Parking model, otheriwse skip it
+        if ( !FtaRestartRun ){
 
 	        if (LOGGING) {
 	            logger.info("Memory before starting FpModel");
@@ -414,8 +426,8 @@ public class MorpcModelServer extends MessageProcessingTask {
 
 
 	    int shadowPriceIterations = (Integer.parseInt((String) propertyMap.get("NumberOfShadowPriceIterations")));
-		//if FTA_Restart_run skip balancing size variable steps
-	    if (((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("false") ){
+		//if FTA_Restart_run is false, run balancing size variable steps, otherwise skip
+	    if ( !FtaRestartRun ){
 		    // run the mandatory DC with shadow pricing.	
 	        if (LOGGING) {
 	            logger.info("Memory before balancing size variables");
@@ -463,8 +475,8 @@ public class MorpcModelServer extends MessageProcessingTask {
 
         if (((String) propertyMap.get("RUN_MANDATORY_DTM")).equalsIgnoreCase("true")) {
         	
-    		//if FTA_Restart_run skip Mandatory D step
-            if ( !((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("true") ){
+    		//if FTA_Restart_run is false, run Mandatory DC step, otherwise skip
+            if ( !FtaRestartRun ){
 	
 	            for (int i = 0; i < shadowPriceIterations; i++) {
 	
@@ -642,8 +654,8 @@ public class MorpcModelServer extends MessageProcessingTask {
 
         if (((String) propertyMap.get("RUN_JOINT_DTM")).equalsIgnoreCase("true")) {
         	
-    		//if FTA_Restart_run skip joint tour generation step
-            if (((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("false") ){
+    		//if FTA_Restart_run is false, run joint tour generation step, otherwise skip
+            if ( !FtaRestartRun ){
 	
 	            // get the Household[] from the HhArrayServer
 	            if (LOGGING)
@@ -736,8 +748,8 @@ public class MorpcModelServer extends MessageProcessingTask {
 
 
         if (((String) propertyMap.get("RUN_NON_MANDATORY_DTM")).equalsIgnoreCase("true")) {
-    		//if FTA_Restart_run skip non-mandatory tour generation step
-            if (((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("false") ){
+    		//if FTA_Restart_run is false, run non-mandatory tour generation step, otherwise skip
+            if ( !FtaRestartRun ){
 	            // get the Household[] from the HhArrayServer
 	            if (LOGGING)
 	                logger.info(this.name + " requesting array of households for individual non-mandatory tour generation.");
@@ -1375,18 +1387,20 @@ public class MorpcModelServer extends MessageProcessingTask {
     }
         
     private void writeDiskObjectZDMTDM(ZonalDataManager zdm, TODDataManager tdm, HashMap staticZonalDataMap, HashMap staticTodDataMap, HashMap propertyMap){
-    	String diskObjectZDMTDMFile=(String)propertyMap.get("DiskObjectZDMTDM.file");
-    	try{
-    		FileOutputStream out=new FileOutputStream(diskObjectZDMTDMFile);
-        	ObjectOutputStream s=new ObjectOutputStream(out);
-        	s.writeObject(zdm);
-        	s.writeObject(tdm);
-        	s.writeObject(staticZonalDataMap);
-        	s.writeObject(staticTodDataMap);
-        	s.flush();
-        	s=null;
-    	}catch(IOException e){
-    		System.err.println(e);
+    	if ( (String)propertyMap.get("DiskObjectZDMTDM.file") != null ) {
+	    	String diskObjectZDMTDMFile=(String)propertyMap.get("DiskObjectZDMTDM.file");
+	    	try{
+	    		FileOutputStream out=new FileOutputStream(diskObjectZDMTDMFile);
+	        	ObjectOutputStream s=new ObjectOutputStream(out);
+	        	s.writeObject(zdm);
+	        	s.writeObject(tdm);
+	        	s.writeObject(staticZonalDataMap);
+	        	s.writeObject(staticTodDataMap);
+	        	s.flush();
+	        	s=null;
+	    	}catch(IOException e){
+	    		System.err.println(e);
+	    	}
     	}
     }
     

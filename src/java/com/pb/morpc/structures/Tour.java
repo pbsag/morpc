@@ -614,6 +614,7 @@ public class Tour implements java.io.Externalizable {
         origTaz = in.readShort();
         destTaz = in.readShort();
         parkTaz = in.readShort();
+        originShortWalk = in.readShort();
         destShrtWlk = in.readShort();
         tourOrder = in.readShort();
         numPersons = in.readShort();
@@ -659,6 +660,7 @@ public class Tour implements java.io.Externalizable {
         out.writeShort(origTaz);
         out.writeShort(destTaz);
         out.writeShort(parkTaz);
+        out.writeShort(originShortWalk);
         out.writeShort(destShrtWlk);
         out.writeShort(tourOrder);
         out.writeShort(numPersons);
@@ -721,6 +723,7 @@ public class Tour implements java.io.Externalizable {
       logger.info("origTaz:"+origTaz);
       logger.info("destTaz:"+destTaz);
       logger.info("parkTaz:"+parkTaz);
+      logger.info("originShortWalk:"+originShortWalk);
       logger.info("destShrtWlk:"+destShrtWlk);
       logger.info("tourOrder:"+tourOrder);
       logger.info("numPersons:"+numPersons);

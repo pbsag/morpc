@@ -44,6 +44,7 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 	
 	//Wu added for Summit Aggregation
 	private SummitAggregationRecord [] summitAggregationArray;
+    private boolean FtaRestartRun = false;
 	private boolean writeSummitAggregationFields;
 
 
@@ -81,6 +82,8 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 		Message newMessage = null;
 
 
+		
+		
 		//Do some work ...
 		int messageReturnType = respondToMessage(msg);
 
@@ -127,6 +130,22 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
 
+				
+		        // determine whether this model run is for an FTA Summit analysis or not
+		        if( (String)propertyMap.get("FTA_Restart_run") != null )
+		        	FtaRestartRun = ((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("true");
+		        else
+		        	FtaRestartRun = false;
+
+		        
+				//Wu added for Summit Aggregation
+				if( ((String)propertyMap.get("writeSummitAggregationFields")) != null )
+					writeSummitAggregationFields = ((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true");
+				else
+					writeSummitAggregationFields = false;
+
+				
+
 				// create a dtmHH object
 				if (LOGGING)
 				    logger.info (this.getName() + " building dtmHH object for mandatory tcmc.");
@@ -160,9 +179,6 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 		}
 		else {
-			//wu added for FTA restart
-			//propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
-			String FTA_Restart_run=(String)propertyMap.get("FTA_Restart_run");
 			
 			// this message should contain an array of Household objects to process
 			if ( msg.getId().equals( MessageID.HOUSEHOLD_LIST )	) {
@@ -183,21 +199,14 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 					if (LOGGING)
 					    logger.info ( this.getName() + " processing household ids: " + hhList[0].getID() + " to " + hhList[hhList.length-1].getID() );
 					
-					//Wu added for Summit Aggregation
-					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")){
-						writeSummitAggregationFields=true;
-					}else{
-						writeSummitAggregationFields=false;
-					}
-					
 					for (int i=0; i < hhList.length; i++) {
 						try {
 
 							hhList[i].setProcessorId (processorId);
 							
 							//Wu added for FTA restart
-							//if FTA restart run skip DC and TC
-							if( FTA_Restart_run == null || !FTA_Restart_run.equalsIgnoreCase("true") ){
+							//do if FTA_Restart_run is false, otherwise skip DC and TC
+							if( !FtaRestartRun ){
 								dtmHH.resetHouseholdCount();
 								
 								//logger.info("in tcmc worker, before tc , hh walk access="+hhList[i].getOriginWalkSegment());
