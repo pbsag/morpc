@@ -1285,7 +1285,7 @@ public class MorpcModelServer extends MessageProcessingTask {
 		    
 		    
 		    // first iteration only
-		    if( iteration+1 == 1 ) {
+		    if( iteration+1 == 1 && iteration+1!=numberOfIterations) {
               
 		        if(RUN_HIGHWAY_ASSIGNMENT_SKIMMING.equals("true")){
 		            runDOSCommand(run_hasnammdCmd);
@@ -1338,13 +1338,13 @@ public class MorpcModelServer extends MessageProcessingTask {
 		//copy intermediate assignment results to sub iteration folders  
 		String tempDir=assignDir.trim();
 		
-        command = "copy "+tempDir + "\\" + "ve*.trp " + tempDir+"\\Iter"+(iteration+1);
+        command = "copy "+tempDir + "\\" + "*.trp " + tempDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
         runDOSCommand(command);	
-        command = "copy "+tempDir + "\\" + "h*.lod " + tempDir+"\\Iter"+(iteration+1);
+        command = "copy "+tempDir + "\\" + "*.lod " + tempDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
         runDOSCommand(command);
-        command = "copy "+tempDir + "\\" + "h*.dbf " + tempDir+"\\Iter"+(iteration+1);
+        command = "copy "+tempDir + "\\" + "*.dbf " + tempDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
         runDOSCommand(command);
         command = "copy "+tempDir + "\\" + "*.dat " + tempDir+"\\Iter"+(iteration+1);
