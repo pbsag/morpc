@@ -816,10 +816,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 				double chosenLogsum=mc[tourTypeIndex].getLogsum();
-				
+								
 				mcTime += (System.currentTimeMillis()-markTime);
 
-				
 				// set chosen in alternative in tour objects
 				hh.mandatoryTours[t].setMode (chosenModeAlt);
 				//set chosen logsum in tour object

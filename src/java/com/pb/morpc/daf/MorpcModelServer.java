@@ -1274,9 +1274,11 @@ public class MorpcModelServer extends MessageProcessingTask {
 		// first or last iteration
 		if(iteration+1 == 1 || iteration+1 == numberOfIterations) { 
 
+	        runDOSCommand(run_extfutureCmd);
 		    runDOSCommand(run_cmvCmd);
 		    runDOSCommand(run_extCmd);
-		
+
+		    /*
 		    if(!scenario.equalsIgnoreCase(baseYearScenario)){
 		    //if(year>2000) {//if future year
 		        runDOSCommand(run_extfutureCmd+" Y");
@@ -1284,7 +1286,7 @@ public class MorpcModelServer extends MessageProcessingTask {
 		    else {//if not future year
 		        runDOSCommand(run_extfutureCmd+" N");
 		    }
-		    
+		    */
 		    
 		    // first iteration only
 		    if( iteration+1 == 1 && iteration+1!=numberOfIterations) {

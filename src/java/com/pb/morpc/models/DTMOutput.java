@@ -1171,7 +1171,6 @@ public class DTMOutput implements java.io.Serializable {
 								tableData[k+38] = (float)resultsIB[21];
 								tableData[k+40] = (float)resultsIB[22];
 							}
-							tableData[k+41]=(float)it[t].getLogsum();
 						}
 						else {
 							tableData[k+31] = 0.0f;
@@ -1185,6 +1184,8 @@ public class DTMOutput implements java.io.Serializable {
 							tableData[k+39] = 0.0f;
 							tableData[k+40] = 0.0f;
 						}
+						
+						tableData[k+41]=(float)it[t].getLogsum();
 
 
 						if (outputFileDTM != null) {
@@ -1398,7 +1399,7 @@ public class DTMOutput implements java.io.Serializable {
 								tableData[k+38] = (float)resultsIB[21];
 								tableData[k+40] = (float)resultsIB[22];
 							}
-							tableData[k+41]=(float)jt[t].getLogsum();
+
 						}
 						else {
 							tableData[k+31] = 0.0f;
@@ -1413,7 +1414,8 @@ public class DTMOutput implements java.io.Serializable {
 							tableData[k+40] = 0.0f;
 						}
 
-
+						tableData[k+41]=(float)jt[t].getLogsum();
+						
 						if (outputFileDTM != null) {
 
 							outStream.print( tableData[0] );
@@ -1620,7 +1622,7 @@ public class DTMOutput implements java.io.Serializable {
 								tableData[k+38] = (float)resultsIB[21];
 								tableData[k+40] = (float)resultsIB[22];
 							}
-							tableData[k+41]=(float)it[t].getLogsum();
+
 						}
 						else {
 							tableData[k+31] = 0.0f;
@@ -1634,7 +1636,8 @@ public class DTMOutput implements java.io.Serializable {
 							tableData[k+39] = 0.0f;
 							tableData[k+40] = 0.0f;
 						}
-
+						
+						tableData[k+41]=(float)it[t].getLogsum();
 
 						if (outputFileDTM != null) {
 
@@ -1832,7 +1835,7 @@ public class DTMOutput implements java.io.Serializable {
 											tableData[k+38] = (float)resultsIB[21];
 											tableData[k+40] = (float)resultsIB[22];
 										}
-										tableData[k+41]=(float)st[s].getLogsum();
+
 									}
 									else {
 										tableData[k+31] = 0.0f;
@@ -1846,6 +1849,8 @@ public class DTMOutput implements java.io.Serializable {
 										tableData[k+39] = 0.0f;
 										tableData[k+40] = 0.0f;
 									}
+									
+									tableData[k+41]=(float)st[s].getLogsum();
 
 
 									if (outputFileDTM != null) {
