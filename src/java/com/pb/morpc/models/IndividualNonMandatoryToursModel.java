@@ -5,8 +5,7 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.model.ConcreteAlternative;
 import com.pb.common.model.LogitModel;
 import com.pb.common.util.Format;
-import com.pb.common.logging.OutputDescription;
-import com.pb.common.logging.DebugLogger;
+//import com.pb.common.logging.OutputDescription;
 import com.pb.morpc.structures.*;
 import com.pb.morpc.synpop.SyntheticPopulation;
 
@@ -36,7 +35,6 @@ public class IndividualNonMandatoryToursModel {
     static final int M44_MODEL_SHEET = 6;
 
     static Logger logger = Logger.getLogger("com.pb.morpc.models");
-    static DebugLogger debugLogger = DebugLogger.getInstance();
 
     private Household[] hh;
 
