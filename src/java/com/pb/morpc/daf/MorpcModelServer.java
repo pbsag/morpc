@@ -360,6 +360,7 @@ public class MorpcModelServer extends MessageProcessingTask {
         Message propertyMapMsg = createMessage();
         propertyMapMsg.setId(MessageID.START_INFO);
         propertyMapMsg.setValue(MessageID.PROPERTY_MAP_KEY, propertyMap);
+        propertyMapMsg.setValue(MessageID.GLOBAL_ITERATION_KEY, new Integer(iteration));
 
         Message exitMsg = createMessage();
         exitMsg.setId(MessageID.EXIT);

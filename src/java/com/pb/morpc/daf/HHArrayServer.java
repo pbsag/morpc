@@ -83,6 +83,8 @@ public class HHArrayServer extends MessageProcessingTask {
 			    	logger.fatal("HHArrayServer onMessage, no propertyMap included in this message.");
 			    }
 
+			    int globalIterations = ((Integer)msg.getValue( MessageID.GLOBAL_ITERATION_KEY )).intValue();
+
 				hhMgr = new HouseholdArrayManager( propertyMap );
 
 				
@@ -96,7 +98,7 @@ public class HHArrayServer extends MessageProcessingTask {
 				
 				// if the FTA_Restart_run property is true, start the model iteration with HH Array from a DiskObjectArray,
 				// otherwise create a new HH Array.
-				if( FtaRestartRun ) {
+				if( FtaRestartRun || globalIterations > 0 ) {
 					hhMgr.createBigHHArrayFromDiskObject();
 				} 
 				// otherwise, create an array of HHs from the household table data stored on disk

@@ -134,4 +134,7 @@ public final class MessageID implements Serializable {
 	public static final short SUMMIT_LIST_KEY_ID=41;
 	public static final String SUMMIT_LIST_KEY="SummitListKey";
 		
+	public static final short GLOBAL_ITERATION_KEY_ID = 42;
+	public static final String GLOBAL_ITERATION_KEY = "GlobalIteration";
+	
 }
