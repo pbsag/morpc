@@ -16,9 +16,11 @@ import java.util.logging.Logger;
  *
  */
 public class DataDictionary {
-    private static final int NUMFIELDS = 4;
-    private static final int NUMHHATTRIBS = 120;
-    private static final int NUMPERSATTRIBS = 130;
+	//default setting, use setter methods to change them
+    private int NUMFIELDS=4;
+    private int NUMHHATTRIBS=120;
+    private int NUMPERSATTRIBS=130;
+    
     public static final boolean DEBUG = false;
     protected Logger logger = Logger.getLogger("com.pb.morpc.synpop.pums");
     public ArrayList HHAttribs;
@@ -33,6 +35,20 @@ public class DataDictionary {
         logger.info(this.PersAttribs.size() +
             " PUMS Person variables read.");
     }
+    
+    public DataDictionary(String fileName, int NUMFIELDS, int NUMHHATTRIBS, int NUMPERSATTRIBS){
+    	this.NUMFIELDS=NUMFIELDS;
+    	this.NUMHHATTRIBS=NUMHHATTRIBS;
+    	this.NUMPERSATTRIBS=NUMPERSATTRIBS;
+        this.HHAttribs = new ArrayList(NUMHHATTRIBS);
+        this.PersAttribs = new ArrayList(NUMPERSATTRIBS);
+
+        readPUMSDataDictionary(fileName);
+        logger.info(this.HHAttribs.size() + " PUMS HH variables read.");
+        logger.info(this.PersAttribs.size() +
+            " PUMS Person variables read.");
+    }
+    
 
     public int getStartCol(ArrayList attribs, String PUMSVariable) {
         int i = getPUMSVariableIndex(attribs, PUMSVariable);
@@ -111,6 +127,14 @@ public class DataDictionary {
             logger.info(myFormat.right(
                     ((DataDictionaryRecord) attribs.get(i)).numberCols, 12));
         }
+    }
+    
+    public ArrayList getHHAttribs(){
+    	return HHAttribs;
+    }
+    
+    public ArrayList getPersonAttribs(){
+    	return PersAttribs;
     }
 
     private int getPUMSVariableIndex(ArrayList attribs, String PUMSVariable) {
