@@ -150,7 +150,12 @@ public class MorpcModelRunner extends MorpcModelBase {
         }
 
 		
-		
+        //write big disk object array to disk
+    	String diskObjectArrayFile=(String)propertyMap.get("DiskObjectArrayOutput.file");
+    	if (diskObjectArrayFile != null)
+    		hhMgr.writeDiskObjectArray( diskObjectArrayFile );
+
+    	
         // write binary matrices and summary tables and .csv output files for DTM
         DTMOutput dtmOut = new DTMOutput(propertyMap,zdm);
 		try {

@@ -725,4 +725,21 @@ public class HouseholdArrayManager implements java.io.Serializable {
     public int getNumberOfHouseoldsToProcess() {
         return totalHhsToProcess;
     }
+
+
+    public void writeDiskObjectArray( String fileName ) {
+
+    	int NoHHs=bigHHArray.length;
+    	
+    	try{
+    		DiskObjectArray diskObjectArray = new DiskObjectArray(fileName, NoHHs, 10000);       	
+    		//write each hh to disk object array
+    		for(int i=0; i<NoHHs; i++){
+        		diskObjectArray.add(i,bigHHArray[i]);
+        	}
+    	}catch(IOException e){
+    		logger.fatal("can not open disk object array file for writing");
+    	}
+    }
+        
 }

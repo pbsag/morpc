@@ -147,8 +147,8 @@ public class Household implements java.io.Externalizable {
 		originWalkSegment = (short)ChoiceModelApplication.getMonteCarloSelection(proportions);
 	}
 
-	public void setOriginWalkSegment (int taz) {
-		originWalkSegment = (short)taz;
+	public void setOriginWalkSegment (int segment) {
+		originWalkSegment = (short)segment;
 	}
 
 	public int getOriginWalkSegment () {

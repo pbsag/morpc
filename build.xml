@@ -25,9 +25,9 @@
             <include name="**/lib/*.zip"/>
         </fileset>
 
-        <fileset dir="${log4j.jar}">
-            <include name="**/*.jar"/>
-        </fileset>
+    <fileset dir="${thirdParty.dir}">
+	    <include name="**/logging-log4j-1.2.9/*.jar"/>
+   </fileset>
     </path>
 
 
