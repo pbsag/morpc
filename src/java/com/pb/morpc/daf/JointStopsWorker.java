@@ -194,6 +194,9 @@ public class JointStopsWorker extends MessageProcessingTask implements java.io.S
 					}
 
 					returnValue = MessageID.RESULTS_ID;
+					
+					//Wu added for release memory after each hh[] is processed
+					//com.pb.common.calculator.UtilityExpressionCalculator.clearData();
 
 				}
 				else {
