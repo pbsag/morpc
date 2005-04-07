@@ -982,13 +982,20 @@ public class StopsModelBase implements java.io.Serializable {
 		float totAttrsOB = 0;
 		float totAttrsIB = 0;
 		
+		int i=-1;
+		int j=-1;
+		int p=-1;
 		int k = 1;
-		for (int i=1; i <= zoneTable.getRowCount(); i++) {
+		try{
+
+		for (i=1; i <= zoneTable.getRowCount(); i++) {
 		    
+			/*
 		    if ( i == 4 ) {
 		        int dummy = 1;
 		    }
-
+		    */
+			
 			totAttrsOB = stopAttractions[11][i] + stopAttractions[21][i] + stopAttractions[31][i] +
 						stopAttractions[4][i] + stopAttractions[5][i] + stopAttractions[6][i] + 
 						stopAttractions[7][i] + stopAttractions[8][i] + stopAttractions[9][i];
@@ -997,7 +1004,7 @@ public class StopsModelBase implements java.io.Serializable {
 						stopAttractions[4][i] + stopAttractions[5][i] + stopAttractions[6][i] + 
 						stopAttractions[7][i] + stopAttractions[8][i] + stopAttractions[9][i];
 
-			for (int j=0; j < WALK_SEGMENTS; j++) {		
+			for (j=0; j < WALK_SEGMENTS; j++) {		
 				stopSize[0][1][k] = stopAttractions[11][i]*walkPctArray[j][i];
 				stopSize[1][1][k] = stopAttractions[12][i]*walkPctArray[j][i];
 				stopSize[0][2][k] = stopAttractions[21][i]*walkPctArray[j][i];
@@ -1020,7 +1027,7 @@ public class StopsModelBase implements java.io.Serializable {
 				stopTotSize[0][k] = totAttrsOB*walkPctArray[j][i];
 				stopTotSize[1][k] = totAttrsIB*walkPctArray[j][i];
 				
-				for (int p=1; p <= 9; p++) {
+				for (p=1; p <= 9; p++) {
 					regionalSize[0][p] += stopSize[0][p][k];
 					regionalSize[1][p] += stopSize[1][p][k];
 				}
@@ -1028,9 +1035,38 @@ public class StopsModelBase implements java.io.Serializable {
 				k++;
 			}
 		}
+		}catch(RuntimeException e){
+			e.printStackTrace();
+			logger.info(e.getMessage());
+			logger.info("NoRows in zoneTable="+zoneTable.getRowCount());
+			logger.info("i="+i);
+			logger.info("j="+j);
+			logger.info("k="+k);
+			logger.info("p="+p);
+			logger.info("totAttrsOB="+totAttrsOB);
+			logger.info("totAttrsIB="+totAttrsIB);
+			logger.info("walkPctArray["+j+"]["+i+"]="+walkPctArray[j][i]);
+			for(int i1=1; i1<=MAX_PURPOSE_CODE; i1++){
+				for(int i2=1; i2<=zoneTable.getRowCount(); i2++){
+					logger.info("stopAttractions["+i1+"]["+i2+"]="+stopAttractions[i1][i2]);				
+				}
+			}
+			for(int i1=0; i1<=1; i1++){
+				for(int i2=1; i2<=9; i2++){
+					logger.info("stopSize["+i1+"]["+i2+"]["+k+"]="+stopSize[i1][i2][k]);
+				}
+			}
+			logger.info("stopTotSize[0]["+k+"]="+stopTotSize[0][k]);
+			logger.info("stopTotSize[1]["+k+"]="+stopTotSize[1][k]);
+			for(int i1=1; i1<=9; i1++){
+				logger.info("regionalSize[0]["+i1+"]="+regionalSize[0][i1]);
+				logger.info("regionalSize[1]["+i1+"]="+regionalSize[1][i1]);
+			}
+			System.exit(1);
+		}
 
 		logger.info ("size variable report for stop location choice:");
-		for (int p=1; p <= 9; p++) {
+		for (p=1; p <= 9; p++) {
 			logger.info ( "outbound total regional size for purpose " + p + " = " + regionalSize[0][p] );
 			logger.info ( "inbound total regional size for purpose " + p + " = " + regionalSize[1][p] );
 		}

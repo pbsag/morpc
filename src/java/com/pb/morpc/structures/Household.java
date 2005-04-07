@@ -2047,12 +2047,18 @@ public class Household implements java.io.Externalizable {
 		return ZonalDataManager.zonal_nonw_walk[origTaz];
 	}
 
+	public float getZonalShortWalkAccessOrig () {
+		return originWalkSegment;
+	}
+	
 	/**
 	 * return the short walk access for the origin of this tour
 	*/
+	/*
 	public float getZonalShortWalkAccessOrig () {
 		return getOriginWalkSegment ();
 	}
+	*/
 
 	/**
 	 * return the short walk access for the chosen destination alternative for this tour

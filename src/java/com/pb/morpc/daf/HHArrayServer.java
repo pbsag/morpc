@@ -43,11 +43,13 @@ public class HHArrayServer extends MessageProcessingTask {
 	//Wu added to send propertyMap to workers
 	private HashMap propertyMap=null;
 	
-
+	//Wu added for FTA restart
 	private boolean FtaRestartRun = false;
+	
+	//Wu added
+	private boolean StartFromDiskObjectArray=false;
     
 	
-    
     public HHArrayServer () {
     }
 
@@ -89,18 +91,23 @@ public class HHArrayServer extends MessageProcessingTask {
 
 				hhMgr = new HouseholdArrayManager( propertyMap );
 
-				
+				//Wu added
 		        // determine whether this model run is for an FTA Summit analysis or not
-		        if( (String)propertyMap.get("FTA_Restart_run") != null )
-		        	FtaRestartRun = ((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("true");
+		        if( (String)propertyMap.get("FTA_Restart_run") != null&&((String)propertyMap.get("FTA_Restart_run")).equalsIgnoreCase("true") )
+		        	FtaRestartRun = true;
 		        else
 		        	FtaRestartRun = false;
 
-		        
+		        // Wu added
+		        if( (String)propertyMap.get("StartFromDiskObjectArray") != null&&((String)propertyMap.get("StartFromDiskObjectArray")).equalsIgnoreCase("true") )
+		        	StartFromDiskObjectArray = true;
+		        else
+		        	StartFromDiskObjectArray = false;	        
 				
-				// if the FTA_Restart_run property is true, start the model iteration with HH Array from a DiskObjectArray,
+				// if FTA restart run or must start from disk object array, start the model iteration with HH Array from a DiskObjectArray,
 				// otherwise create a new HH Array.
-				if( FtaRestartRun || globalIterations > 0 ) {
+				if( StartFromDiskObjectArray||FtaRestartRun) {
+				//if( StartFromDiskObjectArray||FtaRestartRun || globalIterations > 0 ) {
 					hhMgr.createBigHHArrayFromDiskObject();
 				} 
 				// otherwise, create an array of HHs from the household table data stored on disk

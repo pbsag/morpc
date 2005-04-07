@@ -180,9 +180,24 @@ public class MorpcModelServer extends MessageProcessingTask {
     private void runModelIteration(int iteration) {
 
         logger.info("Global iteration:" + (iteration+1) + " started.");
-
+        
         // read the property file specific to this global iteration
         propertyMap = ResourceUtil.getResourceBundleAsHashMap(iterationPropertyFiles[iteration]);
+ 
+        //Wu added
+        //if 2nd iteration starts from disk object array, then read zdm and tdm from ZDMTDMObjetOnDisk created in 1st iteration
+        //don't need to do this in 3rd iteration, because in 3rd iteration, zdm and tdm is also from the 1st iteration ZDMTDMObjectOnDisk 
+        /*
+        if(((String) propertyMap.get("StartFromDiskObjectArray")).equalsIgnoreCase( "true")&&iteration==1){
+        	ZDMTDM zdmtdm=readDiskObjectZDMTDM(propertyMap);
+        	//instantiate ZonalDataManager and TODDataManager object so that their static members are available to other classes (eg. DTMOutput)
+        	zdm=new ZonalDataManager(propertyMap);
+        	tdm=new TODDataManager(propertyMap);
+        	zdm=zdmtdm.getZDM();
+        	tdm=zdmtdm.getTDM();;
+        }
+        */
+        
         zdm.updatePropertyMap(iteration+1);
 
 		CMD_LOCATION = (String) propertyMap.get("CMD_LOCATION");
