@@ -7,6 +7,7 @@ package com.pb.morpc.models;
  * individual tours
  */
 
+import com.pb.common.model.DiscreteChoiceModel;
 import com.pb.common.model.ModelException;
 import com.pb.common.util.SeededRandom;
 import com.pb.morpc.models.ZonalDataManager;
@@ -848,6 +849,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 				
 				double[] modeChoiceProbabilities = root.getProbabilities();
+				
+				HashMap elementalProbabilities = new HashMap();
+				((DiscreteChoiceModel)root).getElementalProbabilitiesHashMap(elementalProbabilities);
+				
 				
 				int dummy=0;
 				if (tourTypes[m] != TourType.WORK) {

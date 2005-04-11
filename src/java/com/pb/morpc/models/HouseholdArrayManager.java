@@ -76,7 +76,7 @@ public class HouseholdArrayManager implements java.io.Serializable {
         int hh_id;
         int hh_taz_idPosition;
         int taz_id;
-
+        int orig_walk_segment_position;
 
 		// read household file
         TableDataSet hhTable = null;
@@ -111,6 +111,14 @@ public class HouseholdArrayManager implements java.io.Serializable {
             System.exit(1);
         }
 
+        orig_walk_segment_position = hhTable.getColumnPosition(SyntheticPopulation.HHORIGTAZWALKSEGMENT_FIELD);
+
+        if (orig_walk_segment_position <= 0) {
+            logger.fatal(SyntheticPopulation.HHORIGTAZWALKSEGMENT_FIELD +
+                " was not a field in the householdData TableDataSet.");
+            System.exit(1);
+        }
+
         int workers_f_col = hhTable.getColumnPosition(SyntheticPopulation.WORKERS_F_FIELD);
         int workers_p_col = hhTable.getColumnPosition(SyntheticPopulation.WORKERS_P_FIELD);
         int students_col = hhTable.getColumnPosition(SyntheticPopulation.STUDENTS_FIELD);
@@ -132,6 +140,7 @@ public class HouseholdArrayManager implements java.io.Serializable {
             tempHHs[i].setID((int) hhTable.getValueAt(i + 1, hh_idPosition));
             tempHHs[i].setTazID((int) hhTable.getValueAt(i + 1,
                     hh_taz_idPosition));
+            tempHHs[i].setOriginWalkSegment( (int) hhTable.getValueAt(i + 1, orig_walk_segment_position) );
             tempHHs[i].setHHIncome((int) hhTable.getValueAt(i + 1, income_col));
 
             int numOfWorkers_f = (int) hhTable.getValueAt(i + 1, workers_f_col);
@@ -496,8 +505,6 @@ public class HouseholdArrayManager implements java.io.Serializable {
             // set the array which records what person id belongs to each person type
             tempHHs[i].setPersonsByPersonTypeArray();
 
-            tempHHs[i].setInitialOriginWalkSegment( tempHHs[i].getTazID() );
-            
             if (logger.isDebugEnabled())
             	logger.info("in HouseholdArrayManager.creatBigHHArray(), initial origin shrt wlk="+tempHHs[i].getOriginWalkSegment());
 			

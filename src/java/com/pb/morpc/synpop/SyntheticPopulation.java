@@ -9,6 +9,8 @@ import com.pb.common.matrix.Vector;
 import com.pb.common.util.Format;
 
 import com.pb.morpc.matrix.MatrixUtil;
+import com.pb.morpc.models.ChoiceModelApplication;
+import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.synpop.pums2000.PUMSData;
 import com.pb.morpc.synpop.pums2000.PUMSHH;
 
@@ -34,6 +36,7 @@ public class SyntheticPopulation {
     
     // field names for zone table data
     public static final String TAZ_FIELD = "taz";
+    public static final String HHORIGTAZWALKSEGMENT_FIELD = "origWalkSegment";
     public static final String PUMA_FIELD = "puma";
     public static final String POP_FIELD = "totpop";
     public static final String HHS_FIELD = "hhs_gq";
@@ -151,6 +154,7 @@ public class SyntheticPopulation {
 
         headings.add(HHID_FIELD);
         headings.add(HHTAZID_FIELD);
+        headings.add(HHORIGTAZWALKSEGMENT_FIELD);
         headings.add(INCOME_FIELD);
         headings.add(WORKERS_F_FIELD);
         headings.add(WORKERS_P_FIELD);
@@ -169,16 +173,11 @@ public class SyntheticPopulation {
                 for (int i = 0; i < zonalHHList[zone].length; i++) {
                     tableData[hh][0] = zonalHHList[zone][i].getHHNumber();
                     tableData[hh][1] = zone;
-                    tableData[hh][2] = PUMSHH.getIncomeCategory(zonalHHList[zone][i].attribs[2]) +
-                        1;
+                    tableData[hh][2] = getInitialOriginWalkSegment (zone);
+                    tableData[hh][3] = PUMSHH.getIncomeCategory(zonalHHList[zone][i].attribs[2]) + 1;
 
-                    if (hh == 16007) {
-                        int dummy = 0;
-                    }
-
-                    for (int j = 0;
-                            j < zonalHHList[zone][i].personTypes.length; j++)
-                        tableData[hh][zonalHHList[zone][i].personTypes[j] + 2]++;
+                    for (int j = 0; j < zonalHHList[zone][i].personTypes.length; j++)
+                        tableData[hh][zonalHHList[zone][i].personTypes[j] + 3]++;
 
                     hh++;
                 }
@@ -190,6 +189,18 @@ public class SyntheticPopulation {
         return tds;
     }
 
+    
+	/**
+	 * set walk segment (0-none, 1-short, 2-long walk to transit access) for the origin for this tour
+	 */
+	private int getInitialOriginWalkSegment (int taz) {
+		double[] proportions = new double[ZonalDataManager.WALK_SEGMENTS];
+		for (int i=0; i < ZonalDataManager.WALK_SEGMENTS; i++)
+			proportions[i] = ZonalDataManager.getWalkPct(i, taz);
+		return ChoiceModelApplication.getMonteCarloSelection(proportions);
+	}
+
+	
     private HH[] getZonalHHs(int zone) {
         ArrayList labels = null;
 
