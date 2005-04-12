@@ -48,7 +48,7 @@ public class StopsModelBase implements java.io.Serializable {
 	protected int slcSoaDataSheet  = 0;
 
 
-	private float[][] walkPctArray = null;
+//	private float[][] walkPctArray = null;
 	private float[][] stopAttractions;
 
 
@@ -61,7 +61,7 @@ public class StopsModelBase implements java.io.Serializable {
 	protected float[] urbType;
 	protected float[] cnty;
 	protected float[] schdist;
-	protected float[] zonalShortAccess;
+//	protected float[] zonalShortAccess;
 
 
 	protected int numberOfZones;
@@ -686,72 +686,72 @@ public class StopsModelBase implements java.io.Serializable {
 
 
 		// get file names from properties file
-		String walkAccessFile = (String)propertyMap.get(  "WalkAccess.file");
-
-		int taz;
-		float waShrt, waLong;
-		float[] shrtArray = new float[zoneTable.getRowCount()+1];
-		float[] longArray = new float[zoneTable.getRowCount()+1];
-		walkPctArray = new float[3][zoneTable.getRowCount()+1];
-		Arrays.fill (walkPctArray[0], 1.0f);
-		Arrays.fill (walkPctArray[1], 0.0f);
-		Arrays.fill (walkPctArray[2], 0.0f);
-
-
-		if (walkAccessFile != null) {
-			try {
-                CSVFileReader reader = new CSVFileReader();
-				reader.setDelimSet( " ,\t\n\r\f\"");
-                TableDataSet wa = reader.readFile(new File(walkAccessFile));
-
-				int tazPosition = wa.getColumnPosition( "TAZ" );
-				if (tazPosition <= 0) {
-					logger.fatal( "TAZ was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
-					System.exit(1);
-				}
-
-				int shrtPosition = wa.getColumnPosition( "SHRT" );
-				if (shrtPosition <= 0) {
-					logger.fatal( "SHRT was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
-					System.exit(1);
-				}
-
-				int longPosition = wa.getColumnPosition( "LONG" );
-				if (longPosition <= 0) {
-					logger.fatal( "LONG was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
-					System.exit(1);
-				}
-
-				for (int j=1; j <= wa.getRowCount(); j++) {
-					taz = (int)wa.getValueAt( j, tazPosition );
-					shrtArray[taz] = wa.getValueAt( j, shrtPosition );
-					longArray[taz] = wa.getValueAt( j, longPosition );
-					walkPctArray[1][taz] = shrtArray[taz];
-					walkPctArray[2][taz] = longArray[taz];
-					walkPctArray[0][taz] = (float)(1.0 - (shrtArray[taz] + longArray[taz]));
-				}
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
-		else {
-			logger.fatal( "no walk access zonal data file was named in properties file.");
-			System.exit(1);
-		}
-
-
-
-		// set 0/1 values for zone doesn't/does have short walk access for all dc alternatives
-		k = 1;
-		zonalShortAccess = new float[3*zoneTable.getRowCount()+1];
-		for (int i=1; i <= zoneTable.getRowCount(); i++) {
-			for (int j=1; j <= 3; j++) {
-				zonalShortAccess[k] = shrtArray[i] > 0.0 ? 1 : 0;
-				k++;
-			}
-		}
+//		String walkAccessFile = (String)propertyMap.get(  "WalkAccess.file");
+//
+//		int taz;
+//		float waShrt, waLong;
+//		float[] shrtArray = new float[zoneTable.getRowCount()+1];
+//		float[] longArray = new float[zoneTable.getRowCount()+1];
+//		walkPctArray = new float[3][zoneTable.getRowCount()+1];
+//		Arrays.fill (walkPctArray[0], 1.0f);
+//		Arrays.fill (walkPctArray[1], 0.0f);
+//		Arrays.fill (walkPctArray[2], 0.0f);
+//
+//
+//		if (walkAccessFile != null) {
+//			try {
+//                CSVFileReader reader = new CSVFileReader();
+//				reader.setDelimSet( " ,\t\n\r\f\"");
+//                TableDataSet wa = reader.readFile(new File(walkAccessFile));
+//
+//				int tazPosition = wa.getColumnPosition( "TAZ" );
+//				if (tazPosition <= 0) {
+//					logger.fatal( "TAZ was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
+//					System.exit(1);
+//				}
+//
+//				int shrtPosition = wa.getColumnPosition( "SHRT" );
+//				if (shrtPosition <= 0) {
+//					logger.fatal( "SHRT was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
+//					System.exit(1);
+//				}
+//
+//				int longPosition = wa.getColumnPosition( "LONG" );
+//				if (longPosition <= 0) {
+//					logger.fatal( "LONG was not a field in the walk access TableDataSet built from " + walkAccessFile + ".");
+//					System.exit(1);
+//				}
+//
+//				for (int j=1; j <= wa.getRowCount(); j++) {
+//					taz = (int)wa.getValueAt( j, tazPosition );
+//					shrtArray[taz] = wa.getValueAt( j, shrtPosition );
+//					longArray[taz] = wa.getValueAt( j, longPosition );
+//					walkPctArray[1][taz] = shrtArray[taz];
+//					walkPctArray[2][taz] = longArray[taz];
+//					walkPctArray[0][taz] = (float)(1.0 - (shrtArray[taz] + longArray[taz]));
+//				}
+//			}
+//			catch (IOException e) {
+//				e.printStackTrace();
+//				System.exit(1);
+//			}
+//		}
+//		else {
+//			logger.fatal( "no walk access zonal data file was named in properties file.");
+//			System.exit(1);
+//		}
+//
+//
+//
+//		// set 0/1 values for zone doesn't/does have short walk access for all dc alternatives
+//		k = 1;
+//		zonalShortAccess = new float[3*zoneTable.getRowCount()+1];
+//		for (int i=1; i <= zoneTable.getRowCount(); i++) {
+//			for (int j=0; j < 3; j++) {
+//				zonalShortAccess[k] = ZonalDataManager.getWalkPct(j,i) > 0.0 ? 1 : 0;
+//				k++;
+//			}
+//		}
 
 		this.zoneTable = zoneTable;		
 	}
@@ -982,6 +982,8 @@ public class StopsModelBase implements java.io.Serializable {
 		float totAttrsOB = 0;
 		float totAttrsIB = 0;
 		
+		float walkPercent = 0.0f;
+		
 		int i=-1;
 		int j=-1;
 		int p=-1;
@@ -1004,28 +1006,29 @@ public class StopsModelBase implements java.io.Serializable {
 						stopAttractions[4][i] + stopAttractions[5][i] + stopAttractions[6][i] + 
 						stopAttractions[7][i] + stopAttractions[8][i] + stopAttractions[9][i];
 
-			for (j=0; j < WALK_SEGMENTS; j++) {		
-				stopSize[0][1][k] = stopAttractions[11][i]*walkPctArray[j][i];
-				stopSize[1][1][k] = stopAttractions[12][i]*walkPctArray[j][i];
-				stopSize[0][2][k] = stopAttractions[21][i]*walkPctArray[j][i];
-				stopSize[1][2][k] = stopAttractions[22][i]*walkPctArray[j][i];
-				stopSize[0][3][k] = stopAttractions[31][i]*walkPctArray[j][i];
-				stopSize[1][3][k] = stopAttractions[32][i]*walkPctArray[j][i];
-				stopSize[0][4][k] = stopAttractions[4][i]*walkPctArray[j][i];
-				stopSize[1][4][k] = stopAttractions[4][i]*walkPctArray[j][i];
-				stopSize[0][5][k] = stopAttractions[5][i]*walkPctArray[j][i];
-				stopSize[1][5][k] = stopAttractions[5][i]*walkPctArray[j][i];
-				stopSize[0][6][k] = stopAttractions[6][i]*walkPctArray[j][i];
-				stopSize[1][6][k] = stopAttractions[6][i]*walkPctArray[j][i];
-				stopSize[0][7][k] = stopAttractions[7][i]*walkPctArray[j][i];
-				stopSize[1][7][k] = stopAttractions[7][i]*walkPctArray[j][i];
-				stopSize[0][8][k] = stopAttractions[8][i]*walkPctArray[j][i];
-				stopSize[1][8][k] = stopAttractions[8][i]*walkPctArray[j][i];
-				stopSize[0][9][k] = stopAttractions[9][i]*walkPctArray[j][i];
-				stopSize[1][9][k] = stopAttractions[9][i]*walkPctArray[j][i];
+			for (j=0; j < WALK_SEGMENTS; j++) {
+				walkPercent = ZonalDataManager.getWalkPct(j,i);
+				stopSize[0][1][k] = stopAttractions[11][i]*walkPercent;
+				stopSize[1][1][k] = stopAttractions[12][i]*walkPercent;
+				stopSize[0][2][k] = stopAttractions[21][i]*walkPercent;
+				stopSize[1][2][k] = stopAttractions[22][i]*walkPercent;
+				stopSize[0][3][k] = stopAttractions[31][i]*walkPercent;
+				stopSize[1][3][k] = stopAttractions[32][i]*walkPercent;
+				stopSize[0][4][k] = stopAttractions[4][i]*walkPercent;
+				stopSize[1][4][k] = stopAttractions[4][i]*walkPercent;
+				stopSize[0][5][k] = stopAttractions[5][i]*walkPercent;
+				stopSize[1][5][k] = stopAttractions[5][i]*walkPercent;
+				stopSize[0][6][k] = stopAttractions[6][i]*walkPercent;
+				stopSize[1][6][k] = stopAttractions[6][i]*walkPercent;
+				stopSize[0][7][k] = stopAttractions[7][i]*walkPercent;
+				stopSize[1][7][k] = stopAttractions[7][i]*walkPercent;
+				stopSize[0][8][k] = stopAttractions[8][i]*walkPercent;
+				stopSize[1][8][k] = stopAttractions[8][i]*walkPercent;
+				stopSize[0][9][k] = stopAttractions[9][i]*walkPercent;
+				stopSize[1][9][k] = stopAttractions[9][i]*walkPercent;
 				
-				stopTotSize[0][k] = totAttrsOB*walkPctArray[j][i];
-				stopTotSize[1][k] = totAttrsIB*walkPctArray[j][i];
+				stopTotSize[0][k] = totAttrsOB*walkPercent;
+				stopTotSize[1][k] = totAttrsIB*walkPercent;
 				
 				for (p=1; p <= 9; p++) {
 					regionalSize[0][p] += stopSize[0][p][k];
@@ -1036,8 +1039,6 @@ public class StopsModelBase implements java.io.Serializable {
 			}
 		}
 		}catch(RuntimeException e){
-			e.printStackTrace();
-			logger.info(e.getMessage());
 			logger.info("NoRows in zoneTable="+zoneTable.getRowCount());
 			logger.info("i="+i);
 			logger.info("j="+j);
@@ -1045,7 +1046,7 @@ public class StopsModelBase implements java.io.Serializable {
 			logger.info("p="+p);
 			logger.info("totAttrsOB="+totAttrsOB);
 			logger.info("totAttrsIB="+totAttrsIB);
-			logger.info("walkPctArray["+j+"]["+i+"]="+walkPctArray[j][i]);
+			logger.info("walkPercent="+ZonalDataManager.getWalkPct(j,i));
 			for(int i1=1; i1<=MAX_PURPOSE_CODE; i1++){
 				for(int i2=1; i2<=zoneTable.getRowCount(); i2++){
 					logger.info("stopAttractions["+i1+"]["+i2+"]="+stopAttractions[i1][i2]);				
@@ -1062,6 +1063,8 @@ public class StopsModelBase implements java.io.Serializable {
 				logger.info("regionalSize[0]["+i1+"]="+regionalSize[0][i1]);
 				logger.info("regionalSize[1]["+i1+"]="+regionalSize[1][i1]);
 			}
+			e.printStackTrace();
+			logger.info(e.getMessage());
 			System.exit(1);
 		}
 
