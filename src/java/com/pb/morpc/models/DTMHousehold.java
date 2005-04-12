@@ -7,7 +7,10 @@ package com.pb.morpc.models;
  * individual tours
  */
 
-import com.pb.common.model.DiscreteChoiceModel;
+//import com.pb.common.model.DiscreteChoiceModel;
+import com.pb.common.model.ConcreteAlternative;
+import java.util.Set;
+import java.util.Iterator;
 import com.pb.common.model.ModelException;
 import com.pb.common.util.SeededRandom;
 import com.pb.morpc.models.ZonalDataManager;
@@ -846,14 +849,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//Wu added for Summit Aggregation
 				LogitModel root=mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
 				int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
-				
-				
-				double[] modeChoiceProbabilities = root.getProbabilities();
-				
-				HashMap elementalProbabilities = new HashMap();
-				((DiscreteChoiceModel)root).getElementalProbabilitiesHashMap(elementalProbabilities);
-				
-				
+											
 				int dummy=0;
 				if (tourTypes[m] != TourType.WORK) {
 					dummy = 1;
@@ -2993,14 +2989,38 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		Vector result=new Vector();
 		//current SummitAggregationRecord
 		SummitAggregationRecord record=null;
-
-		
+	
 		JointTour[] jt;
 		Tour[] it;
 		Tour[] st;
-
-		double [] expUtils=root.getExponentiatedUtilities();
-		double [] probs=root.getProbabilities();
+		
+		HashMap elementalAltMap=new HashMap();
+		root.getElementalAlternativeHashMap(elementalAltMap);
+		Set alts=elementalAltMap.entrySet();
+		Iterator itr=alts.iterator();
+		double [] elementalUtils=new double[alts.size()];
+		double [] elementalConst=new double[alts.size()];
+		double [] expUtils=new double[alts.size()];
+		
+		int counter=0;
+        while (itr.hasNext()) {
+            elementalUtils[counter] = ((ConcreteAlternative) itr.next()).getUtility();
+            elementalConst[counter]=((ConcreteAlternative) itr.next()).getConstant();
+            expUtils[counter]=Math.exp(elementalUtils[counter]+elementalConst[counter]);
+            counter++;
+        }
+		
+		HashMap elementalProbMap=new HashMap();
+		root.getElementalProbabilitiesHashMap(elementalProbMap);	
+		Set probs=elementalProbMap.entrySet();	
+		itr=probs.iterator();
+		double [] elementalProbs=new double[probs.size()];
+		
+        counter=0;
+        while (itr.hasNext()) {
+            elementalProbs[counter] = ((Double) itr.next()).doubleValue();
+            counter++;
+        }
 		
 		//mandatory tours
 		if(tourCategory.equalsIgnoreCase("mandatory")){
@@ -3027,7 +3047,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					record.setMode(it[t].getMode());
 	
 					record.setExpUtils(expUtils);
-					record.setProbs(probs);
+					record.setProbs(elementalProbs);
 					result.add(record);
 				}
 			}
@@ -3057,7 +3077,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					record.setMode(jt[t].getMode());
 					
 					record.setExpUtils(expUtils);
-					record.setProbs(probs);
+					record.setProbs(elementalProbs);
 					result.add(record);
 				}
 			}
@@ -3087,7 +3107,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					record.setMode(it[t].getMode());	
 					
 					record.setExpUtils(expUtils);
-					record.setProbs(probs);
+					record.setProbs(elementalProbs);
 					result.add(record);
 				}
 			}
@@ -3121,7 +3141,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 								record.setMode(st[s].getMode());
 								
 								record.setExpUtils(expUtils);
-								record.setProbs(probs);		
+								record.setProbs(elementalProbs);		
 								result.add(record);
 							}
 						}
