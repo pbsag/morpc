@@ -47,6 +47,8 @@ public class SummitAggregationRecord implements Serializable{
 	protected double [] probs;
 	//exponentiated utilities
 	protected double [] expUtils;
+	//alternative names
+	protected String [] altNames;
 	
 	public SummitAggregationRecord(){		
 	}
@@ -121,6 +123,10 @@ public class SummitAggregationRecord implements Serializable{
 	
 	public void setExpUtils(double [] expUtils){
 		this.expUtils=expUtils;
+	}
+	
+	public void setAltNames(String [] altNames){
+		this.altNames=altNames;
 	}
 		
 	public int getHouseholdID(){
@@ -197,6 +203,10 @@ public class SummitAggregationRecord implements Serializable{
 	
 	public int getNoFields(){
 		return 16+probs.length+expUtils.length;
+	}
+	
+	public String [] getAltNames(){
+		return altNames;
 	}
 
 }

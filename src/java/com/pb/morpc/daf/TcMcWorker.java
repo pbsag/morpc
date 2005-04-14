@@ -227,10 +227,10 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 							}
 						}
 						catch (java.lang.Exception e) {
-						    e.printStackTrace();
 							logger.fatal ("runtime exception occurred in mandatory TcMc for household id=" + hhList[i].getID() + " in " + this.getName() );
 							logger.fatal(e.getMessage());
 							hhList[i].writeContentToLogger(logger);
+						    e.printStackTrace();
 							System.exit(-1);
 						}
 					}

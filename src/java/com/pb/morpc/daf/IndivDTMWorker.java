@@ -233,10 +233,10 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 
 						}
 						catch (java.lang.Exception e) {
-						    e.printStackTrace();
 							logger.fatal ("runtime exception occurred in indiv non-mandatory dtm for household id=" + hhList[i].getID() + "in " + this.getName() );
 							logger.fatal(e.getMessage());
 							hhList[i].writeContentToLogger(logger);
+						    e.printStackTrace();
 							System.exit(-1);
 						}
 					}

@@ -167,10 +167,10 @@ public class JointStopsWorker extends MessageProcessingTask implements java.io.S
 	
 						}
 						catch (java.lang.Exception e) {
-						    e.printStackTrace();
 							logger.fatal ("runtime exception occurred in joint stop freq/loc for household id=" + hhList[i].getID() + "in " + this.getName() );
 							logger.fatal(e.getMessage());
 							hhList[i].writeContentToLogger(logger);
+						    e.printStackTrace();
 							System.exit(-1);
 						}
 					}
@@ -185,10 +185,10 @@ public class JointStopsWorker extends MessageProcessingTask implements java.io.S
 
 						}
 						catch (java.lang.Exception e) {
-							e.printStackTrace();
 							logger.fatal ("runtime exception occurred in joint stop mode for household id=" + hhList[i].getID() + "in " + this.getName() );
 							logger.fatal(e.getMessage());
 							hhList[i].writeContentToLogger(logger);
+							e.printStackTrace();
 							System.exit(-1);
 						}
 					}

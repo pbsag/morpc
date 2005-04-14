@@ -188,10 +188,10 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 	
 						}
 						catch (java.lang.Exception e) {
-							e.printStackTrace();
 							logger.fatal ("runtime exception occurred in at-work stop freq/loc for household id=" + hhList[i].getID() + "in " + this.getName() );
 							logger.fatal(e.getMessage());
-//							hhList[i].writeContentToLogger(logger);
+							e.printStackTrace();
+							hhList[i].writeContentToLogger(logger);
 						}
 					}
 
@@ -207,10 +207,10 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 
 						}
 						catch (java.lang.Exception e) {
-							e.printStackTrace();
 							logger.fatal ("runtime exception occurred in at-work stop mode for household id=" + hhList[i].getID() + "in " + this.getName() );
 							logger.fatal(e.getMessage());
-//							hhList[i].writeContentToLogger(logger);
+							e.printStackTrace();
+							hhList[i].writeContentToLogger(logger);
 						}
 					}
 

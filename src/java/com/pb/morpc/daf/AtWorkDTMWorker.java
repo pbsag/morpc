@@ -249,10 +249,10 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 							//logger.info("in TcMcWorker before create logsum records.");
 						}
 						catch (java.lang.Exception e) {
-							e.printStackTrace();
 							logger.fatal ("runtime exception occurred in at-work dtm for household id=" + hhList[i].getID() + " in " + this.getName() );
 							logger.fatal(e.getMessage());
                             hhList[i].writeContentToLogger(logger);
+							e.printStackTrace();
                             System.exit(-1);
 						}
 					}
