@@ -19,14 +19,10 @@ import java.io.*;
 
 public class DTMModelBase implements java.io.Serializable {
 
-	public static final int WALK_SEGMENTS = 3;
-	public static final int MAX_DISTRIBUTED_PROCESSORES = 32;
-
-
 	protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 
-	protected int processorId = 0;
+	protected int processorIndex = 0;
     
 
 	protected int model5Sheet  = 0;
@@ -88,12 +84,23 @@ public class DTMModelBase implements java.io.Serializable {
 	protected int[] mcLogsumAvailability;
 		
 	protected int[] dcSample;
-	public static float[][] dcCorrections;
 	protected int[] tcSample;
 	protected int[] mcSample;
 	protected int[] pcSample;
 	protected int[] smcSample = new int[2];
 
+	
+	
+	// This array is declared as public static, because it is referenced by the Household
+	// object acting as a DMU to pass information to the UEC.  The UEC control files make
+	// references to this data via @ and @@ variables.
+	// Since this array is instantiated in multiple parallel tasks within the same VM, and it
+	// has to be static for the Household DMU, it is further dimensioned by processor ID so
+	// that each task has its own static copy of the data.
+	public static float[][] dcCorrections;
+
+	
+	
 	protected IndexValues index = new IndexValues();
 
 
@@ -126,11 +133,11 @@ public class DTMModelBase implements java.io.Serializable {
 	
 		
 	
-	// this constructor used to set processorId when called by a distributed application
+	// this constructor used to set processorIndex when called by a distributed application
 	public DTMModelBase ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes, ZonalDataManager zdm ) {
 		
 	    this.zdm = zdm;
-	    this.processorId = processorId;
+	    this.processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
 		initDTMModelBase ( propertyMap, tourTypeCategory, tourTypes );
 	  
 	}
@@ -142,7 +149,7 @@ public class DTMModelBase implements java.io.Serializable {
 	public DTMModelBase ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes, ZonalDataManager zdm ) {
 		
 		this.zdm = zdm;
-		this.processorId = 0;
+		this.processorIndex = 0;
 		initDTMModelBase ( propertyMap, tourTypeCategory, tourTypes );
 	  
 	}
@@ -251,8 +258,8 @@ public class DTMModelBase implements java.io.Serializable {
 			mcUEC[i] = mc[i].getUEC(model7Sheet,  m7DataSheet);
 
 			
-			modalODUtilityMap = new HashMap[MAX_DISTRIBUTED_PROCESSORES];
-			for (int m=0; m < MAX_DISTRIBUTED_PROCESSORES; m++)
+			modalODUtilityMap = new HashMap[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES];
+			for (int m=0; m < ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES; m++)
 				modalODUtilityMap[m] = new HashMap();
 
 			
@@ -325,7 +332,7 @@ public class DTMModelBase implements java.io.Serializable {
 		tcSample = new int[numTcAlternatives+1];
 		mcSample = new int[numMcAlternatives+1];
 		pcSample = new int[numPcAlternatives+1];
-		dcCorrections = new float[MAX_DISTRIBUTED_PROCESSORES][numDcAlternatives+1];
+		dcCorrections = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numDcAlternatives+1];
 
 		int[] mcLogsumAvailability = new int[numDcAlternatives+1];
 		Arrays.fill (mcLogsumAvailability, 1);
@@ -396,9 +403,9 @@ public class DTMModelBase implements java.io.Serializable {
 //						+ Integer.toString(hh.getChosenDest() );
 //		
 //
-//		if ( modalODUtilityMap[processorId].containsKey( mapKey ) ) {
+//		if ( modalODUtilityMap[processorIndex].containsKey( mapKey ) ) {
 //			
-//			ModalUtilities = (double[]) modalODUtilityMap[processorId].get( mapKey );
+//			ModalUtilities = (double[]) modalODUtilityMap[processorIndex].get( mapKey );
 //
 //		}
 //		else {
@@ -410,11 +417,11 @@ public class DTMModelBase implements java.io.Serializable {
 
 			ModalUtilities = mcODUEC[tourTypeIndex].solve(index, hh, mcLogsumAvailability);
 //
-//			modalODUtilityMap[processorId].put ( mapKey, ModalUtilities );
+//			modalODUtilityMap[processorIndex].put ( mapKey, ModalUtilities );
 //
 //		}
 
-		zdm.setOdUtilModeAlt (processorId, ModalUtilities);
+		zdm.setOdUtilModeAlt (processorIndex, ModalUtilities);
 
 	}
 

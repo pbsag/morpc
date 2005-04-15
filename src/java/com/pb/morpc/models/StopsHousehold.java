@@ -73,7 +73,6 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 		for (int i=0; i < 12; i++)
 			smcUEC[i] = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), i+1, 0, this.propertyMap, Household.class);
 		
-		this.processorId = 0;
 		this.count = 1;
 	}
     
@@ -106,7 +105,6 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			smcUEC[i] = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), i+1, 0, this.propertyMap, Household.class);
 
 		
-		this.processorId = processorId;
 		this.count = 1;
 	}
     
@@ -221,7 +219,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				
 						// set destination choice alternative availability to true if size > 0 for the segment.
 						preSampleAlt = (int) (slcOBAvailability.length * SeededRandom.getRandom());
-						if ( stopSize[0][tourType][preSampleAlt] > 0.0 ) {
+						if ( stopSize[processorIndex][0][tourType][preSampleAlt] > 0.0 ) {
 							slcOBAvailability[preSampleAlt] = true;
 							preSampleCount++;
 						}
@@ -239,7 +237,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					for (k=0; k < slcOBAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						if ( stopSize[0][tourType][k] > 0.0 ) {
+						if ( stopSize[processorIndex][0][tourType][k] > 0.0 ) {
 							slcOBAvailability[k] = true;
 						}
 					}
@@ -253,11 +251,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				soaCorrections[0] = slcSoa[tourTypeIndex][0][soaIndex].getSampleCorrectionFactors();
 
 				Arrays.fill(slcSample[0], 0);
-				Arrays.fill(slcCorrections[processorId][0], 0.0f);
+				Arrays.fill(slcCorrections[processorIndex][0], 0.0f);
 				Arrays.fill ( slcOBAvailability, false );
 				for (int j=1; j < soaSample[0].length; j++) {
 					slcSample[0][soaSample[0][j]] = 1;
-					slcCorrections[processorId][0][soaSample[0][j]] = soaCorrections[0][j];
+					slcCorrections[processorIndex][0][soaSample[0][j]] = soaCorrections[0][j];
 					slcOBAvailability[soaSample[0][j]] = true;
 				}
 
@@ -268,11 +266,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 				Arrays.fill ( slcOBAvailability, true );
 				Arrays.fill(slcSample[0], 1);
-				Arrays.fill(slcCorrections[processorId][0], 0.0f);
+				Arrays.fill(slcCorrections[processorIndex][0], 0.0f);
 
 				for (k=0; k < slcOBAvailability.length; k++) {
 					// set destination choice alternative availability to true if size > 0 for the segment.
-					if ( stopSize[0][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
+					if ( stopSize[processorIndex][0][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
 						slcOBAvailability[k] = false;
 						slcSample[0][k] = 0;
 					}
@@ -288,7 +286,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 			// calculate stop location choice logsum for outbound halftours for the hh
 			slc[0][autoTransit][tourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
-			slcLogsum[processorId][0] = (float)(slc[0][autoTransit][tourType].getLogsum () - ( autoTransit == 0 ? MathUtil.log( slcSoa[tourTypeIndex][0][soaIndex].getSlcLogsumCorrectionFactor() ) : 0.0 ) );
+			slcLogsum[processorIndex][0] = (float)(slc[0][autoTransit][tourType].getLogsum () - ( autoTransit == 0 ? MathUtil.log( slcSoa[tourTypeIndex][0][soaIndex].getSlcLogsumCorrectionFactor() ) : 0.0 ) );
 					
 			logsumTime += (System.currentTimeMillis()-markTime);
 
@@ -328,7 +326,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				
 							// set destination choice alternative availability to true if size > 0 for the segment.
 							preSampleAlt = (int) (slcIBAvailability.length * SeededRandom.getRandom());
-							if ( stopSize[1][tourType][preSampleAlt] > 0.0 ) {
+							if ( stopSize[processorIndex][1][tourType][preSampleAlt] > 0.0 ) {
 								slcIBAvailability[preSampleAlt] = true;
 								preSampleCount++;
 							}
@@ -346,7 +344,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 						for (k=0; k < slcIBAvailability.length; k++) {
 							// set destination choice alternative availability to true if size > 0 for the segment.
-							if ( stopSize[1][tourType][k] > 0.0 ) {
+							if ( stopSize[processorIndex][1][tourType][k] > 0.0 ) {
 								slcIBAvailability[k] = true;
 							}
 						}
@@ -360,11 +358,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					soaCorrections[1] = slcSoa[tourTypeIndex][1][soaIndex].getSampleCorrectionFactors();
 
 					Arrays.fill(slcSample[1], 0);
-					Arrays.fill(slcCorrections[processorId][1], 0.0f);
+					Arrays.fill(slcCorrections[processorIndex][1], 0.0f);
 					Arrays.fill ( slcIBAvailability, false );
 					for (int j=1; j < soaSample[1].length; j++) {
 						slcSample[1][soaSample[1][j]] = 1;
-						slcCorrections[processorId][1][soaSample[1][j]] = soaCorrections[1][j];
+						slcCorrections[processorIndex][1][soaSample[1][j]] = soaCorrections[1][j];
 						slcIBAvailability[soaSample[1][j]] = true;
 					}
 
@@ -374,12 +372,12 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				else {
 
 					Arrays.fill(slcSample[1], 1);
-					Arrays.fill(slcCorrections[processorId][1], 0.0f);
+					Arrays.fill(slcCorrections[processorIndex][1], 0.0f);
 					Arrays.fill ( slcIBAvailability, true );
 			
 					for (k=0; k < slcIBAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						if ( stopSize[1][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
+						if ( stopSize[processorIndex][1][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
 							slcIBAvailability[k] = false;
 							slcSample[1][k] = 0;
 						}
@@ -420,8 +418,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[0][autoTransit][tourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
@@ -449,8 +447,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[1][autoTransit][tourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
@@ -477,8 +475,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[0][autoTransit][tourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
@@ -499,8 +497,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[1][autoTransit][tourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
@@ -778,7 +776,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				
 						// set destination choice alternative availability to true if size > 0 for the segment.
 						preSampleAlt = (int) (slcIBAvailability.length * SeededRandom.getRandom());
-						if ( stopSize[1][tourType][preSampleAlt] > 0.0 ) {
+						if ( stopSize[processorIndex][1][tourType][preSampleAlt] > 0.0 ) {
 							slcIBAvailability[preSampleAlt] = true;
 							preSampleCount++;
 						}
@@ -796,7 +794,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					for (k=0; k < slcIBAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						if ( stopSize[1][tourType][k] > 0.0 ) {
+						if ( stopSize[processorIndex][1][tourType][k] > 0.0 ) {
 							slcIBAvailability[k] = true;
 						}
 					}
@@ -808,11 +806,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				soaCorrections[1] = slcSoa[tourTypeIndex][1][soaIndex].getSampleCorrectionFactors();
 
 				Arrays.fill(slcSample[1], 0);
-				Arrays.fill(slcCorrections[processorId][1], 0.0f);
+				Arrays.fill(slcCorrections[processorIndex][1], 0.0f);
 				Arrays.fill(slcIBAvailability, false);
 				for (int i=1; i < soaSample[1].length; i++) {
 					slcSample[1][soaSample[1][i]] = 1;
-					slcCorrections[processorId][1][soaSample[1][i]] = soaCorrections[1][i];
+					slcCorrections[processorIndex][1][soaSample[1][i]] = soaCorrections[1][i];
 					slcIBAvailability[soaSample[1][i]] = true;
 				}
 
@@ -822,12 +820,12 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			else {
 
 				Arrays.fill(slcSample[1], 1);
-				Arrays.fill(slcCorrections[processorId][1], 0.0f);
+				Arrays.fill(slcCorrections[processorIndex][1], 0.0f);
 				Arrays.fill (slcIBAvailability, true);
 		
 				for (k=0; k < slcIBAvailability.length; k++) {
 					// set destination choice alternative availability to true if size > 0 for the segment.
-					if ( stopSize[1][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
+					if ( stopSize[processorIndex][1][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
 						slcSample[1][k] = 0;
 						slcIBAvailability[k] = false;
 					}
@@ -845,7 +843,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 			// calculate stop location choice logsum for outbound halftours for the hh
 			slc[1][autoTransit][tourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
-			slcLogsum[processorId][1] = (float)(slc[1][autoTransit][tourType].getLogsum () - ( autoTransit == 0 ? MathUtil.log( slcSoa[tourTypeIndex][1][soaIndex].getSlcLogsumCorrectionFactor() ) : 0.0 ) );
+			slcLogsum[processorIndex][1] = (float)(slc[1][autoTransit][tourType].getLogsum () - ( autoTransit == 0 ? MathUtil.log( slcSoa[tourTypeIndex][1][soaIndex].getSlcLogsumCorrectionFactor() ) : 0.0 ) );
 					
 			logsumTime += (System.currentTimeMillis()-markTime);
 
@@ -882,7 +880,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				
 							// set destination choice alternative availability to true if size > 0 for the segment.
 							preSampleAlt = (int) (slcOBAvailability.length * SeededRandom.getRandom());
-							if ( stopSize[0][tourType][preSampleAlt] > 0.0 ) {
+							if ( stopSize[processorIndex][0][tourType][preSampleAlt] > 0.0 ) {
 								slcOBAvailability[preSampleAlt] = true;
 								preSampleCount++;
 							}
@@ -900,7 +898,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 						for (k=0; k < slcOBAvailability.length; k++) {
 							// set destination choice alternative availability to true if size > 0 for the segment.
-							if ( stopSize[0][tourType][k] > 0.0 ) {
+							if ( stopSize[processorIndex][0][tourType][k] > 0.0 ) {
 								slcOBAvailability[k] = true;
 							}
 						}
@@ -914,11 +912,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					soaCorrections[0] = slcSoa[tourTypeIndex][0][soaIndex].getSampleCorrectionFactors();
 
 					Arrays.fill(slcSample[0], 0);
-					Arrays.fill(slcCorrections[processorId][0], 0.0f);
+					Arrays.fill(slcCorrections[processorIndex][0], 0.0f);
 					Arrays.fill (slcOBAvailability, false);
 					for (int j=1; j < soaSample[0].length; j++) {
 						slcSample[0][soaSample[0][j]] = 1;
-						slcCorrections[processorId][0][soaSample[0][j]] = soaCorrections[0][j];
+						slcCorrections[processorIndex][0][soaSample[0][j]] = soaCorrections[0][j];
 						slcOBAvailability[soaSample[0][j]] = true;
 					}
 
@@ -928,12 +926,12 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				else {
 
 					Arrays.fill(slcSample[0], 1);
-					Arrays.fill(slcCorrections[processorId][0], 0.0f);
+					Arrays.fill(slcCorrections[processorIndex][0], 0.0f);
 					Arrays.fill (slcOBAvailability, true);
 			
 					for (k=0; k < slcOBAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						if ( stopSize[0][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
+						if ( stopSize[processorIndex][0][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
 							slcSample[0][k] = 0;
 							slcOBAvailability[k] = false;
 						}
@@ -973,8 +971,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[0][autoTransit][tourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -1003,8 +1001,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[1][autoTransit][tourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -1033,8 +1031,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[0][autoTransit][tourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -1058,8 +1056,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[1][autoTransit][tourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -1343,7 +1341,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				
 						// set destination choice alternative availability to true if size > 0 for the segment.
 						preSampleAlt = (int) (slcIBAvailability.length * SeededRandom.getRandom());
-						if ( stopSize[1][tourType][preSampleAlt] > 0.0 ) {
+						if ( stopSize[processorIndex][1][tourType][preSampleAlt] > 0.0 ) {
 							slcIBAvailability[preSampleAlt] = true;
 							preSampleCount++;
 						}
@@ -1361,7 +1359,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					for (k=0; k < slcIBAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						if ( stopSize[1][tourType][k] > 0.0 ) {
+						if ( stopSize[processorIndex][1][tourType][k] > 0.0 ) {
 							slcIBAvailability[k] = true;
 						}
 					}
@@ -1373,11 +1371,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				soaCorrections[1] = slcSoa[tourTypeIndex][1][soaIndex].getSampleCorrectionFactors();
     
 				Arrays.fill(slcSample[1], 0);
-				Arrays.fill(slcCorrections[processorId][1], 0.0f);
+				Arrays.fill(slcCorrections[processorIndex][1], 0.0f);
 				Arrays.fill(slcIBAvailability, false);
 				for (int i=1; i < soaSample[1].length; i++) {
 					slcSample[1][soaSample[1][i]] = 1;
-					slcCorrections[processorId][1][soaSample[1][i]] = soaCorrections[1][i];
+					slcCorrections[processorIndex][1][soaSample[1][i]] = soaCorrections[1][i];
 					slcIBAvailability[soaSample[1][i]] = true;
 				}
 
@@ -1387,12 +1385,12 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			else {
 
 				Arrays.fill(slcSample[1], 1);
-				Arrays.fill(slcCorrections[processorId][1], 0.0f);
+				Arrays.fill(slcCorrections[processorIndex][1], 0.0f);
 				Arrays.fill (slcIBAvailability, true);
 		
 				for (k=0; k < slcIBAvailability.length; k++) {
 					// set destination choice alternative availability to true if size > 0 for the segment.
-					if ( stopSize[1][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
+					if ( stopSize[processorIndex][1][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
 						slcSample[1][k] = 0;
 						slcIBAvailability[k] = false;
 					}
@@ -1407,7 +1405,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			// compute stop location choice logsum for inbound halftours for the hh
 			// calculate inbound stop location choice logsum
 			slc[1][autoTransit][tourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
-			slcLogsum[processorId][1] = (float)(slc[1][autoTransit][tourType].getLogsum () - ( autoTransit == 0 ? MathUtil.log( slcSoa[tourTypeIndex][1][soaIndex].getSlcLogsumCorrectionFactor() ) : 0.0 ) );
+			slcLogsum[processorIndex][1] = (float)(slc[1][autoTransit][tourType].getLogsum () - ( autoTransit == 0 ? MathUtil.log( slcSoa[tourTypeIndex][1][soaIndex].getSlcLogsumCorrectionFactor() ) : 0.0 ) );
 
 			logsumTime += (System.currentTimeMillis()-markTime);
 
@@ -1447,7 +1445,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				
 							// set destination choice alternative availability to true if size > 0 for the segment.
 							preSampleAlt = (int) (slcOBAvailability.length * SeededRandom.getRandom());
-							if ( stopSize[0][tourType][preSampleAlt] > 0.0 ) {
+							if ( stopSize[processorIndex][0][tourType][preSampleAlt] > 0.0 ) {
 								slcOBAvailability[preSampleAlt] = true;
 								preSampleCount++;
 							}
@@ -1465,7 +1463,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 						for (k=0; k < slcOBAvailability.length; k++) {
 							// set destination choice alternative availability to true if size > 0 for the segment.
-							if ( stopSize[0][tourType][k] > 0.0 ) {
+							if ( stopSize[processorIndex][0][tourType][k] > 0.0 ) {
 								slcOBAvailability[k] = true;
 							}
 						}
@@ -1478,11 +1476,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					soaCorrections[0] = slcSoa[tourTypeIndex][0][soaIndex].getSampleCorrectionFactors();
 
 					Arrays.fill(slcSample[0], 0);
-					Arrays.fill(slcCorrections[processorId][0], 0.0f);
+					Arrays.fill(slcCorrections[processorIndex][0], 0.0f);
 					Arrays.fill(slcOBAvailability, false);
 					for (int j=1; j < soaSample[0].length; j++) {
 						slcSample[0][soaSample[0][j]] = 1;
-						slcCorrections[processorId][0][soaSample[0][j]] = soaCorrections[0][j];
+						slcCorrections[processorIndex][0][soaSample[0][j]] = soaCorrections[0][j];
 						slcOBAvailability[soaSample[0][j]] = true;
 					}
 
@@ -1492,12 +1490,12 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				else {
 
 					Arrays.fill(slcSample[0], 1);
-					Arrays.fill(slcCorrections[processorId][0], 0.0f);
+					Arrays.fill(slcCorrections[processorIndex][0], 0.0f);
 					Arrays.fill(slcOBAvailability, true);
 			
 					for (k=0; k < slcOBAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						if ( stopSize[0][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
+						if ( stopSize[processorIndex][0][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
 							slcOBAvailability[k] = false;
 							slcSample[0][k] = 0;
 						}
@@ -1537,8 +1535,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[0][autoTransit][tourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						chosen = 1;
@@ -1570,8 +1568,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[1][autoTransit][tourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no inbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -1599,8 +1597,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[0][autoTransit][tourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no outbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -1623,8 +1621,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					slc[1][autoTransit][tourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
-						chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-						chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
 						logger.warn ( "no inbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -1951,7 +1949,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 								// set destination choice alternative availability to true if size > 0 for the segment.
 								preSampleAlt = (int) (slcIBAvailability.length * SeededRandom.getRandom());
-								if ( stopSize[1][tourType][preSampleAlt] > 0.0 ) {
+								if ( stopSize[processorIndex][1][tourType][preSampleAlt] > 0.0 ) {
 									slcIBAvailability[preSampleAlt] = true;
 									preSampleCount++;
 								}
@@ -1969,7 +1967,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	
 							for (k=0; k < slcIBAvailability.length; k++) {
 								// set destination choice alternative availability to true if size > 0 for the segment.
-								if ( stopSize[1][tourType][k] > 0.0 ) {
+								if ( stopSize[processorIndex][1][tourType][k] > 0.0 ) {
 									slcIBAvailability[k] = true;
 								}
 							}
@@ -1983,11 +1981,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						soaCorrections[1] = slcSoa[tourTypeIndex][1][soaIndex].getSampleCorrectionFactors();
 	
 						Arrays.fill(slcSample[1], 0);
-						Arrays.fill(slcCorrections[processorId][1], 0.0f);
+						Arrays.fill(slcCorrections[processorIndex][1], 0.0f);
 						Arrays.fill ( slcIBAvailability, false );
 						for (int j=1; j < soaSample[1].length; j++) {
 							slcSample[1][soaSample[1][j]] = 1;
-							slcCorrections[processorId][1][soaSample[1][j]] = soaCorrections[1][j];
+							slcCorrections[processorIndex][1][soaSample[1][j]] = soaCorrections[1][j];
 							slcIBAvailability[soaSample[1][j]] = true;
 						}
 	
@@ -1997,12 +1995,12 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					else {
 	
 						Arrays.fill(slcSample[1], 1);
-						Arrays.fill(slcCorrections[processorId][1], 0.0f);
+						Arrays.fill(slcCorrections[processorIndex][1], 0.0f);
 						Arrays.fill ( slcIBAvailability, true );
 				
 						for (k=0; k < slcIBAvailability.length; k++) {
 							// set destination choice alternative availability to true if size > 0 for the segment.
-							if ( stopSize[1][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
+							if ( stopSize[processorIndex][1][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
 								slcIBAvailability[k] = false;
 								slcSample[1][k] = 0;
 							}
@@ -2032,7 +2030,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					
 								// set destination choice alternative availability to true if size > 0 for the segment.
 								preSampleAlt = (int) (slcOBAvailability.length * SeededRandom.getRandom());
-								if ( stopSize[0][tourType][preSampleAlt] > 0.0 ) {
+								if ( stopSize[processorIndex][0][tourType][preSampleAlt] > 0.0 ) {
 									slcOBAvailability[preSampleAlt] = true;
 									preSampleCount++;
 								}
@@ -2050,7 +2048,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	
 							for (k=0; k < slcOBAvailability.length; k++) {
 								// set destination choice alternative availability to true if size > 0 for the segment.
-								if ( stopSize[0][tourType][k] > 0.0 ) {
+								if ( stopSize[processorIndex][0][tourType][k] > 0.0 ) {
 									slcOBAvailability[k] = true;
 								}
 							}
@@ -2063,11 +2061,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						soaCorrections[0] = slcSoa[tourTypeIndex][0][soaIndex].getSampleCorrectionFactors();
 
 						Arrays.fill(slcSample[0], 0);
-						Arrays.fill(slcCorrections[processorId][0], 0.0f);
+						Arrays.fill(slcCorrections[processorIndex][0], 0.0f);
 						Arrays.fill(slcOBAvailability, false);
 						for (int j=1; j < soaSample[0].length; j++) {
 							slcSample[0][soaSample[0][j]] = 1;
-							slcCorrections[processorId][0][soaSample[0][j]] = soaCorrections[0][j];
+							slcCorrections[processorIndex][0][soaSample[0][j]] = soaCorrections[0][j];
 							slcOBAvailability[soaSample[0][j]] = true;
 						}
 
@@ -2077,12 +2075,12 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					else {
 
 						Arrays.fill(slcSample[0], 1);
-						Arrays.fill(slcCorrections[processorId][0], 0.0f);
+						Arrays.fill(slcCorrections[processorIndex][0], 0.0f);
 						Arrays.fill(slcOBAvailability, true);
 				
 						for (k=0; k < slcOBAvailability.length; k++) {
 							// set destination choice alternative availability to true if size > 0 for the segment.
-							if ( stopSize[0][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
+							if ( stopSize[processorIndex][0][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
 								slcOBAvailability[k] = false;
 								slcSample[0][k] = 0;
 							}
@@ -2123,8 +2121,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						slc[0][autoTransit][subtourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
 						if ( slc[0][autoTransit][subtourType].getAvailabilityCount() > 0 ) {
 							chosen = slc[0][autoTransit][subtourType].getChoiceResult();
-							chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-							chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+							chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+							chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 						}
 						else {
 							logger.warn ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -2152,8 +2150,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						slc[1][autoTransit][subtourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
 						if ( slc[1][autoTransit][subtourType].getAvailabilityCount() > 0 ) {
 							chosen = slc[1][autoTransit][subtourType].getChoiceResult();
-							chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-							chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+							chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+							chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 						}
 						else {
 							logger.warn ( "no inbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -2181,8 +2179,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						slc[0][autoTransit][subtourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
 						if ( slc[0][autoTransit][subtourType].getAvailabilityCount() > 0 ) {
 							chosen = slc[0][autoTransit][subtourType].getChoiceResult();
-							chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-							chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+							chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+							chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 						}
 						else {
 							logger.warn ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
@@ -2205,8 +2203,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						slc[1][autoTransit][subtourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
 						if ( slc[1][autoTransit][subtourType].getAvailabilityCount() > 0 ) {
 							chosen = slc[1][autoTransit][subtourType].getChoiceResult();
-							chosenDestAlt = (int)((chosen-1)/WALK_SEGMENTS) + 1;
-							chosenShrtWlk = chosen - (chosenDestAlt-1)*WALK_SEGMENTS - 1;
+							chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
+							chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 						}
 						else {
 							logger.warn ( "no inbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);

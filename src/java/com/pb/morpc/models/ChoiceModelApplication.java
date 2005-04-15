@@ -36,7 +36,6 @@ public class ChoiceModelApplication implements java.io.Serializable {
 	double[] utilities = null;
 	private LogitModel root = null;
 	
-	static int invalidCount=0;
 	
 			
 	// the rootLogsum is calculated when utilities are exponentiated

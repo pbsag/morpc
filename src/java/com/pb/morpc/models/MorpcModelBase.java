@@ -254,7 +254,7 @@ public class MorpcModelBase {
 
 
 
-	public static void sendCommand (String command) throws InterruptedException {
+	private void sendCommand (String command) throws InterruptedException {
 	  try {
 	      
 		String s;

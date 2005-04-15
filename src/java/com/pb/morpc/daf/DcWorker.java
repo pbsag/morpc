@@ -39,7 +39,7 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 	private String modelServer = "DcModelServer";
 
 	private int processorId = 0;
-
+	private int processorIndex = 0;
 
     public DcWorker () {
     }
@@ -109,6 +109,7 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
 				shadowPriceIter = Integer.parseInt((String)msg.getValue( MessageID.SHADOW_PRICE_ITER_KEY ));
 				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
+				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
@@ -166,7 +167,7 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 					for (int i=0; i < hhList.length; i++) {
 						try {
 
-						    hhList[i].setProcessorId (processorId);		
+						    hhList[i].setProcessorIndex (processorIndex);		
 						    
 							//logger.info("in dc worker, hh walk access="+hhList[i].getOriginWalkSegment());
 						    

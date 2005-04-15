@@ -24,14 +24,10 @@ import java.io.*;
 
 public class StopsModelBase implements java.io.Serializable {
 
-	static final int WALK_SEGMENTS = 3;
-	public static final int MAX_DISTRIBUTED_PROCESSORES = 32;
-
-
 	protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 
-	protected int processorId = 0;
+	protected int processorIndex = 0;
     
 	protected TableDataSet todAltsTable;
 	protected TableDataSet zoneTable;
@@ -48,20 +44,27 @@ public class StopsModelBase implements java.io.Serializable {
 	protected int slcSoaDataSheet  = 0;
 
 
-//	private float[][] walkPctArray = null;
 	private float[][] stopAttractions;
-
-
-	public static float[][][] stopSize;
-	public static float[][] stopTotSize;
 	private float[][] regionalSize;
+
+
+	// These arrays are declared as public static, because they are referenced by the Household
+	// object, acting as a DMU to pass information to the UEC.  The UEC control files make
+	// references to these data via @ and @@ variables.
+	// Since these arrays are instantiated in multiple parallel tasks within the same VM, and they
+	// have to be static for the Household DMU, they are further indexed by processor ID so
+	// that each task has its own static copy of the data..
+	public static float[][][][] stopSize = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][2][TourType.TYPES+1][];
+	public static float[][][] stopTotSize = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][2][];
+	public static float[][] slcLogsum = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][2];
+	public static float[][][] slcCorrections = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][2][];
+
 
 
 	protected float[] parkRate;
 	protected float[] urbType;
 	protected float[] cnty;
 	protected float[] schdist;
-//	protected float[] zonalShortAccess;
 
 
 	protected int numberOfZones;
@@ -84,9 +87,6 @@ public class StopsModelBase implements java.io.Serializable {
 	protected UtilityExpressionCalculator[][][] slcUEC;
 
 	
-	public static float[][] slcLogsum;
-	public static float[][][] slcCorrections = new float[MAX_DISTRIBUTED_PROCESSORES][2][];
-
 	protected int[] sfcSample;
 	protected int[][] slcSample = new int[2][];
 	protected int[] distSample = new int[6+1];
@@ -119,16 +119,16 @@ public class StopsModelBase implements java.io.Serializable {
 	// this constructor used by a non-distributed application
 	public StopsModelBase ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 	    
-	    this.processorId = 0;
+	    this.processorIndex = 0;
 		initStopsModelBase ( propertyMap, tourTypeCategory, tourTypes );
 
 	}
 	
 	
-	// this constructor used to set processorId when called by a distributed application
+	// this constructor used to set processorIndex when called by a distributed application
 	public StopsModelBase ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 
-	    this.processorId = processorId;
+	    this.processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
 	    initStopsModelBase ( propertyMap, tourTypeCategory, tourTypes );
 	
 	}
@@ -179,8 +179,6 @@ public class StopsModelBase implements java.io.Serializable {
 		this.numberOfZones = zoneTable.getRowCount();
 
 
-		stopSize = new float[2][TourType.TYPES+1][];
-		stopTotSize = new float[2][];
 		regionalSize = new float[2][];
 
 		calculateStopDensity ( zoneTable );
@@ -242,16 +240,14 @@ public class StopsModelBase implements java.io.Serializable {
 		preSampleRandomNumbers = new int[numSlcAlternatives];
 		sortedRandomNumberIndices = new int[numSlcAlternatives];
 
-		slcCorrections[processorId][0] = new float[numSlcAlternatives+1];
-		slcCorrections[processorId][1] = new float[numSlcAlternatives+1];
+		slcCorrections[processorIndex][0] = new float[numSlcAlternatives+1];
+		slcCorrections[processorIndex][1] = new float[numSlcAlternatives+1];
 		slcSample[0] = new int[numSlcAlternatives+1];
 		slcSample[1] = new int[numSlcAlternatives+1];
 		sfcSample = new int[numSfcAlternatives+1];
 		Arrays.fill ( slcSample[0], 1 );
 		Arrays.fill ( slcSample[1], 1 );
 		Arrays.fill ( sfcSample, 1 );
-
-		slcLogsum = new float[MAX_DISTRIBUTED_PROCESSORES][2];
 
 
 		// define a SampleOfAlternatives Object for use in stop location choice for each purpose
@@ -970,11 +966,11 @@ public class StopsModelBase implements java.io.Serializable {
 
 
 		for (int p=1; p <= TourType.TYPES; p++) {
-			stopSize[0][p] = new float[WALK_SEGMENTS*zoneTable.getRowCount()+1];
-			stopSize[1][p] = new float[WALK_SEGMENTS*zoneTable.getRowCount()+1];
+			stopSize[processorIndex][0][p] = new float[ZonalDataManager.WALK_SEGMENTS*zoneTable.getRowCount()+1];
+			stopSize[processorIndex][1][p] = new float[ZonalDataManager.WALK_SEGMENTS*zoneTable.getRowCount()+1];
 		}
-		stopTotSize[0] = new float[WALK_SEGMENTS*zoneTable.getRowCount()+1];
-		stopTotSize[1] = new float[WALK_SEGMENTS*zoneTable.getRowCount()+1];
+		stopTotSize[processorIndex][0] = new float[ZonalDataManager.WALK_SEGMENTS*zoneTable.getRowCount()+1];
+		stopTotSize[processorIndex][1] = new float[ZonalDataManager.WALK_SEGMENTS*zoneTable.getRowCount()+1];
 
 		regionalSize[0] = new float[9+1];
 		regionalSize[1] = new float[9+1];
@@ -1006,33 +1002,33 @@ public class StopsModelBase implements java.io.Serializable {
 						stopAttractions[4][i] + stopAttractions[5][i] + stopAttractions[6][i] + 
 						stopAttractions[7][i] + stopAttractions[8][i] + stopAttractions[9][i];
 
-			for (j=0; j < WALK_SEGMENTS; j++) {
+			for (j=0; j < ZonalDataManager.WALK_SEGMENTS; j++) {
 				walkPercent = ZonalDataManager.getWalkPct(j,i);
-				stopSize[0][1][k] = stopAttractions[11][i]*walkPercent;
-				stopSize[1][1][k] = stopAttractions[12][i]*walkPercent;
-				stopSize[0][2][k] = stopAttractions[21][i]*walkPercent;
-				stopSize[1][2][k] = stopAttractions[22][i]*walkPercent;
-				stopSize[0][3][k] = stopAttractions[31][i]*walkPercent;
-				stopSize[1][3][k] = stopAttractions[32][i]*walkPercent;
-				stopSize[0][4][k] = stopAttractions[4][i]*walkPercent;
-				stopSize[1][4][k] = stopAttractions[4][i]*walkPercent;
-				stopSize[0][5][k] = stopAttractions[5][i]*walkPercent;
-				stopSize[1][5][k] = stopAttractions[5][i]*walkPercent;
-				stopSize[0][6][k] = stopAttractions[6][i]*walkPercent;
-				stopSize[1][6][k] = stopAttractions[6][i]*walkPercent;
-				stopSize[0][7][k] = stopAttractions[7][i]*walkPercent;
-				stopSize[1][7][k] = stopAttractions[7][i]*walkPercent;
-				stopSize[0][8][k] = stopAttractions[8][i]*walkPercent;
-				stopSize[1][8][k] = stopAttractions[8][i]*walkPercent;
-				stopSize[0][9][k] = stopAttractions[9][i]*walkPercent;
-				stopSize[1][9][k] = stopAttractions[9][i]*walkPercent;
+				stopSize[processorIndex][0][1][k] = stopAttractions[11][i]*walkPercent;
+				stopSize[processorIndex][1][1][k] = stopAttractions[12][i]*walkPercent;
+				stopSize[processorIndex][0][2][k] = stopAttractions[21][i]*walkPercent;
+				stopSize[processorIndex][1][2][k] = stopAttractions[22][i]*walkPercent;
+				stopSize[processorIndex][0][3][k] = stopAttractions[31][i]*walkPercent;
+				stopSize[processorIndex][1][3][k] = stopAttractions[32][i]*walkPercent;
+				stopSize[processorIndex][0][4][k] = stopAttractions[4][i]*walkPercent;
+				stopSize[processorIndex][1][4][k] = stopAttractions[4][i]*walkPercent;
+				stopSize[processorIndex][0][5][k] = stopAttractions[5][i]*walkPercent;
+				stopSize[processorIndex][1][5][k] = stopAttractions[5][i]*walkPercent;
+				stopSize[processorIndex][0][6][k] = stopAttractions[6][i]*walkPercent;
+				stopSize[processorIndex][1][6][k] = stopAttractions[6][i]*walkPercent;
+				stopSize[processorIndex][0][7][k] = stopAttractions[7][i]*walkPercent;
+				stopSize[processorIndex][1][7][k] = stopAttractions[7][i]*walkPercent;
+				stopSize[processorIndex][0][8][k] = stopAttractions[8][i]*walkPercent;
+				stopSize[processorIndex][1][8][k] = stopAttractions[8][i]*walkPercent;
+				stopSize[processorIndex][0][9][k] = stopAttractions[9][i]*walkPercent;
+				stopSize[processorIndex][1][9][k] = stopAttractions[9][i]*walkPercent;
 				
-				stopTotSize[0][k] = totAttrsOB*walkPercent;
-				stopTotSize[1][k] = totAttrsIB*walkPercent;
+				stopTotSize[processorIndex][0][k] = totAttrsOB*walkPercent;
+				stopTotSize[processorIndex][1][k] = totAttrsIB*walkPercent;
 				
 				for (p=1; p <= 9; p++) {
-					regionalSize[0][p] += stopSize[0][p][k];
-					regionalSize[1][p] += stopSize[1][p][k];
+					regionalSize[0][p] += stopSize[processorIndex][0][p][k];
+					regionalSize[1][p] += stopSize[processorIndex][1][p][k];
 				}
 				
 				k++;

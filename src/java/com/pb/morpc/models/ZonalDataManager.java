@@ -24,9 +24,16 @@ import org.apache.log4j.Logger;
  */
 public class ZonalDataManager implements java.io.Serializable {
 
-	public static final int WALK_SEGMENTS = 3;
-	public static final int MAX_DISTRIBUTED_PROCESSORES = 32;
+    // this value indicates that no more than 4 tasks will ever be run in a single VM.
+    // The current implementation uses at most 2.
+    // The way to check this value is to check the daf application properties file
+    // where tasks are assigned to processors, and make sure that no more tasks than
+    // this number are assigned to a daf node. 
+	public static final int MAX_DISTRIBUTED_PROCESSORES = 2;
 
+	public static final int WALK_SEGMENTS = 3;
+
+	
     protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
     private TableDataSet zoneTable;
 
@@ -1649,28 +1656,28 @@ public class ZonalDataManager implements java.io.Serializable {
 
 
 
-	public void setLogsumDcAMPM ( int processorId, int altIndex, float logsum ) {
-		logsumDcAMPM[processorId][altIndex] = logsum;
+	public void setLogsumDcAMPM ( int processorIndex, int altIndex, float logsum ) {
+		logsumDcAMPM[processorIndex][altIndex] = logsum;
 	}
 
 
-	public void setLogsumDcAMMD ( int processorId, int altIndex, float logsum ) {
-		logsumDcAMMD[processorId][altIndex] = logsum;
+	public void setLogsumDcAMMD ( int processorIndex, int altIndex, float logsum ) {
+		logsumDcAMMD[processorIndex][altIndex] = logsum;
 	}
 
 
-	public void setLogsumDcMDMD ( int processorId, int altIndex, float logsum ) {
-		logsumDcMDMD[processorId][altIndex] = logsum;
+	public void setLogsumDcMDMD ( int processorIndex, int altIndex, float logsum ) {
+		logsumDcMDMD[processorIndex][altIndex] = logsum;
 	}
 
 
-	public void setLogsumDcPMNT ( int processorId, int altIndex, float logsum ) {
-		logsumDcPMNT[processorId][altIndex] = logsum;
+	public void setLogsumDcPMNT ( int processorIndex, int altIndex, float logsum ) {
+		logsumDcPMNT[processorIndex][altIndex] = logsum;
 	}
 
 
-	public void setOdUtilModeAlt ( int processorId, double[] ModalUtilities ) {
-	    odUtilModeAlt[processorId] = ModalUtilities;
+	public void setOdUtilModeAlt ( int processorIndex, double[] ModalUtilities ) {
+	    odUtilModeAlt[processorIndex] = ModalUtilities;
 	}
 
 	/**

@@ -38,6 +38,7 @@ public class MandatoryStopsWorker extends MessageProcessingTask implements java.
 	private String modelServer = "MandatoryStopsModelServer";
 
 	private int processorId = 0;
+	private int processorIndex = 0;
 
 
     public MandatoryStopsWorker () {
@@ -107,6 +108,7 @@ public class MandatoryStopsWorker extends MessageProcessingTask implements java.
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
 				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
+				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
@@ -164,7 +166,7 @@ public class MandatoryStopsWorker extends MessageProcessingTask implements java.
 					for (int i=0; i < hhList.length; i++) {
 						try {
 	
-							hhList[i].setProcessorId (processorId);
+							hhList[i].setProcessorIndex (processorIndex);
 							stopsHH.mandatoryTourSfcSlc (hhList[i]);
 	
 						}
@@ -182,7 +184,7 @@ public class MandatoryStopsWorker extends MessageProcessingTask implements java.
 					for (int i=0; i < hhList.length; i++) {
 						try {
 
-							hhList[i].setProcessorId (processorId);
+							hhList[i].setProcessorIndex (processorIndex);
 							stopsHH.mandatoryTourSmc (hhList[i]);
 
 						}

@@ -63,7 +63,7 @@ public class Household implements java.io.Externalizable {
 
     //wu sun added for 2000 pums
     private int district;
-    private int processorId = 0;
+    private int processorIndex = 0;
 
 
     public static void main(String[] args) {
@@ -84,10 +84,12 @@ public class Household implements java.io.Externalizable {
     }
 
     /**
-     * set processor id operating on this household object in a distributed application
+     * set processor index operating on this household object in a distributed application
+     * processor index was calculated as follows before being passed here:
+     * processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES
      */
-	public void setProcessorId (int id) {
-		processorId = id;
+	public void setProcessorIndex (int id) {
+		processorIndex = id;
 	}
 
 	/**
@@ -1752,7 +1754,7 @@ public class Household implements java.io.Externalizable {
 	 * return the total size for the given destination choice alternative for the given purpose
 	*/
 	public float getSizeStopTotalOBAlt (int alt) {
-		return com.pb.morpc.models.StopsModelBase.stopTotSize[0][alt];
+		return com.pb.morpc.models.StopsModelBase.stopTotSize[processorIndex][0][alt];
 	}
 
 	/**
@@ -1822,14 +1824,14 @@ public class Household implements java.io.Externalizable {
 	 * return the total size for the given destination choice alternative for the given purpose
 	*/
 	public float getSizeStopTotalIBAlt (int alt) {
-		return com.pb.morpc.models.StopsModelBase.stopTotSize[1][alt];
+		return com.pb.morpc.models.StopsModelBase.stopTotSize[processorIndex][1][alt];
 	}
 
 	/**
 	 * return the total size for the given destination choice alternative for the given purpose
 	*/
 	private float getSizeStopAlt (int dir, int purpose, int alt) {
-		return com.pb.morpc.models.StopsModelBase.stopSize[dir][purpose][alt];
+		return com.pb.morpc.models.StopsModelBase.stopSize[processorIndex][dir][purpose][alt];
 	}
 
 
@@ -1839,7 +1841,7 @@ public class Household implements java.io.Externalizable {
 	 * return the OD related mode choice utility for the given mode choice alternative
 	*/
 	public float getODUtilModeAlt (int alt) {
-		return (float)ZonalDataManager.odUtilModeAlt[processorId][alt-1];
+		return (float)ZonalDataManager.odUtilModeAlt[processorIndex][alt-1];
 	}
 
 
@@ -2109,154 +2111,154 @@ public class Household implements java.io.Externalizable {
 	 * return the mode choice logsum correction for the sampled destination choice alternative
 	*/
 	public float getDcSoaCorrectionsAlt (int alt) {
-		return com.pb.morpc.models.DTMModelBase.dcCorrections[processorId][alt];
+		return com.pb.morpc.models.DTMModelBase.dcCorrections[processorIndex][alt];
 	}
 
 	/**
 	 * return the stop location choice logsum correction for the sampled stop location choice alternative
 	*/
 	public float getSlcSoaCorrectionsOBAlt (int alt) {
-		return com.pb.morpc.models.StopsModelBase.slcCorrections[processorId][0][alt];
+		return com.pb.morpc.models.StopsModelBase.slcCorrections[processorIndex][0][alt];
 	}
 
 	/**
 	 * return the stop location choice logsum correction for the sampled stop location choice alternative
 	*/
 	public float getSlcSoaCorrectionsIBAlt (int alt) {
-		return com.pb.morpc.models.StopsModelBase.slcCorrections[processorId][1][alt];
+		return com.pb.morpc.models.StopsModelBase.slcCorrections[processorIndex][1][alt];
 	}
 
 	/**
 	 * return the am/pm mode choice logsum for the given destination choice alternative
 	*/
 	public float getLogsumAMPMDestAlt (int alt) {
-		return ZonalDataManager.logsumDcAMPM[processorId][alt];
+		return ZonalDataManager.logsumDcAMPM[processorIndex][alt];
 	}
 
 	/**
 	 * return the am/md mode choice logsum for the given destination choice alternative
 	*/
 	public float getLogsumAMMDDestAlt (int alt) {
-		return ZonalDataManager.logsumDcAMMD[processorId][alt];
+		return ZonalDataManager.logsumDcAMMD[processorIndex][alt];
 	}
 
 	/**
 	 * return the md/md mode choice logsum for the given destination choice alternative
 	*/
 	public float getLogsumMDMDDestAlt (int alt) {
-		return ZonalDataManager.logsumDcMDMD[processorId][alt];
+		return ZonalDataManager.logsumDcMDMD[processorIndex][alt];
 	}
 
 	/**
 	 * return the pm/nt mode choice logsum for the given destination choice alternative
 	*/
 	public float getLogsumPMNTDestAlt (int alt) {
-		return ZonalDataManager.logsumDcPMNT[processorId][alt];
+		return ZonalDataManager.logsumDcPMNT[processorIndex][alt];
 	}
 
 	/**
 	 * return the ea/ea mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumEAEATODAlt (int alt) {
-		return TODDataManager.logsumTcEAEA[processorId][alt];
+		return TODDataManager.logsumTcEAEA[processorIndex][alt];
 	}
 
 	/**
 	 * return the ea/am mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumEAAMTODAlt (int alt) {
-		return TODDataManager.logsumTcEAAM[processorId][alt];
+		return TODDataManager.logsumTcEAAM[processorIndex][alt];
 	}
 
 	/**
 	 * return the ea/md mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumEAMDTODAlt (int alt) {
-		return TODDataManager.logsumTcEAMD[processorId][alt];
+		return TODDataManager.logsumTcEAMD[processorIndex][alt];
 	}
 
 	/**
 	 * return the ea/pm mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumEAPMTODAlt (int alt) {
-		return TODDataManager.logsumTcEAPM[processorId][alt];
+		return TODDataManager.logsumTcEAPM[processorIndex][alt];
 	}
 
 	/**
 	 * return the ea/nt mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumEANTTODAlt (int alt) {
-		return TODDataManager.logsumTcEANT[processorId][alt];
+		return TODDataManager.logsumTcEANT[processorIndex][alt];
 	}
 
 	/**
 	 * return the am/am mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumAMAMTODAlt (int alt) {
-		return TODDataManager.logsumTcAMAM[processorId][alt];
+		return TODDataManager.logsumTcAMAM[processorIndex][alt];
 	}
 
 	/**
 	 * return the am/md mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumAMMDTODAlt (int alt) {
-		return TODDataManager.logsumTcAMMD[processorId][alt];
+		return TODDataManager.logsumTcAMMD[processorIndex][alt];
 	}
 
 	/**
 	 * return the am/pm mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumAMPMTODAlt (int alt) {
-		return TODDataManager.logsumTcAMPM[processorId][alt];
+		return TODDataManager.logsumTcAMPM[processorIndex][alt];
 	}
 
 	/**
 	 * return the am/nt mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumAMNTTODAlt (int alt) {
-		return TODDataManager.logsumTcAMNT[processorId][alt];
+		return TODDataManager.logsumTcAMNT[processorIndex][alt];
 	}
 
 	/**
 	 * return the md/md mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumMDMDTODAlt (int alt) {
-		return TODDataManager.logsumTcMDMD[processorId][alt];
+		return TODDataManager.logsumTcMDMD[processorIndex][alt];
 	}
 
 	/**
 	 * return the md/pm mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumMDPMTODAlt (int alt) {
-		return TODDataManager.logsumTcMDPM[processorId][alt];
+		return TODDataManager.logsumTcMDPM[processorIndex][alt];
 	}
 
 	/**
 	 * return the md/nt mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumMDNTTODAlt (int alt) {
-		return TODDataManager.logsumTcMDNT[processorId][alt];
+		return TODDataManager.logsumTcMDNT[processorIndex][alt];
 	}
 
 	/**
 	 * return the pm/pm mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumPMPMTODAlt (int alt) {
-		return TODDataManager.logsumTcPMPM[processorId][alt];
+		return TODDataManager.logsumTcPMPM[processorIndex][alt];
 	}
 
 	/**
 	 * return the pm/nt mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumPMNTTODAlt (int alt) {
-		return TODDataManager.logsumTcPMNT[processorId][alt];
+		return TODDataManager.logsumTcPMNT[processorIndex][alt];
 	}
 
 	/**
 	 * return the nt/nt mode choice logsum for the given time-of-day choice alternative
 	*/
 	public float getLogsumNTNTTODAlt (int alt) {
-		return TODDataManager.logsumTcNTNT[processorId][alt];
+		return TODDataManager.logsumTcNTNT[processorIndex][alt];
 	}
 
 
@@ -2268,14 +2270,14 @@ public class Household implements java.io.Externalizable {
 	 * return the ob stop location choice logsum for the given stop frequency choice alternative
 	*/
 	public float getLogsumSlcOB () {
-		return com.pb.morpc.models.StopsModelBase.slcLogsum[processorId][0];
+		return com.pb.morpc.models.StopsModelBase.slcLogsum[processorIndex][0];
 	}
 
 	/**
 	 * return the ib stop location choice logsum for the given stop frequency choice alternative
 	*/
 	public float getLogsumSlcIB () {
-		return com.pb.morpc.models.StopsModelBase.slcLogsum[processorId][1];
+		return com.pb.morpc.models.StopsModelBase.slcLogsum[processorIndex][1];
 	}
 
 
@@ -2665,7 +2667,7 @@ public class Household implements java.io.Externalizable {
         mandatoryToursByType = ObjectUtil.readShortArray(in);
 
         district = in.readInt();
-        processorId = in.readInt();
+        processorIndex = in.readInt();
     }
 
 
@@ -2731,7 +2733,7 @@ public class Household implements java.io.Externalizable {
         ObjectUtil.writeShortArray(out, mandatoryToursByType);
 
         out.writeInt(district);
-        out.writeInt(processorId);
+        out.writeInt(processorIndex);
     }
 
     public void writeContentToLogger(Logger logger){
@@ -2859,7 +2861,7 @@ public class Household implements java.io.Externalizable {
 	 }
 
      logger.info("district:"+district);
-     logger.info("processorId:"+processorId);
+     logger.info("processorIndex:"+processorIndex);
     }
 
 }

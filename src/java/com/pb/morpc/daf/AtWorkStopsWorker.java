@@ -38,6 +38,7 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 	private String modelServer = "AtWorkStopsModelServer";
 
 	private int processorId = 0;
+	private int processorIndex = 0;
 
     public AtWorkStopsWorker () {
     }
@@ -107,6 +108,7 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
 				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
+				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
@@ -183,7 +185,7 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 					for (int i=0; i < hhList.length; i++) {
 						try {
 	
-							hhList[i].setProcessorId (processorId);
+							hhList[i].setProcessorIndex (processorIndex);
 							stopsHH.atWorkTourSfcSlc (hhList[i]);
 	
 						}
@@ -202,7 +204,7 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 					for (int i=0; i < hhList.length; i++) {
 						try {
 
-							hhList[i].setProcessorId (processorId);
+							hhList[i].setProcessorIndex (processorIndex);
 							stopsHH.atWorkTourSmc (hhList[i]);
 
 						}

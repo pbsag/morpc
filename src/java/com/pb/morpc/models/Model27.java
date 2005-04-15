@@ -49,7 +49,7 @@ public class Model27 {
     }
 
 
-    private static TableDataSet createPersonDataTable(TableDataSet hhTable) {
+    private TableDataSet createPersonDataTable(TableDataSet hhTable) {
 
 		boolean debug = false;
 
@@ -772,7 +772,7 @@ public class Model27 {
 
         //create a person data table.
 		if (useMessageWindow) mw.setMessage2 ("creating person table");
-        TableDataSet personTable = Model27.createPersonDataTable(hhTable);
+        TableDataSet personTable = createPersonDataTable(hhTable);
         TableDataSet.logColumnFreqReport("SynPopP",personTable,personTable.getColumnPosition("person_type"));
         TableDataSet.logColumnFreqReport("SynPopP",personTable,personTable.getColumnPosition("M2"));
 

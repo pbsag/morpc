@@ -38,6 +38,7 @@ public class IndivStopsWorker extends MessageProcessingTask implements java.io.S
 	private String modelServer = "IndivStopsModelServer";
 
 	private int processorId = 0;
+	private int processorIndex = 0;
 
     public IndivStopsWorker () {
     }
@@ -106,6 +107,7 @@ public class IndivStopsWorker extends MessageProcessingTask implements java.io.S
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
 				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
+				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
@@ -163,7 +165,7 @@ public class IndivStopsWorker extends MessageProcessingTask implements java.io.S
 					for (int i=0; i < hhList.length; i++) {
 						try {
 	
-							hhList[i].setProcessorId (processorId);
+							hhList[i].setProcessorIndex (processorIndex);
 							stopsHH.nonMandatoryTourSfcSlc (hhList[i]);
 	
 						}
@@ -182,7 +184,7 @@ public class IndivStopsWorker extends MessageProcessingTask implements java.io.S
 					for (int i=0; i < hhList.length; i++) {
 						try {
 
-							hhList[i].setProcessorId (processorId);
+							hhList[i].setProcessorIndex (processorIndex);
 							stopsHH.nonMandatoryTourSmc (hhList[i]);
 
 						}

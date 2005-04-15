@@ -52,12 +52,11 @@ public class MorpcModelServer extends MessageProcessingTask {
     private static boolean LOGGING = true;
     static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
-    static String CMD_LOCATION;
+    String CMD_LOCATION;
 
     String hhFile;
     String personFile;
     String zonalFile;
-//    TableDataSet zoneTable = null;
 
     private ZonalDataManager zdm = null;
     private TODDataManager tdm = null;
@@ -71,8 +70,6 @@ public class MorpcModelServer extends MessageProcessingTask {
     private boolean incrementTourCategory;
 
     private long startTime = 0;
-    static long runningTime = 0;
-    static long markTime = 0;
 
 	int numberOfIterations;
     String[] iterationPropertyFiles = { "morpc1", "morpc2", "morpc3"};
@@ -85,8 +82,6 @@ public class MorpcModelServer extends MessageProcessingTask {
     }
 
     public void onStart() {
-
-        markTime = System.currentTimeMillis();
 
         startTime = System.currentTimeMillis();
 
@@ -200,7 +195,6 @@ public class MorpcModelServer extends MessageProcessingTask {
         
         zdm.updatePropertyMap(iteration+1);
 
-		CMD_LOCATION = (String) propertyMap.get("CMD_LOCATION");
 
 		//if FTA_Restart_run is false, run PopSyn, otherwise skip it.
         if (!FtaRestartRun){
@@ -1151,6 +1145,9 @@ public class MorpcModelServer extends MessageProcessingTask {
 
     public static void showMemory() {
 
+    	long runningTime=0;
+    	long markTime=0;
+    	
         runningTime = System.currentTimeMillis() - markTime;
         if (logger.isDebugEnabled()) {
             logger.debug("total running minutes = " + (float) ((runningTime / 1000.0) / 60.0));
@@ -1162,7 +1159,7 @@ public class MorpcModelServer extends MessageProcessingTask {
 
 
 
-    void runDOSCommand(String command) {
+    private void runDOSCommand(String command) {
         try {
             logger.info ("issuing DOS command: " + command);
             sendCommand(command);
@@ -1173,11 +1170,11 @@ public class MorpcModelServer extends MessageProcessingTask {
 
 
 
-    public static void sendCommand(String command) throws InterruptedException {
+    private void sendCommand(String command) throws InterruptedException {
         try {
 
             String s;
-            Process proc = Runtime.getRuntime().exec(CMD_LOCATION + "\\cmd.exe /C " + command);
+            Process proc = Runtime.getRuntime().exec( getDosCommandFolderName() + "\\cmd.exe /C " + command );
 
             BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             BufferedReader stderr = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
@@ -1443,4 +1440,10 @@ public class MorpcModelServer extends MessageProcessingTask {
     	}
     	return result;
     } 
+    
+    
+    private String getDosCommandFolderName() {
+		return (String) propertyMap.get("CMD_LOCATION");
+    }
+    
 }

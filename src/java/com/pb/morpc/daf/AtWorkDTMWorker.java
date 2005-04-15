@@ -43,6 +43,7 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 	private String modelServer = "AtWorkDTMModelServer";
 
 	private int processorId = 0;
+	private int processorIndex = 0;
 	
 	//Wu added for Summit Aggregation
 	private SummitAggregationRecord [] summitAggregationArray;
@@ -128,6 +129,7 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
 				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
+				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
@@ -220,7 +222,7 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 					for (int i=0; i < hhList.length; i++) {
 						try {
 
-							hhList[i].setProcessorId (processorId);
+							hhList[i].setProcessorIndex (processorIndex);
 							//Wu added for FTA restart
 							//do if FTA_Restart_run is false, otherwise skip DC and TC
 							if( !FtaRestartRun ){

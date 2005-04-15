@@ -16,10 +16,6 @@ import java.io.*;
 
 public class TODDataManager implements java.io.Serializable {
 
-	public static final int MAX_DISTRIBUTED_PROCESSORES = 32;
-	public static final int WALK_SEGMENTS = 3;
-
-
 	protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 
@@ -85,21 +81,21 @@ public class TODDataManager implements java.io.Serializable {
 
 		int numTcAlternatives = todAltsTable.getRowCount();
 
-		logsumTcEAEA = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcEAAM = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcEAMD = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcEAPM = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcEANT = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcAMAM = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcAMMD = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcAMPM = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcAMNT = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcMDMD = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcMDPM = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcMDNT = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcPMPM = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcPMNT = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
-		logsumTcNTNT = new float[MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcEAEA = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcEAAM = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcEAMD = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcEAPM = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcEANT = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcAMAM = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcAMMD = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcAMPM = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcAMNT = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcMDMD = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcMDPM = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcMDNT = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcPMPM = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcPMNT = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
+		logsumTcNTNT = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numTcAlternatives+1];
 
     }
 

@@ -43,6 +43,7 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 	private String modelServer = "IndivDTMModelServer";
 
 	private int processorId = 0;
+	private int processorIndex = 0;
 	
 	//Wu added for Summit Aggregation
 	private SummitAggregationRecord [] summitAggregationArray;
@@ -127,6 +128,7 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
 				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
+				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
@@ -203,7 +205,7 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 					for (int i=0; i < hhList.length; i++) {
 						try {
 
-							hhList[i].setProcessorId (processorId);
+							hhList[i].setProcessorIndex (processorIndex);
 							//Wu added for FTA restart
 							//do if FTA_Restart_run is false, otherwise skip DC and TC
 							if( !FtaRestartRun ){
