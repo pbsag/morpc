@@ -92,6 +92,10 @@ public class Household implements java.io.Externalizable {
 		processorIndex = id;
 	}
 
+	public int getProcessorIndex () {
+		return processorIndex;
+	}
+
 	/**
 	 * set id for household object
 	 */

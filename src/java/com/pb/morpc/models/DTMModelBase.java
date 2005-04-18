@@ -419,6 +419,15 @@ public class DTMModelBase implements java.io.Serializable {
 //		}
 
 			ZonalDataManager.setOdUtilModeAlt (processorIndex, ModalUtilities);
+			
+			int dummy = 0;
+			if ( processorIndex != hh.getProcessorIndex() ) {
+				dummy = 1;
+				logger.fatal ( "processorIndex in DTMModelBase.setMcODUtility() = " + processorIndex );
+				logger.fatal ( "processorIndex in hh object = " + hh.getProcessorIndex() );
+				logger.fatal ( "the processorIndex values are expected to be the same.");
+				System.exit(-1);
+			}
 
 	}
 
