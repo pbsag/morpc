@@ -1644,7 +1644,7 @@ public class ZonalDataManager implements java.io.Serializable {
 
 
 
-	public float getTotSize ( int tourTypeIndex, int altIndex ) {
+	public static float getTotSize ( int tourTypeIndex, int altIndex ) {
 		return totSize[tourTypeIndex][altIndex];
 	}
 
@@ -1656,27 +1656,27 @@ public class ZonalDataManager implements java.io.Serializable {
 
 
 
-	public void setLogsumDcAMPM ( int processorIndex, int altIndex, float logsum ) {
+	public static void setLogsumDcAMPM ( int processorIndex, int altIndex, float logsum ) {
 		logsumDcAMPM[processorIndex][altIndex] = logsum;
 	}
 
 
-	public void setLogsumDcAMMD ( int processorIndex, int altIndex, float logsum ) {
+	public static void setLogsumDcAMMD ( int processorIndex, int altIndex, float logsum ) {
 		logsumDcAMMD[processorIndex][altIndex] = logsum;
 	}
 
 
-	public void setLogsumDcMDMD ( int processorIndex, int altIndex, float logsum ) {
+	public static void setLogsumDcMDMD ( int processorIndex, int altIndex, float logsum ) {
 		logsumDcMDMD[processorIndex][altIndex] = logsum;
 	}
 
 
-	public void setLogsumDcPMNT ( int processorIndex, int altIndex, float logsum ) {
+	public static void setLogsumDcPMNT ( int processorIndex, int altIndex, float logsum ) {
 		logsumDcPMNT[processorIndex][altIndex] = logsum;
 	}
 
 
-	public void setOdUtilModeAlt ( int processorIndex, double[] ModalUtilities ) {
+	public static void setOdUtilModeAlt ( int processorIndex, double[] ModalUtilities ) {
 	    odUtilModeAlt[processorIndex] = ModalUtilities;
 	}
 

@@ -40,9 +40,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	protected Vector summitAggregationRecords=null;
 	
 	// this constructor used in non-distributed application
-	public DTMHousehold ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes, ZonalDataManager zdm ) {
+	public DTMHousehold ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 
-		super ( propertyMap, tourTypeCategory, tourTypes, zdm );
+		super ( propertyMap, tourTypeCategory, tourTypes );
 
 		this.count = 1;
 
@@ -54,9 +54,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	// this constructor used in distributed application
-	public DTMHousehold ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes, ZonalDataManager zdm ) {
+	public DTMHousehold ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 
-		super ( processorId, propertyMap, tourTypeCategory, tourTypes, zdm );
+		super ( processorId, propertyMap, tourTypeCategory, tourTypes );
 
 		this.count = 1;
 
@@ -196,7 +196,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 						// set destination choice alternative availability to true if size > 0 for the segment.
 						preSampleAlt = (int) (dcAvailability.length * SeededRandom.getRandom());
-						float size = zdm.getTotSize (tourTypes[tourTypeIndex], preSampleAlt );
+						float size = ZonalDataManager.getTotSize (tourTypes[tourTypeIndex], preSampleAlt );
 						if ( size > 0.0 ) {
 							dcAvailability[preSampleAlt] = true;
 							preSampleCount++;
@@ -215,7 +215,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 					for (k=0; k < dcAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						float size = zdm.getTotSize (tourTypes[tourTypeIndex], k );
+						float size = ZonalDataManager.getTotSize (tourTypes[tourTypeIndex], k );
 						if ( size > 0.0 ) {
 							dcAvailability[k] = true;
 						}
@@ -252,17 +252,17 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					// calculate mode choice logsum based on appropriate od skims for each mandatory purpose
 					if (TourType.MANDATORY_TYPES[tourTypeIndex] == TourType.WORK) {
 						hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmPm" );
-						zdm.setLogsumDcAMPM ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
+						ZonalDataManager.setLogsumDcAMPM ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
 					}
 					else if (TourType.MANDATORY_TYPES[tourTypeIndex] == TourType.UNIVERSITY) {
 						hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmMd" );
-						zdm.setLogsumDcAMMD ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
+						ZonalDataManager.setLogsumDcAMMD ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
 					}
 					else if (TourType.MANDATORY_TYPES[tourTypeIndex] == TourType.SCHOOL) {
 						hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmMd" );
-						zdm.setLogsumDcAMMD ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
+						ZonalDataManager.setLogsumDcAMMD ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
 						hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdMd" );
-						zdm.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
+						ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
 					}
 
 				}
@@ -861,7 +861,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
 						summitAggregationRecords=makeSummitAggregationRecords(root, hh, "mandatory");
 				}
-																
+			
 				mcTime += (System.currentTimeMillis()-markTime);
 
 				// set chosen in alternative in tour objects
@@ -1075,7 +1075,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 						// set destination choice alternative availability to true if size > 0 for the segment.
 						preSampleAlt = (int) (dcAvailability.length * SeededRandom.getRandom());
-						float size = zdm.getTotSize (tourTypes[m], preSampleAlt );
+						float size = ZonalDataManager.getTotSize (tourTypes[m], preSampleAlt );
 						if ( size > 0.0 ) {
 							dcAvailability[preSampleAlt] = true;
 							preSampleCount++;
@@ -1094,7 +1094,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 					for (k=0; k < dcAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						float size = zdm.getTotSize (tourTypes[m], k );
+						float size = ZonalDataManager.getTotSize (tourTypes[m], k );
 						if ( size > 0.0 ) {
 							dcAvailability[k] = true;
 						}
@@ -1130,9 +1130,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 							
 					// calculate mode choice logsum based on appropriate od skims
 					hh.setTODDefaults ( TourType.JOINT_CATEGORY, "MdMd" );
-					zdm.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
+					ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
 					hh.setTODDefaults ( TourType.JOINT_CATEGORY, "PmNt" );
-					zdm.setLogsumDcPMNT ( processorIndex, sample[i], getMcLogsums(hh, m) );
+					ZonalDataManager.setLogsumDcPMNT ( processorIndex, sample[i], getMcLogsums(hh, m) );
 
 				}
 				dcLogsumTime += (System.currentTimeMillis()-markTime);
@@ -1561,7 +1561,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 						// set destination choice alternative availability to true if size > 0 for the segment.
 						preSampleAlt = (int) (dcAvailability.length * SeededRandom.getRandom());
-						float size = zdm.getTotSize (tourTypes[m], preSampleAlt );
+						float size = ZonalDataManager.getTotSize (tourTypes[m], preSampleAlt );
 						if ( size > 0.0 ) {
 							dcAvailability[preSampleAlt] = true;
 							preSampleCount++;
@@ -1580,7 +1580,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 					for (k=0; k < dcAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						float size = zdm.getTotSize (tourTypes[m], k );
+						float size = ZonalDataManager.getTotSize (tourTypes[m], k );
 						if ( size > 0.0 ) {
 							dcAvailability[k] = true;
 						}
@@ -1615,13 +1615,13 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					// calculate mode choice logsum based on appropriate od skims for each individual non-mandatory purpose
 					if (TourType.NON_MANDATORY_TYPES[m] == TourType.ESCORTING) {
 						hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "MdMd" );
-						zdm.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
+						ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
 					}
 					else {
 						hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "MdMd" );
-						zdm.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
+						ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
 						hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "PmNt" );
-						zdm.setLogsumDcPMNT ( processorIndex, sample[i], getMcLogsums(hh, m) );
+						ZonalDataManager.setLogsumDcPMNT ( processorIndex, sample[i], getMcLogsums(hh, m) );
 					}
 
 				}
@@ -2328,7 +2328,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 						// set destination choice alternative availability to true if size > 0 for the segment.
 						preSampleAlt = (int) (dcAvailability.length * SeededRandom.getRandom());
-						float size = zdm.getTotSize (tourTypes[m], preSampleAlt );
+						float size = ZonalDataManager.getTotSize (tourTypes[m], preSampleAlt );
 						if ( size > 0.0 ) {
 							dcAvailability[preSampleAlt] = true;
 							preSampleCount++;
@@ -2347,7 +2347,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 					for (k=0; k < dcAvailability.length; k++) {
 						// set destination choice alternative availability to true if size > 0 for the segment.
-						float size = zdm.getTotSize (tourTypes[m], k );
+						float size = ZonalDataManager.getTotSize (tourTypes[m], k );
 						if ( size > 0.0 ) {
 							dcAvailability[k] = true;
 						}
@@ -2382,7 +2382,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 							
 					// calculate mode choice logsum based on appropriate od skims
 					hh.setTODDefaults ( TourType.AT_WORK_CATEGORY, "MdMd" );
-					zdm.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
+					ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
 
 				}
 				dcLogsumTime += (System.currentTimeMillis()-markTime);

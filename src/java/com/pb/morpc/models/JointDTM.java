@@ -8,7 +8,6 @@ package com.pb.morpc.models;
  */
 
 
-import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 
 import java.util.HashMap;
@@ -24,13 +23,13 @@ public class JointDTM implements java.io.Serializable {
 
 
 	
-    public JointDTM (HashMap propertyMap, HouseholdArrayManager hhMgr, ZonalDataManager zdm) {
+    public JointDTM (HashMap propertyMap, HouseholdArrayManager hhMgr) {
 
 		this.propertyMap = propertyMap;
 		this.hhMgr = hhMgr;
 
 
-		dtmHH = new DTMHousehold (propertyMap, TourType.JOINT_CATEGORY, TourType.JOINT_TYPES, zdm);
+		dtmHH = new DTMHousehold (propertyMap, TourType.JOINT_CATEGORY, TourType.JOINT_TYPES);
     }
     
 

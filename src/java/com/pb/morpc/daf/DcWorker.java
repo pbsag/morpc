@@ -117,7 +117,7 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 				// create a dtmHH object
 				if (LOGGING)
 				    logger.info (this.getName() + " building dtmHH object for mandatory dc.");
-			    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES, zdm );
+			    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
 				dtmHH.setShadowPricingIteration(shadowPriceIter);
 				dtmHH.resetHouseholdCount();
 				if (LOGGING)

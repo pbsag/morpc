@@ -8,7 +8,6 @@ package com.pb.morpc.models;
  */
 
 
-import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 
 import java.util.HashMap;
@@ -25,9 +24,9 @@ public class MandatoryDTM implements java.io.Serializable {
 	
 	
 	
-    public MandatoryDTM (HashMap propertyMap, HouseholdArrayManager hhMgr, ZonalDataManager zdm) {
+    public MandatoryDTM (HashMap propertyMap, HouseholdArrayManager hhMgr) {
 		this.hhMgr = hhMgr;
-		dtmHH = new DTMHousehold ( propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES, zdm );
+		dtmHH = new DTMHousehold ( propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
     }
     
 

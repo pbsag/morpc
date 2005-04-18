@@ -152,7 +152,7 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 				if (LOGGING)
 				    logger.info (this.getName() + " building dtmHH object for individual non-mandatory dtm.");
 				if (dtmHH == null)
-				    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.NON_MANDATORY_CATEGORY, TourType.NON_MANDATORY_TYPES, zdm );
+				    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.NON_MANDATORY_CATEGORY, TourType.NON_MANDATORY_TYPES );
 				if (LOGGING)
 				    logger.info (this.getName() + " dtmHH object built for individual non-mandatory dtm, asking for work.");
 

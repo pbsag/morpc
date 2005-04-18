@@ -127,16 +127,14 @@ public class DTMModelBase implements java.io.Serializable {
 
 	protected double[] submodeUtility = new double[1];
 	
-	protected ZonalDataManager zdm = null;
 	
 	private HashMap[] modalODUtilityMap = null;
 	
 		
 	
 	// this constructor used to set processorIndex when called by a distributed application
-	public DTMModelBase ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes, ZonalDataManager zdm ) {
+	public DTMModelBase ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 		
-	    this.zdm = zdm;
 	    this.processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
 		initDTMModelBase ( propertyMap, tourTypeCategory, tourTypes );
 	  
@@ -146,9 +144,8 @@ public class DTMModelBase implements java.io.Serializable {
 	
 
 	// this constructor used by a non-distributed application
-	public DTMModelBase ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes, ZonalDataManager zdm ) {
+	public DTMModelBase ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 		
-		this.zdm = zdm;
 		this.processorIndex = 0;
 		initDTMModelBase ( propertyMap, tourTypeCategory, tourTypes );
 	  
@@ -421,7 +418,7 @@ public class DTMModelBase implements java.io.Serializable {
 //
 //		}
 
-		zdm.setOdUtilModeAlt (processorIndex, ModalUtilities);
+			ZonalDataManager.setOdUtilModeAlt (processorIndex, ModalUtilities);
 
 	}
 

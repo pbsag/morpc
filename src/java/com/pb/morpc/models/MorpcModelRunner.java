@@ -33,7 +33,7 @@ public class MorpcModelRunner extends MorpcModelBase {
                         "NumberOfShadowPriceIterations")));
 
             // run destination, time-of-day, and mode choice models for indivdual mandatory tours
-            MandatoryDTM manDTM = new MandatoryDTM(propertyMap, hhMgr, zdm);
+            MandatoryDTM manDTM = new MandatoryDTM(propertyMap, hhMgr);
 
             for (int i = 0; i < shadowPriceIterations; i++) {
                 manDTM.setShadowPricingIteration(i + 1);
@@ -63,7 +63,7 @@ public class MorpcModelRunner extends MorpcModelBase {
             jtModel = null;
 
             // run destination, time-of-day, and mode choice models for joint tours
-            JointDTM jointDTM = new JointDTM(propertyMap, hhMgr, zdm);
+            JointDTM jointDTM = new JointDTM(propertyMap, hhMgr);
             jointDTM.doWork();
             jointDTM.printTimes(TourType.JOINT_CATEGORY);
             jointDTM = null;
@@ -81,7 +81,7 @@ public class MorpcModelRunner extends MorpcModelBase {
             inmtModel = null;
 
             // run destination, time-of-day, and mode choice models for indivdual non-mandatory tours
-            NonMandatoryDTM nonManDTM = new NonMandatoryDTM(propertyMap, hhMgr, zdm);
+            NonMandatoryDTM nonManDTM = new NonMandatoryDTM(propertyMap, hhMgr);
             nonManDTM.doWork();
             nonManDTM.printTimes(TourType.NON_MANDATORY_CATEGORY);
             nonManDTM = null;
@@ -89,7 +89,7 @@ public class MorpcModelRunner extends MorpcModelBase {
 
 		if ( ((String)propertyMap.get("RUN_ATWORK_DTM")).equalsIgnoreCase("true") ) {
             // run destination, time-of-day, and mode choice models for subtours within work tours
-            AtWorkDTM atWorkDTM = new AtWorkDTM(propertyMap, hhMgr, zdm);
+            AtWorkDTM atWorkDTM = new AtWorkDTM(propertyMap, hhMgr);
             atWorkDTM.doWork();
             atWorkDTM.printTimes(TourType.AT_WORK_CATEGORY);
             atWorkDTM = null;

@@ -152,7 +152,7 @@ public class JointDTMWorker extends MessageProcessingTask implements java.io.Ser
 				if (LOGGING)
 				    logger.info (this.getName() + " building dtmHH object for mandatory dc.");
 				if (dtmHH == null)
-				    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.JOINT_CATEGORY, TourType.JOINT_TYPES, zdm );
+				    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.JOINT_CATEGORY, TourType.JOINT_TYPES );
 				if (LOGGING)
 				    logger.info (this.getName() + " dtmHH object built for mandatory dc, asking for work.");
 

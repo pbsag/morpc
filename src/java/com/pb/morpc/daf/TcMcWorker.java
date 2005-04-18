@@ -152,7 +152,7 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 				if (LOGGING)
 				    logger.info (this.getName() + " building dtmHH object for mandatory tcmc.");
 				if (dtmHH == null)
-    				dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES, zdm );
+    				dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
 				if (LOGGING)
 				    logger.info (this.getName() + " dtmHH object built for mandatory tcmc, asking for work.");
 

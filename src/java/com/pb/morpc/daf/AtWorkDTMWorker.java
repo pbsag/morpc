@@ -154,7 +154,7 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 				    logger.info (this.getName() + " building dtmHH object for atwork dtm.");
 
 				if (dtmHH == null)
-				    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.AT_WORK_CATEGORY, TourType.AT_WORK_TYPES, zdm );
+				    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.AT_WORK_CATEGORY, TourType.AT_WORK_TYPES );
 
 				if (LOGGING)
 				    logger.info (this.getName() + " dtmHH object built for atwork dtm, asking for work.");
