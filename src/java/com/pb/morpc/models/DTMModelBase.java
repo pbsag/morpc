@@ -421,13 +421,19 @@ public class DTMModelBase implements java.io.Serializable {
 				logger.fatal("tourTypeIndex=" + tourTypeIndex);
 				logger.fatal("processorIndex=" + processorIndex);
 				logger.fatal("UEC NumberOfAlternatives=" + mcODUEC[tourTypeIndex].getNumberOfAlternatives());
+				logger.fatal("UEC MethodInvoker Source Code=");
+				logger.fatal(mcODUEC[tourTypeIndex].getMethodInvokerSourceCode());
+				logger.fatal("UEC MethodInvoker Variable Table=");
+				logger.fatal(mcODUEC[tourTypeIndex].getVariableTable());
 				logger.fatal("UEC AlternativeNames=" + mcODUEC[tourTypeIndex].getAlternativeNames());
-				logger.fatal("UEC AlternativeData=" + mcODUEC[tourTypeIndex].getAlternativeData());
+				String[] altNames = mcODUEC[tourTypeIndex].getAlternativeNames();
+				for (int i=0; i < altNames.length; i++)
+					logger.fatal( "[" + i + "]:  " + altNames[i] );
 				logger.fatal("");
 				hh.writeContentToLogger(logger);
 				StackTraceElement[] stackTraceElements = e.getStackTrace();
 				for (int i=0; i < stackTraceElements.length; i++)
-					logger.fatal( stackTraceElements[i].toString() );
+					logger.fatal( "[" + i + "]:  " + stackTraceElements[i].toString() );
 				logger.fatal("");
 				e.printStackTrace();
 				System.exit(-1);

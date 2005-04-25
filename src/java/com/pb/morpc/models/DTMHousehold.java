@@ -848,8 +848,35 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 								
 				//Wu added for Summit Aggregation
-				LogitModel root=mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
-				int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
+				LogitModel root = null;
+				int chosenModeAlt = -1;
+				try {
+					root=mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
+					chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
+				}
+				catch (java.lang.Exception e) {
+					logger.fatal ("runtime exception occurred in DTMHousehold.mandatoryTourMc() for household id=" + hh.getID() );
+					logger.fatal("");
+					logger.fatal("tourTypeIndex=" + tourTypeIndex);
+					logger.fatal("processorIndex=" + processorIndex);
+					logger.fatal("UEC NumberOfAlternatives=" + mcODUEC[tourTypeIndex].getNumberOfAlternatives());
+					logger.fatal("UEC MethodInvoker Source Code=");
+					logger.fatal(mcODUEC[tourTypeIndex].getMethodInvokerSourceCode());
+					logger.fatal("UEC MethodInvoker Variable Table=");
+					logger.fatal(mcODUEC[tourTypeIndex].getVariableTable());
+					logger.fatal("UEC AlternativeNames=" + mcODUEC[tourTypeIndex].getAlternativeNames());
+					String[] altNames = mcODUEC[tourTypeIndex].getAlternativeNames();
+					for (int i=0; i < altNames.length; i++)
+						logger.fatal( "[" + i + "]:  " + altNames[i] );
+					logger.fatal("");
+					hh.writeContentToLogger(logger);
+					StackTraceElement[] stackTraceElements = e.getStackTrace();
+					for (int i=0; i < stackTraceElements.length; i++)
+						logger.fatal( "[" + i + "]:  " + stackTraceElements[i].toString() );
+					logger.fatal("");
+					e.printStackTrace();
+					System.exit(-1);
+				}
 											
 				int dummy=0;
 				if (tourTypes[m] != TourType.WORK) {
