@@ -383,7 +383,7 @@ public class DTMModelBase implements java.io.Serializable {
 
 	protected void setMcODUtility ( Household hh, int tourTypeIndex ) {
 
-		double[] ModalUtilities;
+		double[] ModalUtilities = null;
 
 		int todAlt = hh.getChosenTodAlt();
 		int startPeriod = TODDataManager.getTodStartPeriod( todAlt ); 
@@ -412,7 +412,27 @@ public class DTMModelBase implements java.io.Serializable {
 			index.setZoneIndex( hh.getTazID() );
 			index.setHHIndex( hh.getID() );
 
-			ModalUtilities = mcODUEC[tourTypeIndex].solve(index, hh, mcLogsumAvailability);
+			try {
+				ModalUtilities = mcODUEC[tourTypeIndex].solve(index, hh, mcLogsumAvailability);
+			}
+			catch (java.lang.Exception e) {
+				logger.fatal ("runtime exception occurred in DTMModelBase.setMcODUtility() for household id=" + hh.getID() );
+				logger.fatal("");
+				logger.fatal("tourTypeIndex=" + tourTypeIndex);
+				logger.fatal("processorIndex=" + processorIndex);
+				logger.fatal("UEC NumberOfAlternatives=" + mcODUEC[tourTypeIndex].getNumberOfAlternatives());
+				logger.fatal("UEC AlternativeNames=" + mcODUEC[tourTypeIndex].getAlternativeNames());
+				logger.fatal("UEC AlternativeData=" + mcODUEC[tourTypeIndex].getAlternativeData());
+				logger.fatal("");
+				hh.writeContentToLogger(logger);
+				StackTraceElement[] stackTraceElements = e.getStackTrace();
+				for (int i=0; i < stackTraceElements.length; i++)
+					logger.fatal( stackTraceElements[i].toString() );
+				logger.fatal("");
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			
 //
 //			modalODUtilityMap[processorIndex].put ( mapKey, ModalUtilities );
 //
