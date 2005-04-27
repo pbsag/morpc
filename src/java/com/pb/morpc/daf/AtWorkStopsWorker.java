@@ -37,7 +37,6 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 
 	private String modelServer = "AtWorkStopsModelServer";
 
-	private int processorId = 0;
 	private int processorIndex = 0;
 
     public AtWorkStopsWorker () {
@@ -107,18 +106,17 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
-				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
-				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
+				processorIndex = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
 
 				// create a stopsHH object
 				if (LOGGING)
-				    logger.info (this.getName() + " building stopsHH object for at-work sfc, slc, and smc.");
+				    logger.info (this.getName() + " building stopsHH object for at-work sfc, slc, and smc for PINDEX=" + processorIndex);
 
 				if (stopsHH == null)
-    				stopsHH = new StopsHousehold ( processorId, propertyMap, TourType.AT_WORK_CATEGORY, TourType.AT_WORK_TYPES );
+    				stopsHH = new StopsHousehold ( processorIndex, propertyMap, TourType.AT_WORK_CATEGORY, TourType.AT_WORK_TYPES );
 				stopsHH.resetHouseholdCount();
 
 				if (LOGGING)

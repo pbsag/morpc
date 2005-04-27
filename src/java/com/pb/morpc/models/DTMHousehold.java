@@ -855,8 +855,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 				}
 				catch (java.lang.Exception e) {
-					logger.fatal ("runtime exception occurred in DTMHousehold.mandatoryTourMc() for household id=" + hh.getID() );
+					logger.fatal ("runtime exception occurred in DTMHousehold.mandatoryTourMc() for household id=" + hh.getID(), e);
 					logger.fatal("");
+					logger.fatal("m=" + m);
+					logger.fatal("t=" + t);
+					logger.fatal("person=" + person);
 					logger.fatal("tourTypeIndex=" + tourTypeIndex);
 					logger.fatal("processorIndex=" + processorIndex);
 					logger.fatal("UEC NumberOfAlternatives=" + mcODUEC[tourTypeIndex].getNumberOfAlternatives());
@@ -870,9 +873,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 						logger.fatal( "[" + i + "]:  " + altNames[i] );
 					logger.fatal("");
 					hh.writeContentToLogger(logger);
-					StackTraceElement[] stackTraceElements = e.getStackTrace();
-					for (int i=0; i < stackTraceElements.length; i++)
-						logger.fatal( "[" + i + "]:  " + stackTraceElements[i].toString() );
 					logger.fatal("");
 					e.printStackTrace();
 					System.exit(-1);

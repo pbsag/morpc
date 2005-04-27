@@ -128,7 +128,10 @@ public class StopsModelBase implements java.io.Serializable {
 	// this constructor used to set processorIndex when called by a distributed application
 	public StopsModelBase ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 
-	    this.processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
+	    this.processorIndex = processorId;
+
+	    logger.info ( "StopsModelBase constructor called with PINDEX=" + processorIndex);
+	    
 	    initStopsModelBase ( propertyMap, tourTypeCategory, tourTypes );
 	
 	}

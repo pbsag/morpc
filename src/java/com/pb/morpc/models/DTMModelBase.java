@@ -128,14 +128,17 @@ public class DTMModelBase implements java.io.Serializable {
 	protected double[] submodeUtility = new double[1];
 	
 	
-	private HashMap[] modalODUtilityMap = null;
+//	private HashMap[] modalODUtilityMap = null;
 	
 		
 	
 	// this constructor used to set processorIndex when called by a distributed application
 	public DTMModelBase ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 		
-	    this.processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
+	    this.processorIndex = processorId;
+	    
+	    logger.info ( "DTMModelBase constructor called with PINDEX=" + processorIndex);
+	    
 		initDTMModelBase ( propertyMap, tourTypeCategory, tourTypes );
 	  
 	}
@@ -235,29 +238,29 @@ public class DTMModelBase implements java.io.Serializable {
 			mc[i] =  new ChoiceModelApplication("Model7.controlFile", "Model7.outputFile", propertyMap);
 
 			// create dest choice UEC
-			logger.info ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Destination Choice UECs");
+			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Destination Choice UECs");
 			if (useMessageWindow) mw.setMessage1 ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Destination Choice UECs");
 			dcUEC[i] = dc[i].getUEC(model5Sheet, m5DataSheet);
 	
 			// create time-of-day choice UEC
-			logger.info ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Time-of-Day Choice UECs");
+			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Time-of-Day Choice UECs");
 			if (useMessageWindow) mw.setMessage1 ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Time-of-Day Choice UECs");
 			tcUEC[i] = tc[i].getUEC(model6Sheet,  m6DataSheet);
 	
 			// create UEC to calculate OD component of mode choice utilities
-			logger.info ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice OD UECs");
+			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice OD UECs");
 			if (useMessageWindow) mw.setMessage1 ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice OD UECs");
 			mcODUEC[i] = mc[i].getUEC(model7ODSheet,  m7ODDataSheet);
 	
-			// create UEC to calculate OD component of mode choice utilities
-			logger.info ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice UECs");
+			// create UEC to calculate non-OD component of mode choice utilities
+			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice UECs");
 			if (useMessageWindow) mw.setMessage1 ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice UECs");
 			mcUEC[i] = mc[i].getUEC(model7Sheet,  m7DataSheet);
 
 			
-			modalODUtilityMap = new HashMap[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES];
-			for (int m=0; m < ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES; m++)
-				modalODUtilityMap[m] = new HashMap();
+//			modalODUtilityMap = new HashMap[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES];
+//			for (int m=0; m < ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES; m++)
+//				modalODUtilityMap[m] = new HashMap();
 
 			
 
@@ -385,11 +388,11 @@ public class DTMModelBase implements java.io.Serializable {
 
 		double[] ModalUtilities = null;
 
-		int todAlt = hh.getChosenTodAlt();
-		int startPeriod = TODDataManager.getTodStartPeriod( todAlt ); 
-		int startSkimPeriod = com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( startPeriod );		
-		int endPeriod = TODDataManager.getTodEndPeriod( todAlt ); 
-		int endSkimPeriod = com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( endPeriod );		
+//		int todAlt = hh.getChosenTodAlt();
+//		int startPeriod = TODDataManager.getTodStartPeriod( todAlt ); 
+//		int startSkimPeriod = com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( startPeriod );		
+//		int endPeriod = TODDataManager.getTodEndPeriod( todAlt ); 
+//		int endSkimPeriod = com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( endPeriod );		
 
 		
 		
@@ -416,7 +419,7 @@ public class DTMModelBase implements java.io.Serializable {
 				ModalUtilities = mcODUEC[tourTypeIndex].solve(index, hh, mcLogsumAvailability);
 			}
 			catch (java.lang.Exception e) {
-				logger.fatal ("runtime exception occurred in DTMModelBase.setMcODUtility() for household id=" + hh.getID() );
+				logger.fatal ("runtime exception occurred in DTMModelBase.setMcODUtility() for household id=" + hh.getID(), e );
 				logger.fatal("");
 				logger.fatal("tourTypeIndex=" + tourTypeIndex);
 				logger.fatal("processorIndex=" + processorIndex);
@@ -431,9 +434,6 @@ public class DTMModelBase implements java.io.Serializable {
 					logger.fatal( "[" + i + "]:  " + altNames[i] );
 				logger.fatal("");
 				hh.writeContentToLogger(logger);
-				StackTraceElement[] stackTraceElements = e.getStackTrace();
-				for (int i=0; i < stackTraceElements.length; i++)
-					logger.fatal( "[" + i + "]:  " + stackTraceElements[i].toString() );
 				logger.fatal("");
 				e.printStackTrace();
 				System.exit(-1);

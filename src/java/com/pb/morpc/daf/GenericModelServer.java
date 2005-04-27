@@ -38,7 +38,6 @@ public class GenericModelServer extends MessageProcessingTask {
 	private HashMap tdmMap = null;
 	
 	private ArrayList workerTaskList = new ArrayList();
-	
 	private int activeWorkers = 0;
 	
 
@@ -61,6 +60,8 @@ public class GenericModelServer extends MessageProcessingTask {
 
 	public void onMessage(Message msg) {
 		
+		int taskNumber = 0;
+
 		if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
 
@@ -72,7 +73,7 @@ public class GenericModelServer extends MessageProcessingTask {
 			if (msg.getId().equals(MessageID.START_INFO)) {					
 				propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 			    if(propertyMap==null){
-			    	logger.fatal("GenericModelServer onMessage, no propertyMap included in this message.");
+			    	logger.info("GenericModelServer onMessage, no propertyMap included in this message.");
 			    }
 				// resolve message contents
 				//propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
@@ -109,6 +110,13 @@ public class GenericModelServer extends MessageProcessingTask {
 						if (LOGGING)
 						    logger.info( this.name + " sending a START_INFO back to " + sender );
 
+						// add the sender task name and number that requested work to a worker arrayList
+						// and to a processorId HashMap.
+						workerTaskList.add ( sender );
+
+						taskNumber = getSenderIndex(sender);
+
+						
 						// create start work message to send to workers
 						startWorkMessage = createMessage();
 						startWorkMessage.setId(MessageID.START_INFO);
@@ -117,11 +125,10 @@ public class GenericModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.TOD_DATA_MANAGER_KEY, tdm );
 						startWorkMessage.setValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY, zdmMap );
 						startWorkMessage.setValue( MessageID.STATIC_TOD_DATA_MAP_KEY, tdmMap );
-						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(activeWorkers) );
+						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
 						sendTo( sender, startWorkMessage );
-						// add the sender task name and number that requested work to a HashMap
-						workerTaskList.add ( sender );
+
 						activeWorkers++;
 						i.remove();
 					}
@@ -171,6 +178,13 @@ public class GenericModelServer extends MessageProcessingTask {
 						if (LOGGING)
 						    logger.info( this.name + " sending a START_INFO back to " + msg.getSender() );
 
+						// add the sender task name and number that requested work to a worker arrayList
+						// and to a processorId HashMap.
+						workerTaskList.add ( msg.getSender() );
+
+						taskNumber = getSenderIndex( msg.getSender() );
+
+						
 						// create start work message to send to workers
 						startWorkMessage = createMessage();
 						startWorkMessage.setId(MessageID.START_INFO);
@@ -179,11 +193,10 @@ public class GenericModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.TOD_DATA_MANAGER_KEY, tdm );
 						startWorkMessage.setValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY, zdmMap );
 						startWorkMessage.setValue( MessageID.STATIC_TOD_DATA_MAP_KEY, tdmMap );
-						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(activeWorkers) );
+						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
 						replyToSender(startWorkMessage);
-						// add the sender task name and number that requested work to a HashMap
-						workerTaskList.add ( msg.getSender() );
+						
 						activeWorkers++;
 					}
 				}
@@ -244,6 +257,31 @@ public class GenericModelServer extends MessageProcessingTask {
 			sendTo("MorpcServer", exitMessage);
 		}
 
+	}
+
+	/**
+	 * get the numeric task identifier from the task name and return it.
+	 * 
+	 * it is assumed that the tasks are named in the "applicationDaf.properties"
+	 * file by concatenating unique numeric identifiers for each task to the end of a common string,
+	 * e.g. dcWorker1, dcWorker2, ..., dcWorkerN for N tasks defined accross various nodes.
+	 * 
+	 * this method therefore starts at the end of the sender String and extracts numeric
+	 * characters to form the numeric identifier for the task name. 
+	 * 
+	 * @param sender
+	 * @return numeric task identifier from the task name
+	 */
+	private int getSenderIndex ( String sender ) {
+		
+		int i = sender.length() - 1;
+		
+		while ( i >= 0 && sender.substring(i).matches( "[0-9]") ) {
+			i--;
+		}
+			
+		return Integer.parseInt( sender.substring(i+1) );
+		
 	}
 
 }

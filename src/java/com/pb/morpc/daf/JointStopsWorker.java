@@ -37,7 +37,6 @@ public class JointStopsWorker extends MessageProcessingTask implements java.io.S
 
 	private String modelServer = "JointStopsModelServer";
 
-	private int processorId = 0;
 	private int processorIndex = 0;
 
     public JointStopsWorker () {
@@ -106,17 +105,16 @@ public class JointStopsWorker extends MessageProcessingTask implements java.io.S
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
-				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
-				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
+				processorIndex = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
 
 				// create a stopsHH object
 				if (LOGGING)
-				    logger.info (this.getName() + " building stopsHH object for joint sfc, slc, and smc.");
+				    logger.info (this.getName() + " building stopsHH object for joint sfc, slc, and smc for PINDEX=" + processorIndex);
 				if (stopsHH == null)
-    				stopsHH = new StopsHousehold ( processorId, propertyMap, TourType.JOINT_CATEGORY, TourType.JOINT_TYPES );
+    				stopsHH = new StopsHousehold ( processorIndex, propertyMap, TourType.JOINT_CATEGORY, TourType.JOINT_TYPES );
 				stopsHH.resetHouseholdCount();
 				if (LOGGING)
 				    logger.info (this.getName() + " stopsHH object built for joint stops, asking for work.");

@@ -42,7 +42,6 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 
 	private String modelServer = "AtWorkDTMModelServer";
 
-	private int processorId = 0;
 	private int processorIndex = 0;
 	
 	//Wu added for Summit Aggregation
@@ -128,8 +127,7 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
-				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
-				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
+				processorIndex = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
@@ -151,10 +149,10 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 
 				// create a dtmHH object
 				if (LOGGING)
-				    logger.info (this.getName() + " building dtmHH object for atwork dtm.");
+				    logger.info (this.getName() + " building dtmHH object for atwork dtm for PINDEX=" + processorIndex);
 
 				if (dtmHH == null)
-				    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.AT_WORK_CATEGORY, TourType.AT_WORK_TYPES );
+				    dtmHH = new DTMHousehold ( processorIndex, propertyMap, TourType.AT_WORK_CATEGORY, TourType.AT_WORK_TYPES );
 
 				if (LOGGING)
 				    logger.info (this.getName() + " dtmHH object built for atwork dtm, asking for work.");

@@ -40,7 +40,6 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 	private String modelServer = "TcMcModelServer";
 
-	private int processorId = 0;
 	private int processorIndex = 0;
 	
 	//Wu added for Summit Aggregation
@@ -126,8 +125,7 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
-				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
-				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
+				processorIndex = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
@@ -152,7 +150,7 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 				if (LOGGING)
 				    logger.info (this.getName() + " building dtmHH object for mandatory tcmc.");
 				if (dtmHH == null)
-    				dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
+    				dtmHH = new DTMHousehold ( processorIndex, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
 				if (LOGGING)
 				    logger.info (this.getName() + " dtmHH object built for mandatory tcmc, asking for work.");
 
@@ -199,7 +197,7 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 
 					// run the TcMc model for the mandatory tours in these households
 					if (LOGGING)
-					    logger.info ( this.getName() + " processing household ids: " + hhList[0].getID() + " to " + hhList[hhList.length-1].getID() );
+					    logger.info ( this.getName() + " processing household ids: " + hhList[0].getID() + " to " + hhList[hhList.length-1].getID() + ", PINDEX=" + processorIndex);
 					
 					for (int i=0; i < hhList.length; i++) {
 						try {
@@ -229,8 +227,7 @@ public class TcMcWorker extends MessageProcessingTask implements java.io.Seriali
 							}
 						}
 						catch (java.lang.Exception e) {
-							logger.fatal ("runtime exception occurred in mandatory TcMc for household id=" + hhList[i].getID() + " in " + this.getName() );
-							logger.fatal(e.getMessage());
+							logger.fatal ("runtime exception occurred in mandatory TcMc for household id=" + hhList[i].getID() + " in " + this.getName(), e );
 							hhList[i].writeContentToLogger(logger);
 						    e.printStackTrace();
 							System.exit(-1);

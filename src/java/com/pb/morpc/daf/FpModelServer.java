@@ -32,8 +32,6 @@ public class FpModelServer extends MessageProcessingTask {
 	private int activeWorkers = 0;
 	
 	
-	
-	
     public FpModelServer () {
     }
 

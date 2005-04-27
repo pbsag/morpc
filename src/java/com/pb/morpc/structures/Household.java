@@ -85,8 +85,6 @@ public class Household implements java.io.Externalizable {
 
     /**
      * set processor index operating on this household object in a distributed application
-     * processor index was calculated as follows before being passed here:
-     * processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES
      */
 	public void setProcessorIndex (int id) {
 		processorIndex = id;

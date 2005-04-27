@@ -37,7 +37,6 @@ public class MandatoryStopsWorker extends MessageProcessingTask implements java.
 
 	private String modelServer = "MandatoryStopsModelServer";
 
-	private int processorId = 0;
 	private int processorIndex = 0;
 
 
@@ -107,17 +106,16 @@ public class MandatoryStopsWorker extends MessageProcessingTask implements java.
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
-				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
-				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
+				processorIndex = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
 
 				// create a stopsHH object
 				if (LOGGING)
-				    logger.info (this.getName() + " building stopsHH object for mandatory sfc, slc, and smc.");
+				    logger.info (this.getName() + " building stopsHH object for mandatory sfc, slc, and smc for PINDEX=" + processorIndex);
 				if (stopsHH == null)
-				    stopsHH = new StopsHousehold ( processorId, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
+				    stopsHH = new StopsHousehold ( processorIndex, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
 				stopsHH.resetHouseholdCount();
 				if (LOGGING)
 				    logger.info (this.getName() + " stopsHH object built for mandatory stops, asking for work.");

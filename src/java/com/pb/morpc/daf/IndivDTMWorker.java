@@ -42,7 +42,6 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 
 	private String modelServer = "IndivDTMModelServer";
 
-	private int processorId = 0;
 	private int processorIndex = 0;
 	
 	//Wu added for Summit Aggregation
@@ -127,8 +126,7 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 				tdm = (TODDataManager)msg.getValue( MessageID.TOD_DATA_MANAGER_KEY );
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
-				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
-				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
+				processorIndex = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
@@ -150,9 +148,9 @@ public class IndivDTMWorker extends MessageProcessingTask implements java.io.Ser
 
 				// create a dtmHH object
 				if (LOGGING)
-				    logger.info (this.getName() + " building dtmHH object for individual non-mandatory dtm.");
+				    logger.info (this.getName() + " building dtmHH object for individual non-mandatory dtm for PINDEX=" + processorIndex);
 				if (dtmHH == null)
-				    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.NON_MANDATORY_CATEGORY, TourType.NON_MANDATORY_TYPES );
+				    dtmHH = new DTMHousehold ( processorIndex, propertyMap, TourType.NON_MANDATORY_CATEGORY, TourType.NON_MANDATORY_TYPES );
 				if (LOGGING)
 				    logger.info (this.getName() + " dtmHH object built for individual non-mandatory dtm, asking for work.");
 

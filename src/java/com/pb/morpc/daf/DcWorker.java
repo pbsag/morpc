@@ -38,7 +38,6 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 
 	private String modelServer = "DcModelServer";
 
-	private int processorId = 0;
 	private int processorIndex = 0;
 
     public DcWorker () {
@@ -108,16 +107,15 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 				zdmMap = (HashMap)msg.getValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY );
 				tdmMap = (HashMap)msg.getValue( MessageID.STATIC_TOD_DATA_MAP_KEY );
 				shadowPriceIter = Integer.parseInt((String)msg.getValue( MessageID.SHADOW_PRICE_ITER_KEY ));
-				processorId = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
-				processorIndex = processorId % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES;
+				processorIndex = Integer.parseInt((String)msg.getValue( MessageID.PROCESSOR_ID_KEY ));
 
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
 
 				// create a dtmHH object
 				if (LOGGING)
-				    logger.info (this.getName() + " building dtmHH object for mandatory dc.");
-			    dtmHH = new DTMHousehold ( processorId, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
+				    logger.info (this.getName() + " building dtmHH object for mandatory dc for PINDEX=" + processorIndex);
+			    dtmHH = new DTMHousehold ( processorIndex, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
 				dtmHH.setShadowPricingIteration(shadowPriceIter);
 				dtmHH.resetHouseholdCount();
 				if (LOGGING)

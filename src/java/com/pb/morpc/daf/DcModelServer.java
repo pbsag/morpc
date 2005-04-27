@@ -37,7 +37,6 @@ public class DcModelServer extends MessageProcessingTask {
 	
 	private int shadowPriceIter = 0;
 	private int activeWorkers = 0;
-	
 
 
     
@@ -58,6 +57,8 @@ public class DcModelServer extends MessageProcessingTask {
 
 	public void onMessage(Message msg) {
 		
+		int taskNumber = 0;
+
 		if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
 
@@ -69,7 +70,7 @@ public class DcModelServer extends MessageProcessingTask {
 			    // resolve message contents
 				propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 			    if(propertyMap==null){
-			    	logger.fatal("GenericModelServer onMessage, no propertyMap included in this message.");
+			    	logger.info("DcModelServer onMessage, no propertyMap included in this message.");
 			    }
 			    
 				zdm = (ZonalDataManager)msg.getValue( MessageID.ZONAL_DATA_MANAGER_KEY );
@@ -80,6 +81,7 @@ public class DcModelServer extends MessageProcessingTask {
 				
 				serverStarted = true;
 				serverExiting = false;
+
 				activeWorkers = 0;
 			}
 			else if ( msg.getId().equals( MessageID.EXIT )	) {		
@@ -107,6 +109,10 @@ public class DcModelServer extends MessageProcessingTask {
 						if (LOGGING)
 						    logger.info( this.name + " sending a START_INFO back to " + sender );
 
+						
+						taskNumber = getSenderIndex(sender);
+
+						
 						// create start work message to send to workers
 						startWorkMessage = createMessage();
 						startWorkMessage.setId(MessageID.START_INFO);
@@ -116,7 +122,7 @@ public class DcModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY, zdmMap );
 						startWorkMessage.setValue( MessageID.STATIC_TOD_DATA_MAP_KEY, tdmMap );
 						startWorkMessage.setValue( MessageID.SHADOW_PRICE_ITER_KEY, Integer.toString(shadowPriceIter) );
-						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(activeWorkers) );
+						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
 						sendTo( sender, startWorkMessage );
 						activeWorkers++;
@@ -163,6 +169,10 @@ public class DcModelServer extends MessageProcessingTask {
 							if (LOGGING)
 								logger.info( this.name + " sending a START_INFO back to " + msg.getSender() );
 
+
+							taskNumber = getSenderIndex(msg.getSender());
+
+							
 							// create start work message to send to workers
 							startWorkMessage = createMessage();
 							startWorkMessage.setId(MessageID.START_INFO);
@@ -172,7 +182,7 @@ public class DcModelServer extends MessageProcessingTask {
 							startWorkMessage.setValue( MessageID.STATIC_ZONAL_DATA_MAP_KEY, zdmMap );
 							startWorkMessage.setValue( MessageID.STATIC_TOD_DATA_MAP_KEY, tdmMap );
 							startWorkMessage.setValue( MessageID.SHADOW_PRICE_ITER_KEY, Integer.toString(shadowPriceIter) );
-							startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(activeWorkers) );
+							startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
 							replyToSender(startWorkMessage);
 							activeWorkers++;
@@ -233,6 +243,31 @@ public class DcModelServer extends MessageProcessingTask {
 			sendTo("MorpcServer", exitMessage);
 		}
 
+	}
+
+	/**
+	 * get the numeric task identifier from the task name and return it.
+	 * 
+	 * it is assumed that the tasks are named in the "applicationDaf.properties"
+	 * file by concatenating unique numeric identifiers for each task to the end of a common string,
+	 * e.g. dcWorker1, dcWorker2, ..., dcWorkerN for N tasks defined accross various nodes.
+	 * 
+	 * this method therefore starts at the end of the sender String and extracts numeric
+	 * characters to form the numeric identifier for the task name. 
+	 * 
+	 * @param sender
+	 * @return numeric task identifier from the task name
+	 */
+	private int getSenderIndex ( String sender ) {
+		
+		int i = sender.length() - 1;
+		
+		while ( i >= 0 && sender.substring(i).matches( "[0-9]") ) {
+			i--;
+		}
+			
+		return Integer.parseInt( sender.substring(i+1) );
+		
 	}
 
 }
