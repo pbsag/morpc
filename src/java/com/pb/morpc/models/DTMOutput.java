@@ -831,13 +831,15 @@ public class DTMOutput implements java.io.Serializable {
 
 
 
-	public void writeDTMOutput ( Household[] hh ) throws IOException {
+	public void writeDTMOutput ( Household[] hh ) throws Exception {
 
 		String modeName[] = { "", "sov", "hov", "walktran", "drivtran", "nonmotor", "schoolbus" };        
 		String tlPurposeName[] = { "", "1 Work-low", "1 Work-med", "1 Work-high", "2 University", "3 School", "4 Escorting", "5 Shopping - ind", "5 Shopping - joint", "6 Maintenance - ind", "6 Maintenance - joint", "7 Discretionary - ind", "7 Discretionary - joint", "8 Eating out - ind", "8 Eating out - joint", "9 At work" };        
 
 		int k = 0;
-
+		int m = 0;
+		int t = 0;
+		
 		int hh_id;
 		int hh_taz_id;
 		int tlIndex;
@@ -857,7 +859,12 @@ public class DTMOutput implements java.io.Serializable {
 		Tour[] it;
 		Tour[] st;
 		
+		ArrayList tableHeadings = null;
+		float[] tableData = null;
+
 		int[] tripsByMode = new int[7];
+		
+		Household tempHH = null;
 		
 		PrintWriter outStream = null;
 		
@@ -898,7 +905,7 @@ public class DTMOutput implements java.io.Serializable {
 	
 
 	
-			ArrayList tableHeadings = new ArrayList();
+			tableHeadings = new ArrayList();
 			tableHeadings.add(SyntheticPopulation.HHID_FIELD);
 			tableHeadings.add(SyntheticPopulation.HHTAZID_FIELD);
 			tableHeadings.add("person_id");
@@ -956,7 +963,7 @@ public class DTMOutput implements java.io.Serializable {
 			tableHeadings.add("CRL_IVT_IB");
 
 			// define an array for use in writing output file
-			float[] tableData = new float[tableHeadings.size()];
+			tableData = new float[tableHeadings.size()];
 
 	
 
@@ -978,6 +985,8 @@ public class DTMOutput implements java.io.Serializable {
 			int r=0;
 			for (int i=0; i < hh.length; i++) {
 			    
+				tempHH = hh[i];
+				
 				hh_id = hh[i].getID();
 				hh_taz_id = hh[i].getTazID();
 				Person[] persons = hh[i].getPersonArray();
@@ -986,7 +995,10 @@ public class DTMOutput implements java.io.Serializable {
 				// first put individual mandatory tours in the output table
 				it = hh[i].getMandatoryTours();
 				if (it != null) {
-					for (int t=0; t < it.length; t++) {
+					
+					m = 1;
+					
+					for (t=0; t < it.length; t++) {
 										    
 						Arrays.fill ( tableData, 0.0f );
 				
@@ -1209,7 +1221,10 @@ public class DTMOutput implements java.io.Serializable {
 				// next put joint tours in the output table
 				jt = hh[i].getJointTours();
 				if (jt != null) {
-					for (int t=0; t < jt.length; t++) {
+					
+					m = 2;
+					
+					for (t=0; t < jt.length; t++) {
 						
 						Arrays.fill ( tableData, 0.0f );
 				
@@ -1435,7 +1450,10 @@ public class DTMOutput implements java.io.Serializable {
 				// next put individual non-mandatory tours in the output table
 				it = hh[i].getIndivTours();
 				if (it != null) {
-					for (int t=0; t < it.length; t++) {
+					
+					m = 3;
+					
+					for (t=0; t < it.length; t++) {
 				    
 						Arrays.fill ( tableData, 0.0f );
 				
@@ -1655,7 +1673,10 @@ public class DTMOutput implements java.io.Serializable {
 				// finally, write trips for atwork subtours
 				it = hh[i].getMandatoryTours();
 				if (it != null) {
-					for (int t=0; t < it.length; t++) {
+					
+					m = 4;
+					
+					for (t=0; t < it.length; t++) {
 						
 						if (it[t].getTourType() == TourType.WORK) {
 							st = it[t].getSubTours();
@@ -1878,8 +1899,23 @@ public class DTMOutput implements java.io.Serializable {
 			tableData = null;
 			
 		}
-		catch (IOException e) {
-			   throw e;
+		catch (Exception e) {
+
+			logger.fatal ("runtime exception occurred in DTMOutput.writeDTMOutput() for household id=" + tempHH.getID(), e );
+			logger.fatal("");
+			logger.fatal("tourCategory=" + m);
+			logger.fatal("tour index=" + t);
+			logger.fatal("orig zone=" + index.getOriginZone());
+			logger.fatal("dest zone=" + index.getDestZone());
+			logger.fatal("stop zone=" + index.getStopZone());
+			
+			for (int i=0; i < tableData.length; i++)
+				logger.fatal( "[" + i + "]:  " + tableHeadings.get(i) + "  =  " + tableData[i] );
+			logger.fatal("");
+			tempHH.writeContentToLogger(logger);
+			logger.fatal("");
+
+			throw e;
 		}
 				
 

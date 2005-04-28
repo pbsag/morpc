@@ -272,7 +272,8 @@ public class MorpcModelServer extends MessageProcessingTask {
         try {
             dtmOut.writeDTMOutput(hhs);
         }
-        catch (java.io.IOException e) {
+        catch (Exception e) {
+        	logger.error ("", e);
             e.printStackTrace();
         }
 

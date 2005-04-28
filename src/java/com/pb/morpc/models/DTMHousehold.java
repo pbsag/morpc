@@ -8,7 +8,7 @@ package com.pb.morpc.models;
  */
 
 //import com.pb.common.model.DiscreteChoiceModel;
-import com.pb.common.model.Alternative;
+//import com.pb.common.model.Alternative;
 import com.pb.common.model.ConcreteAlternative;
 import java.util.Set;
 import java.util.Iterator;
@@ -3034,12 +3034,12 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		
 		int counter=0;
         while (itr.hasNext()) {
-        	Alternative alt=(Alternative) itr.next();
+        	Object alt= itr.next();
             elementalUtils[counter] = ((ConcreteAlternative)alt).getUtility();
             elementalConst[counter]=((ConcreteAlternative)alt).getConstant();
             expUtils[counter]=Math.exp(elementalUtils[counter]+elementalConst[counter]);
     
-            altNames[counter]=alt.getName();
+            altNames[counter]=((ConcreteAlternative)alt).getName();
             
             counter++;
         }
