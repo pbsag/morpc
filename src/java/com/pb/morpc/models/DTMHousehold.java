@@ -7,8 +7,7 @@ package com.pb.morpc.models;
  * individual tours
  */
 
-//import com.pb.common.model.DiscreteChoiceModel;
-//import com.pb.common.model.Alternative;
+import com.pb.common.model.Alternative;
 import com.pb.common.model.ConcreteAlternative;
 import java.util.Set;
 import java.util.Iterator;
@@ -886,7 +885,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords=makeSummitAggregationRecords(root, hh, "mandatory");
+						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.mandatoryTours[t], "mandatory"));
 				}
 			
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -1406,7 +1405,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords=makeSummitAggregationRecords(root, hh, "joint");
+						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.jointTours[t], "joint"));
 				}
 								
 				mcTime += (System.currentTimeMillis() - markTime);
@@ -2122,7 +2121,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords=makeSummitAggregationRecords(root, hh, "individual");
+						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.indivTours[t], "individual"));
 				}
 								
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -2739,7 +2738,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords=makeSummitAggregationRecords(root, hh, "atwork");
+						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.mandatoryTours[t].subTours[s], "atwork"));
 				}
 							
 				mcTime += (System.currentTimeMillis() - markTime);
@@ -3005,186 +3004,163 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		}						
 	}
 	
-	//Wu added for Summit Aggregation
+//	Wu added for Summit Aggregation
 	public Vector getSummitAggregationRecords(){
 		return summitAggregationRecords;
 	}
 	
 	//Wu added for Summit Aggregation
-	private Vector makeSummitAggregationRecords(LogitModel root, Household hh, String tourCategory){
+	private SummitAggregationRecord makeSummitAggregationRecords(LogitModel root, Household hh, Tour tour, String tourCategory){
 		
-		//contains all SummitAggregationRecords in this HH
-		Vector result=new Vector();
-		//current SummitAggregationRecord
+		//SummitAggregationRecord for this tour
 		SummitAggregationRecord record=null;
-	
-		JointTour[] jt;
-		Tour[] it;
-		Tour[] st;
 		
-		HashMap elementalAltMap=new HashMap();
-		root.getElementalAlternativeHashMap(elementalAltMap);
-		Set alts=elementalAltMap.entrySet();
-		Iterator itr=alts.iterator();
-		double [] elementalUtils=new double[alts.size()];
-		double [] elementalConst=new double[alts.size()];
-		double [] expUtils=new double[alts.size()];
-		
-		String [] altNames=new String[alts.size()];
-		
-		int counter=0;
-        while (itr.hasNext()) {
-        	Object alt= itr.next();
-            elementalUtils[counter] = ((ConcreteAlternative)alt).getUtility();
-            elementalConst[counter]=((ConcreteAlternative)alt).getConstant();
-            expUtils[counter]=Math.exp(elementalUtils[counter]+elementalConst[counter]);
-    
-            altNames[counter]=((ConcreteAlternative)alt).getName();
-            
-            counter++;
-        }
-		
-		HashMap elementalProbMap=new HashMap();
-		root.getElementalProbabilitiesHashMap(elementalProbMap);	
-		Set probs=elementalProbMap.entrySet();	
-		itr=probs.iterator();
-		double [] elementalProbs=new double[probs.size()];
-		
-        counter=0;
-        while (itr.hasNext()) {
-            elementalProbs[counter] = ((Double) itr.next()).doubleValue();
-            counter++;
-        }
+		double [] expUtils=makeExpUtilities(root);	
+		double [] elementalProbs=makeProbabilities(root);
 		
 		//mandatory tours
 		if(tourCategory.equalsIgnoreCase("mandatory")){
-			it = hh.getMandatoryTours();
-			if (it != null) {
-				for (int t=0; t < it.length; t++) {
-					record=new SummitAggregationRecord();
-					record.setHouseholdID(hh.getID());
-					record.setPersonID(it[t].getTourPerson());
-					record.setTourID(t+1);
-					record.setPurpose(it[t].getTourType());
-					record.setTourCategory(1);
-					//for individual tour set party size to 1
-					record.setPartySize(0);
-					record.setHHIncome(hh.getHHIncome());
-					record.setAuto(hh.getAutoOwnership());
-					record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
-					record.setOrigin(it[t].getOrigTaz());
-					record.setDestination(it[t].getDestTaz());
-					record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
-					record.setDestSubZone(it[t].getDestShrtWlk());
-					record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt()));
-					record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt()));
-					record.setMode(it[t].getMode());
+			record=new SummitAggregationRecord();
+			record.setHouseholdID(hh.getID());
+			record.setPersonID(tour.getTourPerson());
+			record.setTourID(hh.getTourID());
+			record.setPurpose(tour.getTourType());
+			record.setTourCategory(1);
+			//for individual tour set party size to 1
+			record.setPartySize(0);
+			record.setHHIncome(hh.getHHIncome());
+			record.setAuto(hh.getAutoOwnership());
+			record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
+			record.setOrigin(tour.getOrigTaz());
+			record.setDestination(tour.getDestTaz());
+			record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
+			record.setDestSubZone(tour.getDestShrtWlk());
+			record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( tour.getTimeOfDayAlt()));
+			record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod(tour.getTimeOfDayAlt()));
+			record.setMode(tour.getMode());
 	
-					record.setExpUtils(expUtils);
-					record.setProbs(elementalProbs);
-					result.add(record);
-				}
-			}
+			record.setExpUtils(expUtils);
+			record.setProbs(elementalProbs);;
 		}
 		//joint tours
 		else if(tourCategory.equalsIgnoreCase("joint")){
-			jt = hh.getJointTours();
-			if (jt != null) {
-				for (int t=0; t < jt.length; t++) {
-					record=new SummitAggregationRecord();
-					record.setHouseholdID(hh.getID());
-					record.setPersonID(jt[t].getTourPerson());
-					record.setTourID(t+1);
-					record.setPurpose(jt[t].getTourType());
-					record.setTourCategory(2);
-					//for individual tour set party size to 0
-					record.setPartySize((jt[t].getJointTourPersons()).length);
-					record.setHHIncome(hh.getHHIncome());
-					record.setAuto(hh.getAutoOwnership());
-					record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
-					record.setOrigin(jt[t].getOrigTaz());
-					record.setDestination(jt[t].getDestTaz());
-					record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
-					record.setDestSubZone(jt[t].getDestShrtWlk());
-					record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt()));
-					record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt()));
-					record.setMode(jt[t].getMode());
+			record=new SummitAggregationRecord();
+			record.setHouseholdID(hh.getID());
+			record.setPersonID(tour.getTourPerson());
+			record.setTourID(hh.getTourID());
+			record.setPurpose(tour.getTourType());
+			record.setTourCategory(2);
+			record.setPartySize((((JointTour)tour).getJointTourPersons()).length);
+			record.setHHIncome(hh.getHHIncome());
+			record.setAuto(hh.getAutoOwnership());
+			record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
+			record.setOrigin(tour.getOrigTaz());
+			record.setDestination(tour.getDestTaz());
+			record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
+			record.setDestSubZone(tour.getDestShrtWlk());
+			record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( tour.getTimeOfDayAlt()));
+			record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( tour.getTimeOfDayAlt()));
+			record.setMode(tour.getMode());
 					
-					record.setExpUtils(expUtils);
-					record.setProbs(elementalProbs);
-					result.add(record);
-				}
-			}
+			record.setExpUtils(expUtils);
+			record.setProbs(elementalProbs);
 		}
 		//individual non-mandatory tours
 		else if(tourCategory.equalsIgnoreCase("individual")){
-			it = hh.getIndivTours();
-			if (it != null) {
-				for (int t=0; t < it.length; t++) {
-					record=new SummitAggregationRecord();
-					record.setHouseholdID(hh.getID());
-					record.setPersonID(it[t].getTourPerson());
-					record.setTourID(t+1);
-					record.setPurpose(it[t].getTourType());
-					record.setTourCategory(3);
-					//for individual tour set party size to 0
-					record.setPartySize(0);
-					record.setHHIncome(hh.getHHIncome());
-					record.setAuto(hh.getAutoOwnership());
-					record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
-					record.setOrigin(it[t].getOrigTaz());
-					record.setDestination(it[t].getDestTaz());
-					record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
-					record.setDestSubZone(it[t].getDestShrtWlk());
-					record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt()));
-					record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt()));
-					record.setMode(it[t].getMode());	
+			record=new SummitAggregationRecord();
+			record.setHouseholdID(hh.getID());
+			record.setPersonID(tour.getTourPerson());
+			record.setTourID(hh.getTourID());
+			record.setPurpose(tour.getTourType());
+			record.setTourCategory(3);
+			//for individual tour set party size to 0
+			record.setPartySize(0);
+			record.setHHIncome(hh.getHHIncome());
+			record.setAuto(hh.getAutoOwnership());
+			record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
+			record.setOrigin(tour.getOrigTaz());
+			record.setDestination(tour.getDestTaz());
+			record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
+			record.setDestSubZone(tour.getDestShrtWlk());
+			record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( tour.getTimeOfDayAlt()));
+			record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( tour.getTimeOfDayAlt()));
+			record.setMode(tour.getMode());	
 					
-					record.setExpUtils(expUtils);
-					record.setProbs(elementalProbs);
-					result.add(record);
-				}
-			}
+			record.setExpUtils(expUtils);
+			record.setProbs(elementalProbs);
 		}
 		//at-work tours
 		else if(tourCategory.equalsIgnoreCase("atwork")){
-			it = hh.getMandatoryTours();
-			if (it != null) {
-				for (int t=0; t < it.length; t++) {
-					if (it[t].getTourType() == TourType.WORK) {
-						st = it[t].getSubTours();
-						if (st != null) {
-							for (int s=0; s < st.length; s++) {
-								record=new SummitAggregationRecord();
-								record.setHouseholdID(hh.getID());
-								record.setPersonID(st[s].getTourPerson());	
-								record.setTourID((t+1)*10 + (s+1));
-								record.setPurpose(st[s].getSubTourType());
-								record.setTourCategory(4);
-								//for individual tour set party size to 0
-								record.setPartySize(0);
-								record.setHHIncome(hh.getHHIncome());
-								record.setAuto(hh.getAutoOwnership());
-								record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
-								record.setOrigin(st[s].getOrigTaz());
-								record.setDestination(st[s].getDestTaz());
-								record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
-								record.setDestSubZone(st[s].getDestShrtWlk());
-								record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt()));
-								record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt()));
-								record.setMode(st[s].getMode());
+			record=new SummitAggregationRecord();
+			record.setHouseholdID(hh.getID());
+			record.setPersonID(tour.getTourPerson());	
+			record.setTourID(hh.getTourID());
+			record.setPurpose(tour.getSubTourType());
+			record.setTourCategory(4);
+			//for individual tour set party size to 0
+			record.setPartySize(0);
+			record.setHHIncome(hh.getHHIncome());
+			record.setAuto(hh.getAutoOwnership());
+			record.setWorkers(hh.getFtwkPersons()+hh.getPtwkPersons());
+			record.setOrigin(tour.getOrigTaz());
+			record.setDestination(tour.getDestTaz());
+			record.setOrigSubZone((int)hh.getZonalShortWalkAccessOrig());
+			record.setDestSubZone(tour.getDestShrtWlk());
+			record.setOutTOD(com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod(tour.getTimeOfDayAlt()));
+			record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod(tour.getTimeOfDayAlt()));
+			record.setMode(tour.getMode());
 								
-								record.setExpUtils(expUtils);
-								record.setProbs(elementalProbs);		
-								result.add(record);
-							}
-						}
-					}
-				}
-			}
+			record.setExpUtils(expUtils);
+			record.setProbs(elementalProbs);		
 		}else{
 			logger.fatal("invalid tour category type.");
 		}
-		return result;
+		return record;
+	}
+	
+	private double [] makeExpUtilities(LogitModel root){
+		
+		int NoAlts=MCAlternatives.getNoMCAlternatives();
+		
+		HashMap elementalAltMap=new HashMap();
+		root.getElementalAlternativeHashMap(elementalAltMap);
+		Set altNames=elementalAltMap.keySet();
+		Iterator itr=altNames.iterator();
+		
+		double [] elementalUtils=new double[NoAlts];
+		double [] elementalConst=new double[NoAlts];
+		double [] expUtils=new double[NoAlts];
+		
+        while (itr.hasNext()) {
+        	
+        	String name=(String)itr.next();
+        	int index=MCAlternatives.getMCAltIndex(name);
+        	Alternative alt=(Alternative)elementalAltMap.get(name);
+            
+            elementalUtils[index-1] = ((ConcreteAlternative)alt).getUtility();
+            elementalConst[index-1]=((ConcreteAlternative)alt).getConstant();
+            expUtils[index-1]=Math.exp(elementalUtils[index-1]+elementalConst[index-1]);
+        }
+        return expUtils;
+	}
+	
+	private double [] makeProbabilities(LogitModel root){
+		
+		int NoAlts=MCAlternatives.getNoMCAlternatives();
+		
+		HashMap elementalProbMap=new HashMap();
+		root.getElementalProbabilitiesHashMap(elementalProbMap);
+		Set altNames=elementalProbMap.keySet();
+		Iterator itr=altNames.iterator();
+		double [] elementalProbs=new double[NoAlts];
+		
+        while (itr.hasNext()) {
+        	String name=(String)itr.next();
+        	int index=MCAlternatives.getMCAltIndex(name);
+        	double prob=((Double)elementalProbMap.get(name)).doubleValue();
+        	elementalProbs[index-1]=prob;
+        }
+        
+        return elementalProbs;
 	}
 }
