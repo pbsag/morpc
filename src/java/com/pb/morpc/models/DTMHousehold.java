@@ -3121,12 +3121,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	private double [] makeExpUtilities(LogitModel root){
 		
 		int NoAlts=MCAlternatives.getNoMCAlternatives();
-		
 		HashMap elementalAltMap=new HashMap();
 		root.getElementalAlternativeHashMap(elementalAltMap);
 		Set altNames=elementalAltMap.keySet();
 		Iterator itr=altNames.iterator();
-		
+						
 		double [] elementalUtils=new double[NoAlts];
 		double [] elementalConst=new double[NoAlts];
 		double [] expUtils=new double[NoAlts];
@@ -3134,6 +3133,17 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
         while (itr.hasNext()) {
         	
         	String name=(String)itr.next();
+        	
+    		if(altNames.size()<5){
+    			logger.info("-------");
+    			logger.info(name);
+    		}
+    		
+    		if(altNames.size()>5){
+    			logger.info("*******");
+    			logger.info(name);
+    		}
+    		
         	int index=MCAlternatives.getMCAltIndex(name);
         	Alternative alt=(Alternative)elementalAltMap.get(name);
             
@@ -3145,17 +3155,28 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	}
 	
 	private double [] makeProbabilities(LogitModel root){
-		
+				
 		int NoAlts=MCAlternatives.getNoMCAlternatives();
-		
 		HashMap elementalProbMap=new HashMap();
 		root.getElementalProbabilitiesHashMap(elementalProbMap);
 		Set altNames=elementalProbMap.keySet();
 		Iterator itr=altNames.iterator();
+		
 		double [] elementalProbs=new double[NoAlts];
 		
         while (itr.hasNext()) {
         	String name=(String)itr.next();
+        	
+       		if(altNames.size()<5){
+    			logger.info("-------");
+    			logger.info(name);
+    		}
+    		
+    		if(altNames.size()>5){
+    			logger.info("*******");
+    			logger.info(name);
+    		}
+        	
         	int index=MCAlternatives.getMCAltIndex(name);
         	double prob=((Double)elementalProbMap.get(name)).doubleValue();
         	elementalProbs[index-1]=prob;

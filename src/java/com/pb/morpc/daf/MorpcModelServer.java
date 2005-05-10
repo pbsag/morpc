@@ -138,6 +138,11 @@ public class MorpcModelServer extends MessageProcessingTask {
         
         
         if(FtaRestartRun){
+        	
+    		//prepare for a FTA restart run
+        	String run_ftaPrepareCmd=(String)propertyMap.get("fta_prepare.batch");
+    		runDOSCommand(run_ftaPrepareCmd);
+        	
         	ZDMTDM zdmtdm=readDiskObjectZDMTDM(propertyMap);
         	//instantiate ZonalDataManager and TODDataManager object so that their static members are available to other classes (eg. DTMOutput)
         	zdm=new ZonalDataManager(propertyMap);
@@ -170,6 +175,7 @@ public class MorpcModelServer extends MessageProcessingTask {
         }
 
         System.exit(0);
+        
     }
 
     private void runModelIteration(int iteration) {
@@ -182,16 +188,15 @@ public class MorpcModelServer extends MessageProcessingTask {
         //Wu added
         //if 2nd iteration starts from disk object array, then read zdm and tdm from ZDMTDMObjetOnDisk created in 1st iteration
         //don't need to do this in 3rd iteration, because in 3rd iteration, zdm and tdm is also from the 1st iteration ZDMTDMObjectOnDisk 
-        /*
-        if(((String) propertyMap.get("StartFromDiskObjectArray")).equalsIgnoreCase( "true")&&iteration==1){
+                
+        if(((String) propertyMap.get("StartFromDiskObjectArray")).equalsIgnoreCase("true")){
         	ZDMTDM zdmtdm=readDiskObjectZDMTDM(propertyMap);
         	//instantiate ZonalDataManager and TODDataManager object so that their static members are available to other classes (eg. DTMOutput)
         	zdm=new ZonalDataManager(propertyMap);
         	tdm=new TODDataManager(propertyMap);
         	zdm=zdmtdm.getZDM();
-        	tdm=zdmtdm.getTDM();;
+        	tdm=zdmtdm.getTDM();
         }
-        */
         
         zdm.updatePropertyMap(iteration+1);
 

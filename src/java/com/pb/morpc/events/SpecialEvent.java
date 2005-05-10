@@ -39,7 +39,6 @@ public class SpecialEvent {
 		
 	/**
 	 * Constructor
-	 * @param propertyMap represents a property map
 	 * @param dataReader represents a sepcial event data reader
 	 */
 	public SpecialEvent(SpecialEventDataReader dataReader, String TOD){
