@@ -885,7 +885,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.mandatoryTours[t], "mandatory"));
+						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.mandatoryTours[t], "mandatory",t,-1));
 				}
 			
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -1405,7 +1405,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.jointTours[t], "joint"));
+						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.jointTours[t], "joint",t,-1));
 				}
 								
 				mcTime += (System.currentTimeMillis() - markTime);
@@ -2121,7 +2121,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.indivTours[t], "individual"));
+						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.indivTours[t], "individual",t,-1));
 				}
 								
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -2738,7 +2738,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.mandatoryTours[t].subTours[s], "atwork"));
+						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.mandatoryTours[t].subTours[s], "atwork",t,s));
 				}
 							
 				mcTime += (System.currentTimeMillis() - markTime);
@@ -3010,12 +3010,12 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	}
 	
 	//Wu added for Summit Aggregation
-	private SummitAggregationRecord makeSummitAggregationRecords(LogitModel root, Household hh, Tour tour, String tourCategory){
+	private SummitAggregationRecord makeSummitAggregationRecords(LogitModel root, Household hh, Tour tour, String tourCategory, int t, int s){
 		
 		//SummitAggregationRecord for this tour
 		SummitAggregationRecord record=null;
 		
-		double [] expUtils=makeExpUtilities(root);	
+		double [] elementalUtils=makeUtilities(root);	
 		double [] elementalProbs=makeProbabilities(root);
 		
 		//mandatory tours
@@ -3023,7 +3023,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			record=new SummitAggregationRecord();
 			record.setHouseholdID(hh.getID());
 			record.setPersonID(tour.getTourPerson());
-			record.setTourID(hh.getTourID());
+			record.setTourID(t+1);
 			record.setPurpose(tour.getTourType());
 			record.setTourCategory(1);
 			//for individual tour set party size to 1
@@ -3039,7 +3039,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod(tour.getTimeOfDayAlt()));
 			record.setMode(tour.getMode());
 	
-			record.setExpUtils(expUtils);
+			record.setUtils(elementalUtils);
 			record.setProbs(elementalProbs);;
 		}
 		//joint tours
@@ -3047,7 +3047,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			record=new SummitAggregationRecord();
 			record.setHouseholdID(hh.getID());
 			record.setPersonID(tour.getTourPerson());
-			record.setTourID(hh.getTourID());
+			record.setTourID(t+1);
 			record.setPurpose(tour.getTourType());
 			record.setTourCategory(2);
 			record.setPartySize((((JointTour)tour).getJointTourPersons()).length);
@@ -3062,7 +3062,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( tour.getTimeOfDayAlt()));
 			record.setMode(tour.getMode());
 					
-			record.setExpUtils(expUtils);
+			record.setUtils(elementalUtils);
 			record.setProbs(elementalProbs);
 		}
 		//individual non-mandatory tours
@@ -3070,7 +3070,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			record=new SummitAggregationRecord();
 			record.setHouseholdID(hh.getID());
 			record.setPersonID(tour.getTourPerson());
-			record.setTourID(hh.getTourID());
+			record.setTourID(t+1);
 			record.setPurpose(tour.getTourType());
 			record.setTourCategory(3);
 			//for individual tour set party size to 0
@@ -3086,7 +3086,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( tour.getTimeOfDayAlt()));
 			record.setMode(tour.getMode());	
 					
-			record.setExpUtils(expUtils);
+			record.setUtils(elementalUtils);
 			record.setProbs(elementalProbs);
 		}
 		//at-work tours
@@ -3094,7 +3094,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			record=new SummitAggregationRecord();
 			record.setHouseholdID(hh.getID());
 			record.setPersonID(tour.getTourPerson());	
-			record.setTourID(hh.getTourID());
+			record.setTourID((t+1)*10+(s+1));
 			record.setPurpose(tour.getSubTourType());
 			record.setTourCategory(4);
 			//for individual tour set party size to 0
@@ -3110,7 +3110,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			record.setInTOD(com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod(tour.getTimeOfDayAlt()));
 			record.setMode(tour.getMode());
 								
-			record.setExpUtils(expUtils);
+			record.setUtils(elementalUtils);
 			record.setProbs(elementalProbs);		
 		}else{
 			logger.fatal("invalid tour category type.");
@@ -3118,7 +3118,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		return record;
 	}
 	
-	private double [] makeExpUtilities(LogitModel root){
+	private double [] makeUtilities(LogitModel root){
 		
 		int NoAlts=MCAlternatives.getNoMCAlternatives();
 		HashMap elementalAltMap=new HashMap();
@@ -3127,31 +3127,26 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		Iterator itr=altNames.iterator();
 						
 		double [] elementalUtils=new double[NoAlts];
-		double [] elementalConst=new double[NoAlts];
-		double [] expUtils=new double[NoAlts];
+		//double [] elementalConst=new double[NoAlts];
+		
+		//initialize elemental utilities
+		for(int i=0; i<NoAlts; i++){
+			elementalUtils[i]=-999.0;
+		}
 		
         while (itr.hasNext()) {
         	
         	String name=(String)itr.next();
-        	
-    		if(altNames.size()<5){
-    			logger.info("-------");
-    			logger.info(name);
-    		}
-    		
-    		if(altNames.size()>5){
-    			logger.info("*******");
-    			logger.info(name);
-    		}
-    		
+        	    		
         	int index=MCAlternatives.getMCAltIndex(name);
         	Alternative alt=(Alternative)elementalAltMap.get(name);
             
             elementalUtils[index-1] = ((ConcreteAlternative)alt).getUtility();
-            elementalConst[index-1]=((ConcreteAlternative)alt).getConstant();
-            expUtils[index-1]=Math.exp(elementalUtils[index-1]+elementalConst[index-1]);
+            //logger.info("util="+elementalUtils[index-1]);
+            //elementalConst[index-1]=((ConcreteAlternative)alt).getConstant();
+            //logger.info("constant="+elementalConst[index-1]);
         }
-        return expUtils;
+        return elementalUtils;
 	}
 	
 	private double [] makeProbabilities(LogitModel root){
@@ -3165,18 +3160,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		double [] elementalProbs=new double[NoAlts];
 		
         while (itr.hasNext()) {
-        	String name=(String)itr.next();
-        	
-       		if(altNames.size()<5){
-    			logger.info("-------");
-    			logger.info(name);
-    		}
-    		
-    		if(altNames.size()>5){
-    			logger.info("*******");
-    			logger.info(name);
-    		}
-        	
+        	String name=(String)itr.next();        	
         	int index=MCAlternatives.getMCAltIndex(name);
         	double prob=((Double)elementalProbMap.get(name)).doubleValue();
         	elementalProbs[index-1]=prob;

@@ -121,7 +121,7 @@ public class SummitAggregationRecord implements Serializable{
 		this.probs=probs;
 	}
 	
-	public void setExpUtils(double [] expUtils){
+	public void setUtils(double [] expUtils){
 		this.expUtils=expUtils;
 	}
 	

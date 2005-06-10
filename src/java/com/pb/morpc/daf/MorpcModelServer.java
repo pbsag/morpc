@@ -139,9 +139,12 @@ public class MorpcModelServer extends MessageProcessingTask {
         
         if(FtaRestartRun){
         	
-    		//prepare for a FTA restart run
-        	String run_ftaPrepareCmd=(String)propertyMap.get("fta_prepare.batch");
-    		runDOSCommand(run_ftaPrepareCmd);
+        	if(((String)propertyMap.get("SKIP_TSKIM_FTA")).equalsIgnoreCase("false")){
+	        	//prepare for a FTA restart run
+	        	String scenario=(String)propertyMap.get("scenario");
+	        	String run_tskim_ftaCmd=(String)propertyMap.get("run_tskim_fta.batch")+" "+scenario;
+	    		runDOSCommand(run_tskim_ftaCmd);
+        	}
         	
         	ZDMTDM zdmtdm=readDiskObjectZDMTDM(propertyMap);
         	//instantiate ZonalDataManager and TODDataManager object so that their static members are available to other classes (eg. DTMOutput)
