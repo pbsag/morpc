@@ -121,7 +121,6 @@ public class AccessibilityIndices {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             attraction = reader.readFile(new File((String) propertyMap.get("TAZMainData.file")));
         } catch (IOException e) {
             logger.error(e.getMessage());

@@ -21,7 +21,6 @@ import org.apache.log4j.Logger;
 public class Derived {
     private TableDataSet zsed;
     private TableDataSet accessi;
-    private TableDataSet derived;
     int NoOfZones;
     float[] areaType;
     float[] urbType;
@@ -36,7 +35,6 @@ public class Derived {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             zsed = reader.readFile(new File((String) propertyMap.get("TAZMainData.file")));
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -44,7 +42,6 @@ public class Derived {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             accessi = reader.readFile(new File((String) propertyMap.get("TAZAccessibility.file")));
         } catch (IOException e) {
             logger.error(e.getMessage());

@@ -41,7 +41,6 @@ public class Report {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             HHTable = reader.readFile(new File((String) propertyMap.get("SyntheticHousehold.file")));
         } catch (Exception e) {
 			e.printStackTrace();
@@ -59,7 +58,6 @@ public class Report {
 */
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             M1Table = reader.readFile(new File((String) propertyMap.get("Model1.outputFile")));
         } catch (Exception e) {
 			e.printStackTrace();
@@ -68,7 +66,6 @@ public class Report {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             M21Table = reader.readFile(new File((String) propertyMap.get("Model21.outputFile")));
         } catch (Exception e) {
 			e.printStackTrace();
@@ -77,7 +74,6 @@ public class Report {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             M5678Table = reader.readFile(new File((String) propertyMap.get("Model567.outputFile")));
         } catch (Exception e) {
 			e.printStackTrace();
@@ -86,7 +82,6 @@ public class Report {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             DistrictTable = reader.readFile(new File((String) propertyMap.get("TAZEquivalency.file")));
         } catch (Exception e) {
 			e.printStackTrace();

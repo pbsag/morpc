@@ -38,7 +38,6 @@ public class SyntheticPopulationTester {
 
     try {
         CSVFileReader reader = new CSVFileReader();
-		reader.setDelimSet( " ,\t\n\r\f\"");
         ZoneTable = reader.readFile(new File(ZoneFile));
     }
     catch (IOException e) {

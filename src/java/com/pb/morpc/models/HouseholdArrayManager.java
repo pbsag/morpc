@@ -83,7 +83,6 @@ public class HouseholdArrayManager implements java.io.Serializable {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             hhTable = reader.readFile(new File(hhFile));
         } catch (IOException e) {
             e.printStackTrace();
@@ -167,7 +166,6 @@ public class HouseholdArrayManager implements java.io.Serializable {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             personTable = reader.readFile(new File(personFile));
         } catch (IOException e) {
             e.printStackTrace();

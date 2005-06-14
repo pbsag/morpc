@@ -169,7 +169,6 @@ public class StopsModelBase implements java.io.Serializable {
 
 		try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             zoneTable = reader.readFile(new File(zonalFile));
 		}
 		catch (IOException e) {
@@ -779,7 +778,6 @@ public class StopsModelBase implements java.io.Serializable {
 		if (stopDensityModelsFile != null) {
 			try {
                 CSVFileReader reader = new CSVFileReader();
-				reader.setDelimSet( " ,\t\n\r\f\"");
                 TableDataSet sd = reader.readFile(new File(stopDensityModelsFile));
 
 				int purpFieldPosition = sd.getColumnPosition( "purpose" );

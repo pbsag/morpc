@@ -33,7 +33,6 @@ public class TestSaveFile {
 			showMemory ();
             
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
 
 			table = reader.readFile(new File(fileName));
 			logger.info("reading file 2nd time");

@@ -124,7 +124,6 @@ public class ZonalDataManager implements java.io.Serializable {
 
         try {
             CSVFileReader reader = new CSVFileReader();
-            reader.setDelimSet( " ,\t\n\r\f\"");
 
             tables.add(reader.readFile(new File(zonalFile1)));
             tables.add(reader.readFile(new File(zonalFile2)));
@@ -492,7 +491,6 @@ public class ZonalDataManager implements java.io.Serializable {
         if (walkAccessFile != null) {
             try {
                 CSVFileReader reader = new CSVFileReader();
-				reader.setDelimSet( " ,\t\n\r\f\"");
                 TableDataSet wa = reader.readFile(new File(walkAccessFile));
 
                 int tazPosition = wa.getColumnPosition("TAZ");
@@ -1218,7 +1216,6 @@ public class ZonalDataManager implements java.io.Serializable {
         if (attractionModelsFile != null) {
             try {
                 CSVFileReader reader = new CSVFileReader();
-				reader.setDelimSet( " ,\t\n\r\f\"");
                 TableDataSet am = reader.readFile(new File(attractionModelsFile));
 
                 int purpFieldPosition = am.getColumnPosition("purpose");
@@ -1607,7 +1604,6 @@ public class ZonalDataManager implements java.io.Serializable {
 	/**
 	 * set values in the static members of this class from data in a HashMap.
 	 *
-	 * @return
 	 */
 	public void setStaticData ( HashMap staticDataMap ) {
 

@@ -54,7 +54,6 @@ public class TODDataManager implements java.io.Serializable {
 
 		try {
             CSVFileReader reader = new CSVFileReader();
-			reader.setDelimSet( " ,\t\n\r\f\"");
             todAltsTable = reader.readFile(new File(todFile));
 		}
 		catch (IOException e) {
@@ -221,7 +220,6 @@ public class TODDataManager implements java.io.Serializable {
 	/**
 	 * set values in the static members of this class from data in a HashMap.
 	 * 
-	 * @return
 	 */
 	public void setStaticData ( HashMap staticDataMap ) {
 	    
