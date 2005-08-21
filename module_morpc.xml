@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="module_morpc" default="compile.module.morpc">
+  <dirname property="module.morpc.basedir" file="${ant.file.module_morpc}"/>
+  
+  <property name="module.jdk.home.morpc" value="${project.jdk.home}"/>
+  <property name="module.jdk.classpath.morpc" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.morpc" value="${compiler.args}"/>
+  
+  <property name="morpc.output.dir" value="${module.morpc.basedir}/build/classes"/>
+  <property name="morpc.testoutput.dir" value="${module.morpc.basedir}/build/classes"/>
+  
+  <path id="morpc.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="morpc.module.classpath">
+    <path refid="${module.jdk.classpath.morpc}"/>
+    <pathelement location="${common-base.output.dir}"/>
+    <pathelement location="${logging-log4j-1.2.9.output.dir}"/>
+    <pathelement location="${module.morpc.basedir}/../../third-party/logging-log4j-1.2.9/log4j-1.2.9.jar"/>
+    <pathelement location="${module.morpc.basedir}/../../cmf/common-base/lib/junit.jar"/>
+    <pathelement location="${module.morpc.basedir}/../../cmf/common-base/lib/or124.jar"/>
+    <pathelement location="${module.morpc.basedir}/../../cmf/common-base/lib/jxl.jar"/>
+    <pathelement location="${module.morpc.basedir}/../../cmf/common-base/lib/xml4j.jar"/>
+    <pathelement location="${module.morpc.basedir}/../../cmf/common-base/lib/mysql-connector-java-3.0.10-stable-bin.jar"/>
+    <pathelement location="${module.morpc.basedir}/../../cmf/common-base/lib/dx.jar"/>
+    <pathelement location="${module.morpc.basedir}/../../cmf/common-base/lib/jds.jar"/>
+    <pathelement location="${module.morpc.basedir}/../../cmf/common-base/lib/dxml.jar"/>
+    <pathelement location="${common-daf-v1.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.morpc"/>
+  
+  <patternset id="excluded.from.compilation.morpc">
+    <patternset refid="excluded.from.module.morpc"/>
+    <patternset refid="compiler.excluded"/>
+  </patternset>
+  
+  <path id="morpc.module.sourcepath">
+    <dirset dir="${module.morpc.basedir}">
+      <include name="src/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.morpc" depends="compile.module.morpc.production,compile.module.morpc.tests" description="compile module morpc"/>
+  
+  <target name="compile.module.morpc.production" depends="compile.module.common-base,compile.module.common-daf-v1" description="compile module morpc production classes">
+    <mkdir dir="${morpc.output.dir}"/>
+    <javac destdir="${morpc.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memoryMaximumSize="${compiler.max.memory}" fork="true" executable="${module.jdk.home.morpc}/bin/javac">
+      <compilerarg line="${compiler.args.morpc}"/>
+      <bootclasspath refid="morpc.module.bootclasspath"/>
+      <classpath refid="morpc.module.classpath"/>
+      <src refid="morpc.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.morpc"/>
+    </javac>
+    <copy todir="${morpc.output.dir}">
+      <fileset dir="${module.morpc.basedir}/src/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+        <patternset refid="excluded.from.compilation.morpc"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.morpc.tests" depends="compile.module.morpc.production" description="compile module morpc test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.morpc" description="cleanup module">
+    <delete dir="${morpc.output.dir}"/>
+    <delete dir="${morpc.testoutput.dir}"/>
+  </target>
+</project>
