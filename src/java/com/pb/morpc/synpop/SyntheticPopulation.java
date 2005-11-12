@@ -6,7 +6,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.NDimensionalMatrixBalancerDouble;
 import com.pb.common.matrix.NDimensionalMatrixDouble;
 import com.pb.common.matrix.Vector;
-import com.pb.common.util.Format;
 
 import com.pb.morpc.matrix.MatrixUtil;
 import com.pb.morpc.models.ChoiceModelApplication;
@@ -495,13 +494,13 @@ public class SyntheticPopulation {
             hhs += zoneTable.getValueAt(i, hhsPosition);
 
         logger.info("");
-        logger.info(Format.print(
+        logger.info(String.format(
                 "Number of data records in zonal data file = %d",
                 zoneTable.getRowCount()));
-        logger.info(Format.print(
+        logger.info(String.format(
                 "Number of data fields in zonal data file = %d",
                 zoneTable.getColumnCount()));
-        logger.info(Format.print(
+        logger.info(String.format(
                 "HHs read from zonal data file = %.2f", hhs));
         logger.info("");
     }
@@ -577,7 +576,7 @@ public class SyntheticPopulation {
 
         if (debug) {
             // print mean household size control value
-            logger.info(Format.print(
+            logger.info(String.format(
                     "\n\nMean Household Size Control Value = %10.5f",
                     zd.getAvgHHSize()));
 
@@ -610,7 +609,7 @@ public class SyntheticPopulation {
 
         if (debug) {
             // print mean household size control value
-            logger.info(Format.print(
+            logger.info(String.format(
                     "\n\nMean Workers Control Value = %10.5f",
                     zd.getAvgWorkers()));
 
@@ -643,7 +642,7 @@ public class SyntheticPopulation {
 
         if (debug) {
             // print mean household size control value
-            logger.info(Format.print(
+            logger.info(String.format(
                     "\n\nMean Income Control Value = %10.5f", zd.getAvgIncome()));
 
             // list the contents of the returned marginal proportions before adjustment
@@ -661,21 +660,21 @@ public class SyntheticPopulation {
         double sum;
 
         // list the contents of the marginal proportions array
-        logger.info(Format.print("%s", title));
+        logger.info(String.format("%s", title));
         mean = 0.0;
         sum = 0.0;
 
         for (int i = 0; i < proportions.length; i++) {
-            logger.info(Format.print("%-6s", labels[i]));
-            logger.info(Format.print(" %10.3f", proportions[i]));
+            logger.info(String.format("%-6s", labels[i]));
+            logger.info(String.format(" %10.3f", proportions[i]));
             sum += proportions[i];
             mean += (proportions[i] * categories[i]);
         }
 
         mean /= sum;
-        logger.info(Format.print("%-6s", "Total"));
-        logger.info(Format.print(" %10.3f", sum));
-        logger.info(Format.print("Mean Category Value = %10.5f", mean));
+        logger.info(String.format("%-6s", "Total"));
+        logger.info(String.format(" %10.3f", sum));
+        logger.info(String.format("Mean Category Value = %10.5f", mean));
         logger.info("");
         logger.info("");
     }
@@ -1069,14 +1068,14 @@ public class SyntheticPopulation {
         for (int i = 0; i < s0.length; i++) {
             logger.info("Household Size = " + s0[i]);
 
-            logger.info(Format.print("%-15s", "Income"));
+            logger.info(String.format("%-15s", "Income"));
 
             for (int k = 0; k < s2.length; k++)
-                logger.info(Format.print("%15s", s2[k]));
+                logger.info(String.format("%15s", s2[k]));
 
-            logger.info(Format.print("%15s", "Total"));
+            logger.info(String.format("%15s", "Total"));
 
-            logger.info(Format.print("%-15s", "Workers"));
+            logger.info(String.format("%-15s", "Workers"));
 
             tot = 0.0f;
 
@@ -1087,28 +1086,28 @@ public class SyntheticPopulation {
                 ctots[k] = 0.0f;
 
             for (int j = 0; j < s1.length; j++) {
-                logger.info(Format.print("%-15s", s1[j]));
+                logger.info(String.format("%-15s", s1[j]));
 
                 for (int k = 0; k < s2.length; k++) {
                     loc[0] = i;
                     loc[1] = j;
                     loc[2] = k;
                     value = table.getValue(loc);
-                    logger.info(Format.print("%15.4f", value));
+                    logger.info(String.format("%15.4f", value));
                     rtots[j] += value;
                     ctots[k] += value;
                     tot += value;
                 }
 
-                logger.info(Format.print("%15.4f", rtots[j]));
+                logger.info(String.format("%15.4f", rtots[j]));
             }
 
-            logger.info(Format.print("%-15s", "Total"));
+            logger.info(String.format("%-15s", "Total"));
 
             for (int k = 0; k < s2.length; k++)
-                logger.info(Format.print("%15.4f", ctots[k]));
+                logger.info(String.format("%15.4f", ctots[k]));
 
-            logger.info(Format.print("%15.4f", tot));
+            logger.info(String.format("%15.4f", tot));
             logger.info("");
             logger.info("");
         }

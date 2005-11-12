@@ -3,7 +3,6 @@ package com.pb.morpc.models;
 import com.pb.common.calculator.IndexValues;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.Format;
 import com.pb.morpc.structures.Household;
 
 
@@ -64,14 +63,14 @@ public class AutoOwnershipUEC {
 	        
         if (debug) {
    			logger.info( "utilities[] array for hh_taz_id=" + hh_taz_id + ", hh_id=" + hh_id );
-            logger.info( Format.print("%6s", " ") );
+            logger.info( String.format("%6s", " ") );
     		for (int c=0; c < utilities.length; c++)
-    			logger.info( Format.print("%12s", ("Alt " + (c+1)) ) );
+    			logger.info( String.format("%12s", ("Alt " + (c+1)) ) );
     		logger.info ( "" );
     		
-            logger.info( Format.print("%6s", " ") );
+            logger.info( String.format("%6s", " ") );
        		for (int c=0; c < utilities.length; c++)
-       			logger.info( Format.print("%12.5f", utilities[c]) );
+       			logger.info( String.format("%12.5f", utilities[c]) );
        		logger.info ( "" );
             logger.info ( "" );
         }

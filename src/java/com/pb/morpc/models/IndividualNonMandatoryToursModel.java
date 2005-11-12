@@ -4,8 +4,6 @@ import com.pb.common.calculator.IndexValues;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.model.ConcreteAlternative;
 import com.pb.common.model.LogitModel;
-import com.pb.common.util.Format;
-//import com.pb.common.logging.OutputDescription;
 import com.pb.morpc.structures.*;
 import com.pb.morpc.synpop.SyntheticPopulation;
 
@@ -2769,18 +2767,18 @@ public class IndividualNonMandatoryToursModel {
 		// print a simple summary table
 		logger.info( "Frequency Report table: " + tableTitle );
 		logger.info( "Frequency for field " + fieldName );
-		logger.info(Format.print("%8s", "Value") + "  " + Format.print("%-20s", "Description") + "  " + Format.print("%11s", "Frequency"));
+		logger.info(String.format("%8s", "Value") + "  " + String.format("%-20s", "Description") + "  " + String.format("%11s", "Frequency"));
 		
 		int total = 0;
 		for (int i = 0; i < freqs.length; i++) {
 		    if (freqs[i] > 0) {
 		        String description = OutputDescription.getDescription(fieldName, i);
-		        logger.info( Format.print("%8d", i) + "  " + Format.print("%-20s", description) + "  " + Format.print("%11d", freqs[i] ) );
+		        logger.info( String.format("%8d", i) + "  " + String.format("%-20s", description) + "  " + String.format("%11d", freqs[i] ) );
 				total += freqs[i];
 		    }
 		}
 		
-		logger.info(Format.print("%8s", "Total") + Format.print("%35d\n\n\n", total));
+		logger.info(String.format("%8s", "Total") + String.format("%35d\n\n\n", total));
     }
 
 }

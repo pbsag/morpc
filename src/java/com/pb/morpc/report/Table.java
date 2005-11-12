@@ -1,7 +1,6 @@
 package com.pb.morpc.report;
 
 import com.pb.common.matrix.NDimensionalMatrix;
-import com.pb.common.util.Format;
 
 import java.io.*;
 
@@ -159,7 +158,7 @@ public class Table {
             //print table name
             outStream.println("\n");
             //comment out if table name not formatted
-            //outStream.print(Format.print("%" + tableNameFormatLen + "s",tableName));
+            //outStream.print(String.format("%" + tableNameFormatLen + "s",tableName));
             outStream.print(tableName);
             outStream.println("\n");
 
@@ -178,10 +177,10 @@ public class Table {
 
                         //make new format
                         String tempformat = "%" + formatLen + "s";
-                        outStream.print(Format.print(tempformat,
+                        outStream.print(String.format(tempformat,
                                 (String) header1.get(i)));
                     } else {
-                        outStream.print(Format.print(format,
+                        outStream.print(String.format(format,
                                 (String) header1.get(i)));
                     }
                 }
@@ -195,7 +194,7 @@ public class Table {
 
             //Print header 2
             for (int i = 0; i < header2.size(); i++) {
-                outStream.print(Format.print(format, (String) header2.get(i)));
+                outStream.print(String.format(format, (String) header2.get(i)));
             }
 
             outStream.println("\n");
@@ -213,13 +212,13 @@ public class Table {
 
                 //print row headers
                 for (int j = 0; j < rowHeader.size(); j++) {
-                    outStream.print(Format.print(format,
+                    outStream.print(String.format(format,
                             (String) rowHeader.get(j)));
                 }
 
                 //print data content
                 for (int j = 0; j < dataContent.size(); j++) {
-                    outStream.print(Format.print(format,
+                    outStream.print(String.format(format,
                             new Integer(
                                 (((Float) dataContent.get(j)).intValue())).toString()));
                 }
@@ -229,14 +228,14 @@ public class Table {
                 //if type is "Total" print total field
                 //else do nothing
                 if (choice.equals("Percent")) {
-                    outStream.print(Format.print(format,
+                    outStream.print(String.format(format,
                             (new Float(row.getPercent())).toString()));
                 } else if (choice.equals("Average")) {
-                    outStream.print(Format.print(format,
+                    outStream.print(String.format(format,
                             (new Integer(
                                 (new Float(row.getAverage())).intValue())).toString()));
                 } else if (choice.equals("Total")) {
-                    outStream.print(Format.print(format,
+                    outStream.print(String.format(format,
                             (new Integer((new Float(row.getTotal())).intValue())).toString()));
                 }
 
@@ -277,27 +276,27 @@ public class Table {
 
                             //print sum row header
                             for (int m = 0; m < sumRowHeader.size(); m++) {
-                                outStream.print(Format.print(format,
+                                outStream.print(String.format(format,
                                         (String) sumRowHeader.get(m)));
                             }
 
                             //print sum row data content
                             for (int m = 0; m < sumRowDataContent.size();
                                     m++) {
-                                outStream.print(Format.print(format,
+                                outStream.print(String.format(format,
                                         new Integer(
                                             ((Float) sumRowDataContent.get(m)).intValue()).toString()));
                             }
 
                             //print sum row end column
                             if (choice.equals("Percent")) {
-                                outStream.print(Format.print(format, "100.00"));
+                                outStream.print(String.format(format, "100.00"));
                             } else if (choice.equals("Average")) {
-                                outStream.print(Format.print(format,
+                                outStream.print(String.format(format,
                                         (new Integer(
                                             (new Float(average)).intValue())).toString()));
                             } else {
-                                outStream.print(Format.print(format,
+                                outStream.print(String.format(format,
                                         (new Integer(
                                             (new Float(total)).intValue())).toString()));
                             }
