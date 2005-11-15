@@ -1,6 +1,5 @@
 package com.pb.morpc.synpop.pums2000;
 
-import com.pb.common.util.Justify;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -8,6 +7,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
+
 
 
 /**
@@ -92,42 +92,19 @@ public class DataDictionary {
     }
 
     public void printDictionary(ArrayList attribs) {
-        Justify myFormat = new Justify();
-        int blanks;
 
         if (attribs.size() > 0) {
-            logger.info(
-                "Index    Variable      Start Column    Number Columns");
+            logger.info( String.format("%8s%16s%16s%16s", "Index", "Variable", "Start Column", "Number Columns") );
         }
 
         for (int i = 0; i < attribs.size(); i++) {
-            logger.info(myFormat.left(i, 5));
-
-            blanks = 12 -
-                ((DataDictionaryRecord) attribs.get(i)).variable.length();
-
-            for (int b = 0; b < blanks; b++)
-                logger.info(" ");
-
-            logger.info(((DataDictionaryRecord) attribs.get(i)).variable);
-
-            blanks = 6;
-
-            for (int b = 0; b < blanks; b++)
-                logger.info(" ");
-
-            logger.info(myFormat.right(
-                    ((DataDictionaryRecord) attribs.get(i)).startCol, 12));
-
-            blanks = 6;
-
-            for (int b = 0; b < blanks; b++)
-                logger.info(" ");
-
-            logger.info(myFormat.right(
-                    ((DataDictionaryRecord) attribs.get(i)).numberCols, 12));
+            logger.info( String.format("%-8d", i) );
+            logger.info( String.format("%16d", ((DataDictionaryRecord) attribs.get(i)).variable) );
+            logger.info( String.format("%16d", ((DataDictionaryRecord) attribs.get(i)).startCol) );
+            logger.info( String.format("%16d", ((DataDictionaryRecord) attribs.get(i)).numberCols) );
         }
     }
+
     
     public ArrayList getHHAttribs(){
     	return HHAttribs;
