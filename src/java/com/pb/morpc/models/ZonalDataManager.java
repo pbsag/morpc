@@ -2,6 +2,7 @@ package com.pb.morpc.models;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
+import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 
@@ -490,7 +491,8 @@ public class ZonalDataManager implements java.io.Serializable {
 
         if (walkAccessFile != null) {
             try {
-                CSVFileReader reader = new CSVFileReader();
+                OLD_CSVFileReader reader = new OLD_CSVFileReader();
+                reader.setDelimSet( " " + reader.getDelimSet() );
                 TableDataSet wa = reader.readFile(new File(walkAccessFile));
 
                 int tazPosition = wa.getColumnPosition("TAZ");

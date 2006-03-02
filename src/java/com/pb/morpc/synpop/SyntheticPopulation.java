@@ -1,6 +1,7 @@
 package com.pb.morpc.synpop;
 
 import com.pb.common.util.SeededRandom;
+import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.NDimensionalMatrixBalancerDouble;
@@ -10,14 +11,19 @@ import com.pb.common.matrix.Vector;
 import com.pb.morpc.matrix.MatrixUtil;
 import com.pb.morpc.models.ChoiceModelApplication;
 import com.pb.morpc.models.ZonalDataManager;
+import com.pb.morpc.structures.PersonType;
 import com.pb.morpc.synpop.pums2000.PUMSData;
 import com.pb.morpc.synpop.pums2000.PUMSHH;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.log4j.Logger;
 
@@ -32,6 +38,9 @@ import org.apache.log4j.Logger;
 public class SyntheticPopulation {
     
 	protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
+    
+    public static final String ZONAL_STUDENT_INPUT_FILE = "\\jim\\projects\\USTUDENT.csv";
+    public static final String ZONAL_STUDENT_OUTPUT_FILE = "\\jim\\projects\\zonalStudents.csv";
     
     // field names for zone table data
     public static final String TAZ_FIELD = "taz";
@@ -84,16 +93,48 @@ public class SyntheticPopulation {
         lastZone = zoneTable.getRowCount();
 
         HH[][] zonalHHs = new HH[lastZone + 1][];
-
+        
         sumHouseholdsInTableData();
 
         seed2D = populate2WaySeedTables();
         seed3D = populate3WaySeedTables();
 
         int hhsPosition = zoneTable.getColumnPosition(HHS_FIELD);
+        int hhincPosition = zoneTable.getColumnPosition(INCOME_FIELD);
         int HHsInZone;
         int hhNumber = 0;
 
+        int[] inputZonalStudents = null;
+        
+        // read the control totals for number of university students in each zone
+        try {
+            String zonalStudentsFileName = ZONAL_STUDENT_INPUT_FILE;
+            inputZonalStudents = readUnivStudents ( zonalStudentsFileName );
+        }
+        catch (Exception e) {
+            logger.fatal ("Exception reading input zonal students summary file.", e);
+            System.exit(1);
+        }
+
+        
+        
+        // open output stream for writing number of students per zone file
+        PrintWriter outStream = null;
+        try {
+            String zonalStudentsFileName = ZONAL_STUDENT_OUTPUT_FILE;
+            outStream = new PrintWriter (new BufferedWriter( new FileWriter(zonalStudentsFileName) ) );
+            outStream.println ( "taz,controlTotal,synpopTotal,lo-1,md-1,hi-1,lo-2,md-2,hi-2,lo-3,md-3,hi-4p,lo-4p,md-4p,hi-4p");
+        }
+        catch (IOException e) {
+            logger.fatal ("I/O exception opening zonal students summary file.", e);
+            System.exit(1);
+        }
+            
+        // create an array to store the number of students in each income
+        // category and in each of 1, 2, 3, 4+ household sizes
+        int[][] univStudentsInZone = new int[4][zeroIncome.length];
+        int univStudentsTotal = 0;
+            
         // generate the synthetic population for each zone
         for (int zone = firstZone; zone <= lastZone; zone++) {
 
@@ -102,18 +143,48 @@ public class SyntheticPopulation {
             if (HHsInZone > 0) {
                 HH[] hhList = getZonalHHs(zone);
 
+                univStudentsTotal = 0;
+                for (int i=0; i < univStudentsInZone.length; i++)
+                    Arrays.fill(univStudentsInZone[i],0);
+                
                 for (int i = 0; i < hhList.length; i++) {
+                    
+                    int hhinc = PUMSHH.getIncomeCategory( hhList[i].attribs[2] );
+                    int hhsz = ( hhList[i].personTypes.length > 3 ? 3 : hhList[i].personTypes.length-1 );
+                    
+                    // count the number of university students residing in zone
+                    for (int j=0; j < hhList[i].personTypes.length; j++) {
+                        if ( hhList[i].personTypes[j] == PersonType.STUDENT ) {
+                            univStudentsInZone[hhsz][hhinc]++;
+                            univStudentsTotal++;
+                        }
+                    }
+                    
+                    
                     hhList[i].setHHNumber(hhNumber);
                     hhNumber++;
                 }
 
                 zonalHHs[zone] = hhList;
-            } else {
+                
+            }
+            else {
                 // TableDataSet values are stored with zero based indexing
                 setZonalFinalTargets(zone - 1, new Vector(zeroHHSize),
                     new Vector(zeroWorker), new Vector(zeroIncome));
             }
+            
+            outStream.print ( zone + "," + inputZonalStudents[zone] + "," + univStudentsTotal );
+            for (int i=0; i < univStudentsInZone.length; i++) {
+                for (int j=0; j < univStudentsInZone[i].length; j++) {
+                    outStream.print ( "," + univStudentsInZone[i][j] );
+                }
+            }
+            outStream.print( "\n" );
+
         }
+
+        outStream.close();
 
         return zonalHHs;
     }
@@ -1155,4 +1226,40 @@ public class SyntheticPopulation {
                 hhTableDataSet, i);
 
     }
+
+
+
+    private int[] readUnivStudents ( String fileName ) {
+        
+        // read the csv file into a TableDataSet
+        CSVFileReader reader = new CSVFileReader();
+        
+        TableDataSet table = null;
+        try {
+            table = reader.readFile(new File( fileName ));
+        } catch (IOException e) {
+            logger.error ("problem reading zonal university students count into TableDataSet", e);
+        }
+
+        // determine the max zone number from the 1st column of TableDataSet
+        int maxZone = 0;
+        for (int r=0; r < table.getRowCount(); r++) {
+            int zone = (int)table.getValueAt(r+1, 1);
+            if ( zone > maxZone )
+                maxZone = zone;
+        }
+        
+        // put values from 2nd column in TableDataSet into array to return
+        int[] values = new int[maxZone+1];
+
+        for (int r=0; r < table.getRowCount(); r++) {
+            int zone = (int)table.getValueAt(r+1, 1);
+            int value = (int)table.getValueAt(r+1, 2);
+            values[zone] = value;
+        }
+        
+        return values;
+        
+    }
+
 }

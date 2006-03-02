@@ -47,7 +47,7 @@ public class MorpcModelBase {
 	protected HouseholdArrayManager hhMgr = null;
 	protected ZonalDataManager zdm = null;
 
-    static final String PROPERTIES_FILE_BASENAME = "morpc_bench";
+    static final String PROPERTIES_FILE_BASENAME = "morpc";
 	
 	
     public MorpcModelBase () {
