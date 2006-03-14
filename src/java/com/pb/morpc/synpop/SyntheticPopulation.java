@@ -23,7 +23,6 @@ import java.io.PrintWriter;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.log4j.Logger;
 
@@ -39,8 +38,10 @@ public class SyntheticPopulation {
     
 	protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
     
-    public static final String ZONAL_STUDENT_INPUT_FILE = "\\jim\\projects\\USTUDENT.csv";
-    public static final String ZONAL_STUDENT_OUTPUT_FILE = "\\jim\\projects\\zonalStudents.csv";
+    
+    
+    public static final int OSU_COTADIST = 2;
+
     
     // field names for zone table data
     public static final String TAZ_FIELD = "taz";
@@ -89,7 +90,8 @@ public class SyntheticPopulation {
     }
 
 
-    public HH[][] buildPop() {
+    public HH[][] buildPop(String zonalStudentsInputFileName, String zonalStudentsOutputFileName) {
+        
         lastZone = zoneTable.getRowCount();
 
         HH[][] zonalHHs = new HH[lastZone + 1][];
@@ -100,16 +102,17 @@ public class SyntheticPopulation {
         seed3D = populate3WaySeedTables();
 
         int hhsPosition = zoneTable.getColumnPosition(HHS_FIELD);
-        int hhincPosition = zoneTable.getColumnPosition(INCOME_FIELD);
         int HHsInZone;
         int hhNumber = 0;
 
         int[] inputZonalStudents = null;
+        int[] inputZonalUnivDistricts = null;
         
         // read the control totals for number of university students in each zone
         try {
-            String zonalStudentsFileName = ZONAL_STUDENT_INPUT_FILE;
-            inputZonalStudents = readUnivStudents ( zonalStudentsFileName );
+            int[][] returnedArray = readUnivStudents ( zonalStudentsInputFileName );
+            inputZonalStudents = returnedArray[0];
+            inputZonalUnivDistricts = returnedArray[1];
         }
         catch (Exception e) {
             logger.fatal ("Exception reading input zonal students summary file.", e);
@@ -120,52 +123,93 @@ public class SyntheticPopulation {
         
         // open output stream for writing number of students per zone file
         PrintWriter outStream = null;
-        try {
-            String zonalStudentsFileName = ZONAL_STUDENT_OUTPUT_FILE;
-            outStream = new PrintWriter (new BufferedWriter( new FileWriter(zonalStudentsFileName) ) );
-            outStream.println ( "taz,controlTotal,synpopTotal,lo-1,md-1,hi-1,lo-2,md-2,hi-2,lo-3,md-3,hi-4p,lo-4p,md-4p,hi-4p");
-        }
-        catch (IOException e) {
-            logger.fatal ("I/O exception opening zonal students summary file.", e);
-            System.exit(1);
+        if ( zonalStudentsOutputFileName != null ) {
+            try {
+                outStream = new PrintWriter (new BufferedWriter( new FileWriter(zonalStudentsOutputFileName) ) );
+                outStream.println ( "taz,cotadist,nonworkerTotal,controlTotal,synpopTotal,newStudentsTotal,newNonworkersTotal");
+            }
+            catch (IOException e) {
+                logger.fatal ("I/O exception opening zonal students summary file.", e);
+                System.exit(1);
+            }
         }
             
         // create an array to store the number of students in each income
         // category and in each of 1, 2, 3, 4+ household sizes
-        int[][] univStudentsInZone = new int[4][zeroIncome.length];
-        int univStudentsTotal = 0;
             
         // generate the synthetic population for each zone
         for (int zone = firstZone; zone <= lastZone; zone++) {
 
+            int newStudentsTotal = 0;
+            int newNonworkersTotal = 0;
+            int univStudentsTotal = 0;
+            int nonWorkAdultTotal = 0;
+            
+            
             HHsInZone = (int) zoneTable.getValueAt(zone, hhsPosition);
 
-            if (HHsInZone > 0) {
-                HH[] hhList = getZonalHHs(zone);
+            HH[] hhList = null;
+            if (HHsInZone > 0)
+                hhList = getZonalHHs(zone);
 
-                univStudentsTotal = 0;
-                for (int i=0; i < univStudentsInZone.length; i++)
-                    Arrays.fill(univStudentsInZone[i],0);
-                
+            
+            if ( hhList != null && hhList.length > 0 ) {    
+
                 for (int i = 0; i < hhList.length; i++) {
-                    
-                    int hhinc = PUMSHH.getIncomeCategory( hhList[i].attribs[2] );
-                    int hhsz = ( hhList[i].personTypes.length > 3 ? 3 : hhList[i].personTypes.length-1 );
                     
                     // count the number of university students residing in zone
                     for (int j=0; j < hhList[i].personTypes.length; j++) {
                         if ( hhList[i].personTypes[j] == PersonType.STUDENT ) {
-                            univStudentsInZone[hhsz][hhinc]++;
                             univStudentsTotal++;
                         }
+                        else if ( hhList[i].personTypes[j] == PersonType.NONWORKER ) {
+                            nonWorkAdultTotal++;
+                        }
                     }
-                    
                     
                     hhList[i].setHHNumber(hhNumber);
                     hhNumber++;
                 }
 
+                try {
+                    
+                    // change some students to nonworkers if inputZonalStudents[zone] < univStudentsTotal to
+                    // match exactly the control total if an OSU district zone.  Leave students alone if outside OSU district.
+                    if ( inputZonalUnivDistricts[zone] == OSU_COTADIST ) {
+                        if ( inputZonalStudents[zone] < univStudentsTotal ) {
+                            reduceStudents ( hhList, inputZonalStudents[zone], univStudentsTotal );
+                        }
+                        else if ( inputZonalStudents[zone] > univStudentsTotal ) {
+                            hhList = increaseStudents ( hhList, inputZonalStudents[zone] - univStudentsTotal, hhNumber );
+                            hhNumber = hhList[hhList.length-1].getHHNumber() + 1;
+                        }
+                    }
+                    // increase the number of students outside OSU district by the control total
+                    else {
+                        hhList = increaseStudents ( hhList, inputZonalStudents[zone], hhNumber );
+                        hhNumber = hhList[hhList.length-1].getHHNumber() + 1;
+                    }
+
+                }
+                catch (Exception e) {
+
+                    logger.error ( "Exception caught modifying number of students for zone " + zone, e);
+                    System.exit(1);
+                    
+                }
+                
                 zonalHHs[zone] = hhList;
+
+                // sum up new students in zone
+                for (int i = 0; i < hhList.length; i++) {
+                    // count the number of university students residing in zone
+                    for (int j=0; j < hhList[i].personTypes.length; j++) {
+                        if ( hhList[i].personTypes[j] == PersonType.STUDENT )
+                            newStudentsTotal++;
+                        else if ( hhList[i].personTypes[j] == PersonType.NONWORKER )
+                            newNonworkersTotal++;
+                    }
+                }
                 
             }
             else {
@@ -173,22 +217,106 @@ public class SyntheticPopulation {
                 setZonalFinalTargets(zone - 1, new Vector(zeroHHSize),
                     new Vector(zeroWorker), new Vector(zeroIncome));
             }
-            
-            outStream.print ( zone + "," + inputZonalStudents[zone] + "," + univStudentsTotal );
-            for (int i=0; i < univStudentsInZone.length; i++) {
-                for (int j=0; j < univStudentsInZone[i].length; j++) {
-                    outStream.print ( "," + univStudentsInZone[i][j] );
-                }
+
+
+            if ( outStream != null ) {
+                outStream.print ( zone + "," + inputZonalUnivDistricts[zone] + "," + nonWorkAdultTotal + "," + inputZonalStudents[zone] + "," + univStudentsTotal + "," + newStudentsTotal + "," + newNonworkersTotal );
+                outStream.print( "\n" );
             }
-            outStream.print( "\n" );
 
         }
 
-        outStream.close();
+        if ( outStream != null ) {
+            outStream.close();
+        }
+        
 
         return zonalHHs;
     }
 
+    
+
+    private void reduceStudents ( HH[] hhList, int inputZonalStudents, int univStudentsTotal ) {
+        
+        // initialize the bucket rounding variable used in reduction procedure
+        double bucketValue = 0.0;
+        int lastHhIndex = 0;
+        int lastStudentIndex = 0;
+        int numStudents = 0;
+        
+        // determine the reduction fraction needed
+        double reductionFactor = ((double)univStudentsTotal - inputZonalStudents)/univStudentsTotal;
+
+        
+        // loop over all households in zone and reduce the number of students by changing
+        // reductionFactor proportion of them to NONWORKERS.
+        for (int i=0; i < hhList.length; i++) {
+            
+            // loop through persons and change the reductionFactor proportion of STUDENTS to NONWORKERS
+            for (int j=0; j < hhList[i].personTypes.length; j++) {
+                
+                if ( hhList[i].personTypes[j] == PersonType.STUDENT ) {
+
+                    numStudents++;
+
+                    bucketValue += reductionFactor;
+                    if ( bucketValue >= 1.0 ) {
+                        hhList[i].personTypes[j] = PersonType.NONWORKER;
+                        bucketValue -= 1.0;
+                        numStudents--;
+                    }
+                    lastStudentIndex = j;
+                    lastHhIndex = i;
+                        
+                }
+
+            }
+            
+        }
+
+        if ( bucketValue > 0.5 && hhList[lastHhIndex].personTypes[lastStudentIndex] == PersonType.STUDENT ) {
+            hhList[lastHhIndex].personTypes[lastStudentIndex] = PersonType.NONWORKER;
+            numStudents--;
+        }
+
+
+        if ( numStudents != inputZonalStudents ) {
+            logger.error ( "reduceStudents() did not produce the correct number of students." );
+            throw new RuntimeException();
+        }
+        
+    }
+
+    // increase STUDENTS by adding 1 person hhs
+    private HH[] increaseStudents ( HH[] hhList, int additionalStudentsNeeded, int hhNumber ) {
+        
+        // add additionalStudentsNeeded households to increase the number of students to the desired number
+        
+        HH[] newHhList = null;
+        
+        // create an extended array which includes the necessary additinal households
+        newHhList = new HH[hhList.length + additionalStudentsNeeded];
+        for (int i=0; i < hhList.length; i++)
+            newHhList[i] = hhList[i];
+        
+        // set the characteristics of these households to be those of students - 1 person, 0 worker, 0 income, personType STUDENT
+        for (int i=hhList.length; i < hhList.length + additionalStudentsNeeded; i++) {
+            newHhList[i] = new HH();
+            newHhList[i].personTypes = new int[1];
+            newHhList[i].attribs[0] = 1;
+            newHhList[i].attribs[1] = 0;
+            newHhList[i].attribs[2] = 0;
+            newHhList[i].personTypes[0] = PersonType.STUDENT;
+            
+            newHhList[i].setHHNumber(hhNumber);
+            hhNumber++;
+        }
+        
+        return newHhList;
+                
+    }
+
+    
     public int getNumberHHs() {
         int hhs = 0;
 
@@ -305,7 +433,6 @@ public class SyntheticPopulation {
         float[] incomeMarg = new float[incomePercentages[0][0].length];
         int[] loc = new int[2];
         float value;
-        float tot = 0.0f;
 
         for (int i = 0; i < incomePercentages.length; i++) {
             for (int j = 0; j < incomePercentages[0].length; j++) {
@@ -431,9 +558,6 @@ public class SyntheticPopulation {
             WorkerMarginals.size()] = IncomeMarginals.getValueAt(i + 1) * HHsInZone;
     }
 
-    private float[][] getFinalTargets() {
-        return this.finalTargets;
-    }
 
     private HH[] matchHHsToPUMS(ZonalData zd, NDimensionalMatrixDouble hhs3D) {
         ArrayList pumsHHs;
@@ -940,7 +1064,6 @@ public class SyntheticPopulation {
         double weight;
         double newValue;
 
-        String key;
 
         // get the maximum puma number in the PUMS data
         maxPuma = pums.getMaxPuma();
@@ -961,7 +1084,6 @@ public class SyntheticPopulation {
                         hhs[i][j][k][m] = new ArrayList();
 
         NDimensionalMatrixDouble[] seed3D = new NDimensionalMatrixDouble[numPumas];
-        HashMap indexPuma = pums.getIndexPuma();
         HashMap pumaIndex = pums.getPumaIndex();
 
         // create a 3-D matrix object for each puma and populate the matrices from
@@ -1035,7 +1157,6 @@ public class SyntheticPopulation {
         double weight;
         double newValue;
 
-        String key;
 
         // get the maximum puma number in the PUMS data
         maxPuma = pums.getMaxPuma();
@@ -1054,7 +1175,6 @@ public class SyntheticPopulation {
                     hhs[i][j][k] = new ArrayList();
 
         NDimensionalMatrixDouble[] seed2D = new NDimensionalMatrixDouble[numPumas];
-        HashMap indexPuma = pums.getIndexPuma();
         HashMap pumaIndex = pums.getPumaIndex();
 
         // create a 3-D matrix object for each puma and populate the matrices from
@@ -1193,8 +1313,9 @@ public class SyntheticPopulation {
     }
 
     // the following main() is used to test the methods implemented in this object.
-    public void runSynPop(String OUTPUT_HHFILE, String ZONAL_TARGETS_HHFILE) {
-        zonalHHList = buildPop();
+    public void runSynPop(String OUTPUT_HHFILE, String ZONAL_TARGETS_HHFILE, String univStudentsFilename, String zonalUnivStudentsOutput ) {
+        
+        zonalHHList = buildPop(univStudentsFilename, zonalUnivStudentsOutput);
 
         // write households to output file
         TableDataSet hhTableDataSet = createHHTableDataSet();
@@ -1229,7 +1350,7 @@ public class SyntheticPopulation {
 
 
 
-    private int[] readUnivStudents ( String fileName ) {
+    private int[][] readUnivStudents ( String fileName ) {
         
         // read the csv file into a TableDataSet
         CSVFileReader reader = new CSVFileReader();
@@ -1250,12 +1371,14 @@ public class SyntheticPopulation {
         }
         
         // put values from 2nd column in TableDataSet into array to return
-        int[] values = new int[maxZone+1];
+        int[][] values = new int[2][maxZone+1];
 
         for (int r=0; r < table.getRowCount(); r++) {
             int zone = (int)table.getValueAt(r+1, 1);
             int value = (int)table.getValueAt(r+1, 2);
-            values[zone] = value;
+            int dist = (int)table.getValueAt(r+1, 3);
+            values[0][zone] = value;
+            values[1][zone] = dist;
         }
         
         return values;

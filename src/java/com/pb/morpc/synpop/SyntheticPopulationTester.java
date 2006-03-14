@@ -15,44 +15,51 @@ import java.io.*;
  */
 
 public class SyntheticPopulationTester {
-  private String PUMSData;
-  private String PUMSDictionary;
-  private String ZoneFile;
-  private TableDataSet ZoneTable;
-  private PUMSData pums;
-  private static SyntheticPopulation sp;
-  private static String OutPutHH;
-  private static String ZonalTargetHH;
-  private HashMap propertyMap = null;
-
+  
   public SyntheticPopulationTester() {
-
-    propertyMap = ResourceUtil.getResourceBundleAsHashMap ("morpc" );
-
-    PUMSData=(String)propertyMap.get("PUMSData.file");
-    PUMSDictionary=(String)propertyMap.get("PUMSDictionary.file");
-    ZoneFile=(String)propertyMap.get("TAZData.file");
-
-    OutPutHH=(String)propertyMap.get("SyntheticHousehold.file");
-    ZonalTargetHH=(String)propertyMap.get("ZonalTargets.file");
-
-    try {
-        CSVFileReader reader = new CSVFileReader();
-        ZoneTable = reader.readFile(new File(ZoneFile));
-    }
-    catch (IOException e) {
-        e.printStackTrace();
-        System.exit(1);
-    }
-
-    PUMSData pums = new PUMSData(PUMSData, PUMSDictionary);
-    pums.readData (PUMSData);
-    pums.createPumaIndices();
-    sp = new SyntheticPopulation(pums, ZoneTable);
   }
 
+  private void runTest() {
+      
+      HashMap propertyMap = ResourceUtil.getResourceBundleAsHashMap ("morpc" );
+
+      TableDataSet ZoneTable = null;
+
+      String PUMSData=(String)propertyMap.get("PUMSData.file");
+      String PUMSDictionary=(String)propertyMap.get("PUMSDictionary.file");
+      String ZoneFile=(String)propertyMap.get("TAZData.file");
+
+      String OutPutHH=(String)propertyMap.get("SyntheticHousehold.file");
+      String ZonalTargetHH=(String)propertyMap.get("ZonalTargets.file");
+
+      try {
+          CSVFileReader reader = new CSVFileReader();
+          ZoneTable = reader.readFile(new File(ZoneFile));
+      }
+      catch (IOException e) {
+          e.printStackTrace();
+          System.exit(1);
+      }
+
+      PUMSData pums = new PUMSData(PUMSData, PUMSDictionary);
+      pums.readData (PUMSData);
+      pums.createPumaIndices();
+
+      
+      SyntheticPopulation sp = new SyntheticPopulation(pums, ZoneTable);
+      
+      String zonalStudentsInputFileName = (String) propertyMap.get("UnivStudentsTaz.file");
+      String zonalStudentsOutputFileName = (String) propertyMap.get("UnivStudentsTazOutput.file");
+
+      sp.runSynPop(OutPutHH, ZonalTargetHH, zonalStudentsInputFileName, zonalStudentsOutputFileName);
+
+  }
+  
   public static void main(String [] args){
+
     SyntheticPopulationTester sptester=new SyntheticPopulationTester();
-    sp.runSynPop(OutPutHH, ZonalTargetHH);
+    sptester.runTest();
+    
   }
+  
 }

@@ -20,11 +20,8 @@ public class AtWorkStops implements java.io.Serializable {
 	private StopsHousehold stopsHH;
 	private HouseholdArrayManager hhMgr;
 
-	private HashMap propertyMap;
-	
 	
     public AtWorkStops (HashMap propertyMap, HouseholdArrayManager hhMgr) {
-
 
 		this.hhMgr = hhMgr;
 

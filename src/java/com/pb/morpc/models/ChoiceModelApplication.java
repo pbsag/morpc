@@ -222,11 +222,11 @@ public class ChoiceModelApplication implements java.io.Serializable {
 		
 		
 		
-		int dummy=0;
-		if (availabilityCount == 0) {
-		    dummy=1;
-			utilities = uec.solve( index, hh, sample );
-		}
+//		int dummy=0;
+//		if (availabilityCount == 0) {
+//		    dummy=1;
+//			utilities = uec.solve( index, hh, sample );
+//		}
 		
 		
 		if (debug) {

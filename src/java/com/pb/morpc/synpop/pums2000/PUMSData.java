@@ -329,7 +329,7 @@ public class PUMSData {
             e.printStackTrace();
         }
 
-        logger.error(
+        logger.info(
             "person field value different from number of person records in " +
             invalid + " of " + hhCount + " households.");
     }

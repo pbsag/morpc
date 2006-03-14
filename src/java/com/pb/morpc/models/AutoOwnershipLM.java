@@ -43,7 +43,7 @@ public class AutoOwnershipLM {
         
         //calculate the logsum at the root level
         root.writeUtilityHeader();
-        double logsum = root.getUtility();
+        root.getUtility();
 
         //calculate probabilities
         root.writeProbabilityHeader();

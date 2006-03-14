@@ -64,10 +64,6 @@ public class MorpcModelServer extends MessageProcessingTask {
     private HashMap staticZonalDataMap = null;
     private HashMap staticTodDataMap = null;
 
-    private int numberOfHouseoldsToProcess = 0;
-    private int hhResultsCount = 0;
-    private boolean allHHResultsProcessed;
-    private boolean incrementTourCategory;
 
     private long startTime = 0;
 
@@ -1079,7 +1075,11 @@ public class MorpcModelServer extends MessageProcessingTask {
 
         // create a synthetic population
         SyntheticPopulation sp = new SyntheticPopulation(pums, zoneTable);
-        sp.runSynPop(OUTPUT_HHFILE, ZONAL_TARGETS_HHFILE);
+        
+        String zonalStudentsInputFileName = (String) propertyMap.get("UnivStudentsTaz.file");
+        String zonalStudentsOutputFileName = (String) propertyMap.get("UnivStudentsTazOutput.file");
+
+        sp.runSynPop(OUTPUT_HHFILE, ZONAL_TARGETS_HHFILE, zonalStudentsInputFileName, zonalStudentsOutputFileName);
         pums = null;
         sp = null;
 

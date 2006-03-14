@@ -52,25 +52,14 @@ public class MorpcModelBase {
 	
     public MorpcModelBase () {
 
-		boolean SKIP_CREATE_DISK_OBJECT_ARRAY = false;
 
 		
         propertyMap = ResourceUtil.getResourceBundleAsHashMap ( PROPERTIES_FILE_BASENAME );
-/*
-    	String TPP_TO_BINARY_PROGRAM_DIRECTORY = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM_DIRECTORY");
-        String BINARY_TO_TPP_PROGRAM_DIRECTORY = (String) propertyMap.get("BINARY_TO_TPP_PROGRAM_DIRECTORY");
-        String TPP_TO_BINARY_PROGRAM = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM");
-        String BINARY_TO_TPP_PROGRAM = (String) propertyMap.get("BINARY_TO_TPP_PROGRAM");
-*/        
-		// build the zonal data table
+
+
+        // build the zonal data table
 		zdm = new ZonalDataManager ( propertyMap );
 	
-		// build the TOD Ddata table
-		TODDataManager tod = new TODDataManager ( propertyMap );
-
-//		long[] objectSize = new long[10];
-//		objectSize[0] = ObjectUtil.sizeOf(zdm);
-		
 
 		// set the global random number generator seed read from the properties file
 		SeededRandom.setSeed ( Integer.parseInt( (String)propertyMap.get("RandomSeed") ) );
@@ -181,7 +170,11 @@ public class MorpcModelBase {
     
 		// create a synthetic population
 		SyntheticPopulation sp = new SyntheticPopulation(pums, zoneTable);
-		sp.runSynPop(OUTPUT_HHFILE, ZONAL_TARGETS_HHFILE);
+
+        String zonalStudentsInputFileName = (String) propertyMap.get("UnivStudentsTaz.file");
+        String zonalStudentsOutputFileName = (String) propertyMap.get("UnivStudentsTazOutput.file");
+
+		sp.runSynPop(OUTPUT_HHFILE, ZONAL_TARGETS_HHFILE, zonalStudentsInputFileName, zonalStudentsOutputFileName);
 		pums = null;
 		sp = null;
 	

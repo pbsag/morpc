@@ -22,7 +22,6 @@ public class MorpcModelRunner extends MorpcModelBase {
     }
 
     public void runModels() {
-        boolean SKIP_AGGREGATE_SUBMODE_SKIMS = false;
 
 		
 		if ( ((String)propertyMap.get("RUN_MANDATORY_DTM")).equalsIgnoreCase("true") ) {
