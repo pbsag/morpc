@@ -10,6 +10,57 @@ import java.io.Serializable;
  */
 public class OutputDescription implements Serializable {
 
+    public static String[] getDescriptions (String columnName){
+        String[] descriptions = null;
+
+        //synpop description
+        if (columnName.equals("person_type")){
+            descriptions = new String[] {"workers_f _","workers_p_","students__","nonworkers","preschool_",
+                    "schoolpred","schooldriv"};
+        //synpop description
+        }else if (columnName.equals("income")){
+            descriptions = new String[] {"low_", "med", "high"};
+        //auto-ownership description
+        }else if(columnName.equals("M1")){
+            descriptions = new String[] {"0_cars__","1_car___","2_cars__","3_cars__","4+_cars"};
+        //
+        } else if(columnName.equals("M31")){
+            descriptions = new String[] {"0_tours","1_Shop","1_Eat","1_Main","1_Disc","2_SS","2_SE",
+                    "2_SM","2_SD","2_EE","2_EM","2_ED","2_MM","2_MD","2_DD","0_travelers"};
+
+        } else if (columnName.equals("M32")){
+            descriptions = new String[] {"adults","children","mixed","no HH tour"};
+
+        } else if (columnName.equals("M33")){
+            descriptions = new String[] {"yes","no","not elig"};
+
+        } else if (columnName.equals("M41")){
+            descriptions = new String[] {"0S_0E_0M","0S_0E_1M","0S_0E_2M","0S_0E_3M","0S_1E_0M",
+                    "0S_1E_1M","0S_1E_2M","0S_1E_3M","0S_2E_0M","0S_2E_1M","0S_2E_2M","0S_2E_3M",
+                    "1S_0E_0M","1S_0E_1M","1S_0E_2M","1S_0E_3M","1S_1E_0M","1S_1E_1M","1S_1E_2M",
+                    "1S_1E_3M","1S_2E_0M","1S_2E_1M","1S_2E_2M","1S_2E_3M","2S_0E_0M","2S_0E_1M",
+                    "2S_0E_2M","2S_0E_3M","2S_1E_0M","2S_1E_1M","2S_1E_2M","2S_1E_3M","2S_2E_0M",
+                    "2S_2E_1M","2S_2E_2M","2S_2E_3M"};
+
+        } else if (columnName.equals("M42")){
+            descriptions = new String[] {"1st_FW","2nd_FW","3rd_FW","4th_FW","1st_PW","2nd_PW",
+                    "3rd_PW","4th_PW","1st_STUD","2nd_STUD","3rd_STUD","4th_STUD","1st_NW",
+                    "2nd_NW","3rd_NW","4th_NW","1st_SCH_PD","2nd_SCH_PD","3rd_SCH_PD",
+                    "4th_SCH_PD","1st_SCH_DR","2nd_SCH_DR","3rd_SCH_DR","4th_SCH_DR"};
+
+        } else if (columnName.equals("M431")|| columnName.equals("M432")||columnName.equals("M433")){
+            descriptions = new String[] {"not elig","0_eat,disc","1_eat","1_disc","2_disc","2_ed"};
+
+        } else if (columnName.equals("M44")){
+            descriptions = new String[] {"no subtrs","1_eat","1_work","1_other","2_work","2_ew"};
+
+        } else if (columnName.equals("M7_MC")){
+            descriptions = new String[] {"SOV","HOV","Walk_trn","Drive_trn","Non_motor","School Bus"};
+        }
+
+        return descriptions;
+    }
+
     public static String getDescription (String columnName, float value){
         String description = null;
         int testCase = (int)value;
