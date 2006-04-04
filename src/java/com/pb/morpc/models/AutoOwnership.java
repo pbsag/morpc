@@ -4,14 +4,15 @@ import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.NDimensionalMatrixDouble;
 import com.pb.morpc.matrix.MatrixUtil;
-import com.pb.morpc.synpop.SyntheticPopulation;
 import com.pb.morpc.structures.MessageWindow;
+import com.pb.morpc.structures.OutputDescription;
+import com.pb.morpc.synpop.SyntheticPopulation;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
-import org.apache.log4j.Logger;
 
 /**
  * Implements a test of the multinomial logit model for auto ownership choice
@@ -197,10 +198,11 @@ public class AutoOwnership {
         }
 
 		if (useMessageWindow) mw.setMessage3("Printing Auto Ownership summary reports");
+        String[] descriptions = OutputDescription.getDescriptions("M1");
         TableDataSet.logColumnFreqReport(
             "Auto Ownership",
             hhTable,
-            hhTable.getColumnPosition("M1"));
+            hhTable.getColumnPosition("M1"), descriptions);
 
 		if (useMessageWindow) mw.setMessage3("end of Auto Ownership Module");
         logger.debug("end of AutoOwnership");
