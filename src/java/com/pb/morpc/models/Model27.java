@@ -6,17 +6,22 @@ import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.model.ConcreteAlternative;
 import com.pb.common.model.LogitModel;
+import com.pb.morpc.structures.Household;
+import com.pb.morpc.structures.MessageWindow;
+import com.pb.morpc.structures.OutputDescription;
 import com.pb.morpc.structures.PatternType;
 import com.pb.morpc.synpop.SyntheticPopulation;
-import com.pb.morpc.structures.MessageWindow;
-import com.pb.morpc.structures.Household;
+import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import org.apache.log4j.Logger;
 
 
 public class Model27 {
@@ -773,8 +778,10 @@ public class Model27 {
         //create a person data table.
 		if (useMessageWindow) mw.setMessage2 ("creating person table");
         TableDataSet personTable = createPersonDataTable(hhTable);
-        TableDataSet.logColumnFreqReport("SynPopP",personTable,personTable.getColumnPosition("person_type"));
-        TableDataSet.logColumnFreqReport("SynPopP",personTable,personTable.getColumnPosition("M2"));
+        String[] descriptions = OutputDescription.getDescriptions("person_type");
+        TableDataSet.logColumnFreqReport("SynPopP",personTable,personTable.getColumnPosition("person_type"),descriptions);
+        descriptions = OutputDescription.getDescriptions("M2");
+        TableDataSet.logColumnFreqReport("SynPopP",personTable,personTable.getColumnPosition("M2"),descriptions);
 
 
 		if (personFile != null) {
