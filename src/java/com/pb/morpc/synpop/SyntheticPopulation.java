@@ -109,14 +109,16 @@ public class SyntheticPopulation {
         int[] inputZonalUnivDistricts = null;
         
         // read the control totals for number of university students in each zone
-        try {
-            int[][] returnedArray = readUnivStudents ( zonalStudentsInputFileName );
-            inputZonalStudents = returnedArray[0];
-            inputZonalUnivDistricts = returnedArray[1];
-        }
-        catch (Exception e) {
-            logger.fatal ("Exception reading input zonal students summary file.", e);
-            System.exit(1);
+        if ( zonalStudentsInputFileName != null ) {
+            try {
+                int[][] returnedArray = readUnivStudents ( zonalStudentsInputFileName );
+                inputZonalStudents = returnedArray[0];
+                inputZonalUnivDistricts = returnedArray[1];
+            }
+            catch (Exception e) {
+                logger.fatal ("Exception reading input zonal students summary file.", e);
+                System.exit(1);
+            }
         }
 
         
@@ -124,13 +126,15 @@ public class SyntheticPopulation {
         // open output stream for writing number of students per zone file
         PrintWriter outStream = null;
         if ( zonalStudentsOutputFileName != null ) {
-            try {
-                outStream = new PrintWriter (new BufferedWriter( new FileWriter(zonalStudentsOutputFileName) ) );
-                outStream.println ( "taz,cotadist,nonworkerTotal,controlTotal,synpopTotal,newStudentsTotal,newNonworkersTotal");
-            }
-            catch (IOException e) {
-                logger.fatal ("I/O exception opening zonal students summary file.", e);
-                System.exit(1);
+            if ( zonalStudentsOutputFileName != null ) {
+                try {
+                    outStream = new PrintWriter (new BufferedWriter( new FileWriter(zonalStudentsOutputFileName) ) );
+                    outStream.println ( "taz,cotadist,nonworkerTotal,controlTotal,synpopTotal,newStudentsTotal,newNonworkersTotal");
+                }
+                catch (IOException e) {
+                    logger.fatal ("I/O exception opening zonal students summary file.", e);
+                    System.exit(1);
+                }
             }
         }
             
@@ -171,31 +175,35 @@ public class SyntheticPopulation {
                     hhNumber++;
                 }
 
-                try {
-                    
-                    // change some students to nonworkers if inputZonalStudents[zone] < univStudentsTotal to
-                    // match exactly the control total if an OSU district zone.  Leave students alone if outside OSU district.
-                    if ( inputZonalUnivDistricts[zone] == OSU_COTADIST ) {
-                        if ( inputZonalStudents[zone] < univStudentsTotal ) {
-                            reduceStudents ( hhList, inputZonalStudents[zone], univStudentsTotal );
+                // if an input file with student control totals by zone was defined in the properties file, use it and
+                // make the adjustments, otherwise skip the adjustments.
+                if ( zonalStudentsInputFileName != null ) {
+                    try {
+                        
+                        // change some students to nonworkers if inputZonalStudents[zone] < univStudentsTotal to
+                        // match exactly the control total if an OSU district zone.  Leave students alone if outside OSU district.
+                        if ( inputZonalUnivDistricts[zone] == OSU_COTADIST ) {
+                            if ( inputZonalStudents[zone] < univStudentsTotal ) {
+                                reduceStudents ( hhList, inputZonalStudents[zone], univStudentsTotal );
+                            }
+                            else if ( inputZonalStudents[zone] > univStudentsTotal ) {
+                                hhList = increaseStudents ( hhList, inputZonalStudents[zone] - univStudentsTotal, hhNumber );
+                                hhNumber = hhList[hhList.length-1].getHHNumber() + 1;
+                            }
                         }
-                        else if ( inputZonalStudents[zone] > univStudentsTotal ) {
-                            hhList = increaseStudents ( hhList, inputZonalStudents[zone] - univStudentsTotal, hhNumber );
+                        // increase the number of students outside OSU district by the control total
+                        else {
+                            hhList = increaseStudents ( hhList, inputZonalStudents[zone], hhNumber );
                             hhNumber = hhList[hhList.length-1].getHHNumber() + 1;
                         }
-                    }
-                    // increase the number of students outside OSU district by the control total
-                    else {
-                        hhList = increaseStudents ( hhList, inputZonalStudents[zone], hhNumber );
-                        hhNumber = hhList[hhList.length-1].getHHNumber() + 1;
-                    }
 
-                }
-                catch (Exception e) {
+                    }
+                    catch (Exception e) {
 
-                    logger.error ( "Exception caught modifying number of students for zone " + zone, e);
-                    System.exit(1);
-                    
+                        logger.error ( "Exception caught modifying number of students for zone " + zone, e);
+                        System.exit(1);
+                        
+                    }
                 }
                 
                 zonalHHs[zone] = hhList;
@@ -219,15 +227,19 @@ public class SyntheticPopulation {
             }
 
 
-            if ( outStream != null ) {
-                outStream.print ( zone + "," + inputZonalUnivDistricts[zone] + "," + nonWorkAdultTotal + "," + inputZonalStudents[zone] + "," + univStudentsTotal + "," + newStudentsTotal + "," + newNonworkersTotal );
-                outStream.print( "\n" );
+            if ( zonalStudentsOutputFileName != null ) {
+                if ( outStream != null ) {
+                    outStream.print ( zone + "," + inputZonalUnivDistricts[zone] + "," + nonWorkAdultTotal + "," + inputZonalStudents[zone] + "," + univStudentsTotal + "," + newStudentsTotal + "," + newNonworkersTotal );
+                    outStream.print( "\n" );
+                }
             }
 
         }
 
-        if ( outStream != null ) {
-            outStream.close();
+        if ( zonalStudentsOutputFileName != null ) {
+            if ( outStream != null ) {
+                outStream.close();
+            }
         }
         
 

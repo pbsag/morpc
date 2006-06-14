@@ -46,8 +46,10 @@ public class MorpcModelBase {
 	protected HashMap propertyMap = null;
 	protected HouseholdArrayManager hhMgr = null;
 	protected ZonalDataManager zdm = null;
+    protected TODDataManager tdm = null;
 
-    static final String PROPERTIES_FILE_BASENAME = "morpc";
+//    static final String PROPERTIES_FILE_BASENAME = "morpc";
+    static final String PROPERTIES_FILE_BASENAME = "morpc_bench";
 	
 	
     public MorpcModelBase () {
@@ -57,9 +59,10 @@ public class MorpcModelBase {
         propertyMap = ResourceUtil.getResourceBundleAsHashMap ( PROPERTIES_FILE_BASENAME );
 
 
-        // build the zonal data table
+        //instantiate ZonalDataManager and TODDataManager objects so that their static members are available to other classes (eg. DTMOutput)
 		zdm = new ZonalDataManager ( propertyMap );
-	
+        tdm = new TODDataManager(propertyMap);
+
 
 		// set the global random number generator seed read from the properties file
 		SeededRandom.setSeed ( Integer.parseInt( (String)propertyMap.get("RandomSeed") ) );

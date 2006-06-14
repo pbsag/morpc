@@ -302,423 +302,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 				
 				
-	public void mandatoryTourTc ( Household hh ) {
-
-		int soaIndex = 0;
-		long markTime=0;
-
-		hh_id     = hh.getID();
-		if (useMessageWindow) mw.setMessage1 ("Time-of-day Choice for Mandatory Tours");
-		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
-		count++;		
-
-
-		long startTime = System.currentTimeMillis();
-
-		// get the array of mandatory tours for this household.	
-		if ( hh.getMandatoryTours() == null )
-			return;
-
-
-		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
-
-
-		hh_taz_id = hh.getTazID();
-		int income    = hh.getHHIncome();
-
-		hh.setOrigTaz ( hh_taz_id );
-		hh.setTourCategory( TourType.MANDATORY_CATEGORY );
-
-		
-		// loop over all puposes for the mandatory tour category in order
-		for (int m=0; m < tourTypes.length; m++) {
-
-			// loop over individual tours of the tour purpose of interest for the hh
-			for (int t=0; t < hh.mandatoryTours.length; t++) {
-
-				int tourTypeIndex = m;
-
-				int tourType = hh.mandatoryTours[t].getTourType();
-
-				// set the array of sample of alternatives objects index
-				if (tourTypes[m] == TourType.WORK)
-					soaIndex = income - 1;
-				else
-					soaIndex = 0;
-
-
-				
-				person = hh.mandatoryTours[t].getTourPerson();
-
-
-	
-				if ( tourType != tourTypes[m] ) {
-
-					// if we're processing work, and the tour is school, and the patterntype is school_work,
-					// process the tour as a school tour, even though the tourType is work.
-					if ( tourTypes[m] == TourType.WORK && tourType == TourType.SCHOOL
-						&& persons[person].getPatternType() == PatternType.SCHOOL_WORK ) {
-							tourTypeIndex = 2;
-							soaIndex = 0;
-					}
-					// if we're processing work, and the tour is university, and the patterntype is univ_work,
-					// process the tour as a university tour, even though the tourType is work.
-					else if ( tourTypes[m] == TourType.WORK && tourType == TourType.UNIVERSITY
-						&& persons[person].getPatternType() == PatternType.UNIV_WORK ) {
-							tourTypeIndex = 1;
-							soaIndex = 0;
-					}
-					// if we're processing work, and the tour is univ, and the patterntype is univ_work,
-					// don't do anything, just keep processing the univ tour.
-					else {
-						continue; // otherwise, it's not the right tour type, so go to the next tour.
-					}
-			
-				}
-				else {
-		
-					// if we're processing school, and the tourType is school, and the patterntype is school_work,
-					// we've already processed the school tour, so skip to the next tour.
-					if ( tourTypes[m] == TourType.SCHOOL && tourType == TourType.SCHOOL
-						&& persons[person].getPatternType() == PatternType.SCHOOL_WORK ) {
-							continue;
-					}
-					// if we're processing univ, and the tourType is univ, and the patterntype is univ_work,
-					// we've already processed the univ tour, so skip to the next tour.
-					else if ( tourTypes[m] == TourType.UNIVERSITY && tourType == TourType.UNIVERSITY
-						&& persons[person].getPatternType() == PatternType.UNIV_WORK ) {
-							continue;
-					}
-
-				}
-	
-
-				hh.mandatoryTours[t].setOrigTaz ( hh_taz_id );
-				hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
-				
-				if (logDebug)
-					logger.info("in DTM mandatory tc, setting orig short walk="+hh.getOriginWalkSegment());
-
-				hh.setPersonID ( person );
-				hh.setTourID ( t );
-				hh.setChosenDest( hh.mandatoryTours[t].getDestTaz() );
-
-				
-				
-
-				// update the time of day choice availabilty based on available time windows
-				// tcSample and tcAvailability are 1 based
-				Arrays.fill(tcSample, 1);
-				Arrays.fill(tcAvailability, true);
-
-				setTcAvailability (persons[person], tcAvailability, tcSample);
-
-
-				// count the number of tours in which no time-of-day alternative was available
-				int noTOD = 0;
-				for (int p=1; p <= tcUEC[tourTypeIndex].getNumberOfAlternatives(); p++) {
-					if (tcAvailability[p]) {
-						noTOD++;
-						break;
-					}
-				}
-				if (noTOD == 0) {
-					noTODAvailableIndiv[tourTypeIndex]++;
-					tcAvailability[1] = true;
-					tcSample[1] = 1;
-					tcAvailability[tcUEC[tourTypeIndex].getNumberOfAlternatives()] = true;
-					tcSample[tcUEC[tourTypeIndex].getNumberOfAlternatives()] = 1;
-				}
-
-
-				// calculate the mode choice logsums for TOD choice based on chosen dest and default time periods
-				markTime = System.currentTimeMillis();
-				if (TourType.MANDATORY_TYPES[tourTypeIndex] != TourType.SCHOOL) {
-					
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaEa" );
-					tcLogsumEaEa = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaAm" );
-					tcLogsumEaAm = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaMd" );
-					tcLogsumEaMd = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaPm" );
-					tcLogsumEaPm = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaNt" );
-					tcLogsumEaNt = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmAm" );
-					tcLogsumAmAm = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmMd" );
-					tcLogsumAmMd = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmPm" );
-					tcLogsumAmPm = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmNt" );
-					tcLogsumAmNt = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdMd" );
-					tcLogsumMdMd = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdPm" );
-					tcLogsumMdPm = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdNt" );
-					tcLogsumMdNt = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "PmPm" );
-					tcLogsumPmPm = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "PmNt" );
-					tcLogsumPmNt = getMcLogsums ( hh, tourTypeIndex );
-
-					hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "NtNt" );
-					tcLogsumNtNt = getMcLogsums ( hh, tourTypeIndex );
-
-				}
-
-
-				// assign mode choice logsums to time-of-day choice alternatives, given correspondiong time periods
-				if (TourType.MANDATORY_TYPES[tourTypeIndex] != TourType.SCHOOL) {
-					com.pb.morpc.models.TODDataManager.logsumTcEAEA[processorIndex][1]   = tcLogsumEaEa;
-					com.pb.morpc.models.TODDataManager.logsumTcEAEA[processorIndex][2]   = tcLogsumEaEa;
-					com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][3]   = tcLogsumEaAm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][4]   = tcLogsumEaAm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][5]   = tcLogsumEaAm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][6]   = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][7]   = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][8]   = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][9]   = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][10]  = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][11]  = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][12]  = tcLogsumEaPm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][13]  = tcLogsumEaPm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][14]  = tcLogsumEaPm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][15]  = tcLogsumEaPm;
-					com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][16]  = tcLogsumEaNt;
-					com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][17]  = tcLogsumEaNt;
-					com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][18]  = tcLogsumEaNt;
-					com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][19]  = tcLogsumEaNt;
-					com.pb.morpc.models.TODDataManager.logsumTcEAEA[processorIndex][20]  = tcLogsumEaEa;
-					com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][21]  = tcLogsumEaAm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][22]  = tcLogsumEaAm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][23]  = tcLogsumEaAm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][24]  = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][25]  = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][26]  = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][27]  = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][28]  = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][29]  = tcLogsumEaMd;
-					com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][30]  = tcLogsumEaPm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][31]  = tcLogsumEaPm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][32]  = tcLogsumEaPm;
-					com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][33]  = tcLogsumEaPm;
-					com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][34]  = tcLogsumEaNt;
-					com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][35]  = tcLogsumEaNt;
-					com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][36]  = tcLogsumEaNt;
-					com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][37]  = tcLogsumEaNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][38]  = tcLogsumEaAm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][39]  = tcLogsumEaAm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][40]  = tcLogsumEaAm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][41]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][42]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][43]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][44]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][45]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][46]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][47]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][48]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][49]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][50]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][51]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][52]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][53]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][54]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][55]  = tcLogsumAmAm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][56]  = tcLogsumAmAm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][57]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][58]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][59]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][60]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][61]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][62]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][63]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][64]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][65]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][66]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][67]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][68]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][69]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][70]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][71]  = tcLogsumAmAm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][72]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][73]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][74]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][75]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][76]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][77]  = tcLogsumAmMd;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][78]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][79]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][80]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][81]  = tcLogsumAmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][82]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][83]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][84]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][85]  = tcLogsumAmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][86]  = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][87]  = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][88]  = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][89]  = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][90]  = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][91]  = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][92]  = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][93]  = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][94]  = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][95]  = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][96]  = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][97]  = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][98]  = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][99]  = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][100] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][101] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][102] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][103] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][104] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][105] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][106] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][107] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][108] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][109] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][110] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][111] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][112] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][113] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][114] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][115] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][116] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][117] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][118] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][119] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][120] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][121] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][122] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][123] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][124] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][125] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][126] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][127] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][128] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][129] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][130] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][131] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][132] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][133] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][134] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][135] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][136] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][137] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][138] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][139] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][140] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][141] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][142] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][143] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][144] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][145] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][146] = tcLogsumMdMd;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][147] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][148] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][149] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][150] = tcLogsumMdPm;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][151] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][152] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][153] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][154] = tcLogsumMdNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][155] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][156] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][157] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][158] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][159] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][160] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][161] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][162] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][163] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][164] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][165] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][166] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][167] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][168] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][169] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][170] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][171] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][172] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][173] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][174] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][175] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][176] = tcLogsumPmPm;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][177] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][178] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][179] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][180] = tcLogsumPmNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][181] = tcLogsumNtNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][182] = tcLogsumNtNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][183] = tcLogsumNtNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][184] = tcLogsumNtNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][185] = tcLogsumNtNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][186] = tcLogsumNtNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][187] = tcLogsumNtNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][188] = tcLogsumNtNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][189] = tcLogsumNtNt;
-					com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][190] = tcLogsumNtNt;
-				}
-				tcLogsumTime += (System.currentTimeMillis()-markTime);
-
-
-				// compute time-of-day choice proportions and choose alternative
-				markTime = System.currentTimeMillis();
-				tc[tourTypeIndex].updateLogitModel ( hh, tcAvailability, tcSample );
-				
-				int chosenTODAlt;
-				try {
-				    chosenTODAlt = tc[tourTypeIndex].getChoiceResult();
-				}
-				catch (ModelException e) {
-					chosenTODAlt = SeededRandom.getRandom() < 0.5 ? 1 : 190;
-				}
-				tcTime += (System.currentTimeMillis()-markTime);
-
-				
-				
-				
-				// set the hour as unavailable for all hours between start and end for this person
-				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( chosenTODAlt );
-				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( chosenTODAlt );
-				for (int j=start; j <= end; j++) {
-					hh.persons[person].setHourUnavailable(j);
-					persons[person].setHourUnavailable(j);
-				}
-
-				// set chosen in alternative in tour objects
-				hh.mandatoryTours[t].setTimeOfDayAlt (chosenTODAlt);
-				
-				
-			}
-			
-		}
-
-	}
-	
-
-
-
 	public void mandatoryTourMc ( Household hh ) {
 		
+        
+        
+        
 		//Wu added for Summit Aggregation
 		summitAggregationRecords=new Vector();
 
@@ -901,14 +489,19 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					
 					if ( hh.getFreeParking() == 1 ) {
 						pc[0].updateLogitModel ( hh ,pcAvailability, pcSample );
-						chosenParkAlt = pc[0].getChoiceResult();
+                        chosenParkAlt = pc[0].getChoiceResult();
 					}
 					else {
 						pc[1].updateLogitModel ( hh, pcAvailability, pcSample );
-						chosenParkAlt = pc[1].getChoiceResult();
+                        chosenParkAlt = pc[1].getChoiceResult();
 					}
 
-					hh.mandatoryTours[t].setChosenPark (chosenParkAlt);
+					hh.mandatoryTours[t].setChosenPark ((int)cbdAltsTable.getValueAt(chosenParkAlt,2));
+                    
+                    dummy=0;
+                    if ( chosenParkAlt > 30 ) {
+                        dummy = 1;
+                    }
 
 				}
 				else {
@@ -2138,7 +1731,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					pc[2].updateLogitModel ( hh, pcAvailability, pcSample );
 					chosenParkAlt = pc[2].getChoiceResult();
 
-					hh.indivTours[t].setChosenPark (chosenParkAlt);
+					hh.indivTours[t].setChosenPark ((int)cbdAltsTable.getValueAt(chosenParkAlt,2));
 
 				}
 				else { 
@@ -3004,7 +2597,421 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		}						
 	}
 	
-//	Wu added for Summit Aggregation
+public void mandatoryTourTc ( Household hh ) {
+    
+    	int soaIndex = 0;
+    	long markTime=0;
+    
+    	hh_id     = hh.getID();
+    	if (useMessageWindow) mw.setMessage1 ("Time-of-day Choice for Mandatory Tours");
+    	if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
+    	count++;		
+    
+    
+    	long startTime = System.currentTimeMillis();
+    
+    	// get the array of mandatory tours for this household.	
+    	if ( hh.getMandatoryTours() == null )
+    		return;
+    
+    
+    	// get person array for this household.
+    	Person[] persons = hh.getPersonArray();
+    
+    
+    	hh_taz_id = hh.getTazID();
+    	int income    = hh.getHHIncome();
+    
+    	hh.setOrigTaz ( hh_taz_id );
+    	hh.setTourCategory( TourType.MANDATORY_CATEGORY );
+    
+    	
+    	// loop over all puposes for the mandatory tour category in order
+    	for (int m=0; m < tourTypes.length; m++) {
+    
+    		// loop over individual tours of the tour purpose of interest for the hh
+    		for (int t=0; t < hh.mandatoryTours.length; t++) {
+    
+    			int tourTypeIndex = m;
+    
+    			int tourType = hh.mandatoryTours[t].getTourType();
+    
+    			// set the array of sample of alternatives objects index
+    			if (tourTypes[m] == TourType.WORK)
+    				soaIndex = income - 1;
+    			else
+    				soaIndex = 0;
+    
+    
+    			
+    			person = hh.mandatoryTours[t].getTourPerson();
+    
+    
+    
+    			if ( tourType != tourTypes[m] ) {
+    
+    				// if we're processing work, and the tour is school, and the patterntype is school_work,
+    				// process the tour as a school tour, even though the tourType is work.
+    				if ( tourTypes[m] == TourType.WORK && tourType == TourType.SCHOOL
+    					&& persons[person].getPatternType() == PatternType.SCHOOL_WORK ) {
+    						tourTypeIndex = 2;
+    						soaIndex = 0;
+    				}
+    				// if we're processing work, and the tour is university, and the patterntype is univ_work,
+    				// process the tour as a university tour, even though the tourType is work.
+    				else if ( tourTypes[m] == TourType.WORK && tourType == TourType.UNIVERSITY
+    					&& persons[person].getPatternType() == PatternType.UNIV_WORK ) {
+    						tourTypeIndex = 1;
+    						soaIndex = 0;
+    				}
+    				// if we're processing work, and the tour is univ, and the patterntype is univ_work,
+    				// don't do anything, just keep processing the univ tour.
+    				else {
+    					continue; // otherwise, it's not the right tour type, so go to the next tour.
+    				}
+    		
+    			}
+    			else {
+    	
+    				// if we're processing school, and the tourType is school, and the patterntype is school_work,
+    				// we've already processed the school tour, so skip to the next tour.
+    				if ( tourTypes[m] == TourType.SCHOOL && tourType == TourType.SCHOOL
+    					&& persons[person].getPatternType() == PatternType.SCHOOL_WORK ) {
+    						continue;
+    				}
+    				// if we're processing univ, and the tourType is univ, and the patterntype is univ_work,
+    				// we've already processed the univ tour, so skip to the next tour.
+    				else if ( tourTypes[m] == TourType.UNIVERSITY && tourType == TourType.UNIVERSITY
+    					&& persons[person].getPatternType() == PatternType.UNIV_WORK ) {
+    						continue;
+    				}
+    
+    			}
+    
+    
+    			hh.mandatoryTours[t].setOrigTaz ( hh_taz_id );
+    			hh.mandatoryTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
+    			
+    			if (logDebug)
+    				logger.info("in DTM mandatory tc, setting orig short walk="+hh.getOriginWalkSegment());
+    
+    			hh.setPersonID ( person );
+    			hh.setTourID ( t );
+    			hh.setChosenDest( hh.mandatoryTours[t].getDestTaz() );
+    
+    			
+    			
+    
+    			// update the time of day choice availabilty based on available time windows
+    			// tcSample and tcAvailability are 1 based
+    			Arrays.fill(tcSample, 1);
+    			Arrays.fill(tcAvailability, true);
+    
+    			setTcAvailability (persons[person], tcAvailability, tcSample);
+    
+    
+    			// count the number of tours in which no time-of-day alternative was available
+    			int noTOD = 0;
+    			for (int p=1; p <= tcUEC[tourTypeIndex].getNumberOfAlternatives(); p++) {
+    				if (tcAvailability[p]) {
+    					noTOD++;
+    					break;
+    				}
+    			}
+    			if (noTOD == 0) {
+    				noTODAvailableIndiv[tourTypeIndex]++;
+    				tcAvailability[1] = true;
+    				tcSample[1] = 1;
+    				tcAvailability[tcUEC[tourTypeIndex].getNumberOfAlternatives()] = true;
+    				tcSample[tcUEC[tourTypeIndex].getNumberOfAlternatives()] = 1;
+    			}
+    
+    
+    			// calculate the mode choice logsums for TOD choice based on chosen dest and default time periods
+    			markTime = System.currentTimeMillis();
+    			if (TourType.MANDATORY_TYPES[tourTypeIndex] != TourType.SCHOOL) {
+    				
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaEa" );
+    				tcLogsumEaEa = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaAm" );
+    				tcLogsumEaAm = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaMd" );
+    				tcLogsumEaMd = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaPm" );
+    				tcLogsumEaPm = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaNt" );
+    				tcLogsumEaNt = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmAm" );
+    				tcLogsumAmAm = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmMd" );
+    				tcLogsumAmMd = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmPm" );
+    				tcLogsumAmPm = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmNt" );
+    				tcLogsumAmNt = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdMd" );
+    				tcLogsumMdMd = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdPm" );
+    				tcLogsumMdPm = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdNt" );
+    				tcLogsumMdNt = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "PmPm" );
+    				tcLogsumPmPm = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "PmNt" );
+    				tcLogsumPmNt = getMcLogsums ( hh, tourTypeIndex );
+    
+    				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "NtNt" );
+    				tcLogsumNtNt = getMcLogsums ( hh, tourTypeIndex );
+    
+    			}
+    
+    
+    			// assign mode choice logsums to time-of-day choice alternatives, given correspondiong time periods
+    			if (TourType.MANDATORY_TYPES[tourTypeIndex] != TourType.SCHOOL) {
+    				com.pb.morpc.models.TODDataManager.logsumTcEAEA[processorIndex][1]   = tcLogsumEaEa;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAEA[processorIndex][2]   = tcLogsumEaEa;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][3]   = tcLogsumEaAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][4]   = tcLogsumEaAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][5]   = tcLogsumEaAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][6]   = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][7]   = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][8]   = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][9]   = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][10]  = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][11]  = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][12]  = tcLogsumEaPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][13]  = tcLogsumEaPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][14]  = tcLogsumEaPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][15]  = tcLogsumEaPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][16]  = tcLogsumEaNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][17]  = tcLogsumEaNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][18]  = tcLogsumEaNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][19]  = tcLogsumEaNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAEA[processorIndex][20]  = tcLogsumEaEa;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][21]  = tcLogsumEaAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][22]  = tcLogsumEaAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAAM[processorIndex][23]  = tcLogsumEaAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][24]  = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][25]  = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][26]  = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][27]  = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][28]  = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAMD[processorIndex][29]  = tcLogsumEaMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][30]  = tcLogsumEaPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][31]  = tcLogsumEaPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][32]  = tcLogsumEaPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEAPM[processorIndex][33]  = tcLogsumEaPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][34]  = tcLogsumEaNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][35]  = tcLogsumEaNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][36]  = tcLogsumEaNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcEANT[processorIndex][37]  = tcLogsumEaNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][38]  = tcLogsumEaAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][39]  = tcLogsumEaAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][40]  = tcLogsumEaAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][41]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][42]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][43]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][44]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][45]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][46]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][47]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][48]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][49]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][50]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][51]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][52]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][53]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][54]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][55]  = tcLogsumAmAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][56]  = tcLogsumAmAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][57]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][58]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][59]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][60]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][61]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][62]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][63]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][64]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][65]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][66]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][67]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][68]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][69]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][70]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMAM[processorIndex][71]  = tcLogsumAmAm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][72]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][73]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][74]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][75]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][76]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMMD[processorIndex][77]  = tcLogsumAmMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][78]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][79]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][80]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMPM[processorIndex][81]  = tcLogsumAmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][82]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][83]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][84]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcAMNT[processorIndex][85]  = tcLogsumAmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][86]  = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][87]  = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][88]  = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][89]  = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][90]  = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][91]  = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][92]  = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][93]  = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][94]  = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][95]  = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][96]  = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][97]  = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][98]  = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][99]  = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][100] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][101] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][102] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][103] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][104] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][105] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][106] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][107] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][108] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][109] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][110] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][111] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][112] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][113] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][114] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][115] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][116] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][117] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][118] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][119] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][120] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][121] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][122] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][123] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][124] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][125] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][126] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][127] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][128] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][129] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][130] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][131] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][132] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][133] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][134] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][135] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][136] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][137] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][138] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][139] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][140] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][141] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][142] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][143] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][144] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][145] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDMD[processorIndex][146] = tcLogsumMdMd;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][147] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][148] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][149] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDPM[processorIndex][150] = tcLogsumMdPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][151] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][152] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][153] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcMDNT[processorIndex][154] = tcLogsumMdNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][155] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][156] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][157] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][158] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][159] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][160] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][161] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][162] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][163] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][164] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][165] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][166] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][167] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][168] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][169] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][170] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][171] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][172] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][173] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][174] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][175] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMPM[processorIndex][176] = tcLogsumPmPm;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][177] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][178] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][179] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcPMNT[processorIndex][180] = tcLogsumPmNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][181] = tcLogsumNtNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][182] = tcLogsumNtNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][183] = tcLogsumNtNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][184] = tcLogsumNtNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][185] = tcLogsumNtNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][186] = tcLogsumNtNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][187] = tcLogsumNtNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][188] = tcLogsumNtNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][189] = tcLogsumNtNt;
+    				com.pb.morpc.models.TODDataManager.logsumTcNTNT[processorIndex][190] = tcLogsumNtNt;
+    			}
+    			tcLogsumTime += (System.currentTimeMillis()-markTime);
+    
+    
+    			// compute time-of-day choice proportions and choose alternative
+    			markTime = System.currentTimeMillis();
+    			tc[tourTypeIndex].updateLogitModel ( hh, tcAvailability, tcSample );
+    			
+    			int chosenTODAlt;
+    			try {
+    			    chosenTODAlt = tc[tourTypeIndex].getChoiceResult();
+    			}
+    			catch (ModelException e) {
+    				chosenTODAlt = SeededRandom.getRandom() < 0.5 ? 1 : 190;
+    			}
+    			tcTime += (System.currentTimeMillis()-markTime);
+    
+    			
+    			
+    			
+    			// set the hour as unavailable for all hours between start and end for this person
+    			start = com.pb.morpc.models.TODDataManager.getTodStartHour ( chosenTODAlt );
+    			end = com.pb.morpc.models.TODDataManager.getTodEndHour ( chosenTODAlt );
+    			for (int j=start; j <= end; j++) {
+    				hh.persons[person].setHourUnavailable(j);
+    				persons[person].setHourUnavailable(j);
+    			}
+    
+    			// set chosen in alternative in tour objects
+    			hh.mandatoryTours[t].setTimeOfDayAlt (chosenTODAlt);
+    			
+    			
+    		}
+    		
+    	}
+    
+    }
+
+
+
+    //	Wu added for Summit Aggregation
 	public Vector getSummitAggregationRecords(){
 		return summitAggregationRecords;
 	}

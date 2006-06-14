@@ -8,6 +8,8 @@ package com.pb.morpc.models;
  */
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.calculator.IndexValues;
+import com.pb.common.datafile.CSVFileReader;
+import com.pb.common.datafile.TableDataSet;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 
@@ -89,6 +91,8 @@ public class DTMModelBase implements java.io.Serializable {
 	protected int[] pcSample;
 	protected int[] smcSample = new int[2];
 
+    protected TableDataSet cbdAltsTable = null;
+    
 	
 	
 	// This array is declared as public static, because it is referenced by the Household
@@ -163,6 +167,7 @@ public class DTMModelBase implements java.io.Serializable {
 		this.tourTypeCategory = tourTypeCategory; 
 		this.tourTypes = tourTypes; 
 
+        
 		// get the indicator for whether to use the message window or not
 		// from the properties file.
 		String useMessageWindowString = (String)propertyMap.get( "MessageWindow" );
@@ -319,7 +324,23 @@ public class DTMModelBase implements java.io.Serializable {
 			numPcAlternatives = pcUEC[0].getNumberOfAlternatives();
 
 
+        
 
+        // read the parking choice alternatives data file to get alternatives names
+        String cbdFile = (String)propertyMap.get( "CBDAlternatives.file" );
+
+        try {
+            CSVFileReader reader = new CSVFileReader();
+            cbdAltsTable = reader.readFile(new File(cbdFile));
+        }
+        catch (IOException e) {
+            logger.error ("problem reading table of cbd zones for parking location choice model.", e);
+            System.exit(1);
+        }
+
+
+        
+        
 		mcAvailability = new boolean[numMcAlternatives+1];
 		tcAvailability = new boolean[numTcAlternatives+1];
 		dcAvailability = new boolean[numDcAlternatives+1];
