@@ -465,11 +465,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					System.exit(-1);
 				}
 											
-				int dummy=0;
-				if (tourTypes[m] != TourType.WORK) {
-					dummy = 1;
-				}
-				
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
 					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
@@ -482,7 +477,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.mandatoryTours[t].setMode (chosenModeAlt);
 
 				index.setOriginZone( hh.mandatoryTours[t].getOrigTaz() );
-				index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
+                index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
 				int chosenParkAlt=0;
 				// determine parking location if chosenDestAlt is in the CBD and chosenModeAlt is sov or hov.
 				if ( hh.getCbdDest() && chosenModeAlt < 3 ) {
@@ -496,13 +491,13 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
                         chosenParkAlt = pc[1].getChoiceResult();
 					}
 
-					hh.mandatoryTours[t].setChosenPark ((int)cbdAltsTable.getValueAt(chosenParkAlt,2));
-                    
-                    dummy=0;
-                    if ( chosenParkAlt > 30 ) {
+                    int dummy=0;
+                    if (chosenParkAlt == 35) {
                         dummy = 1;
                     }
-
+                    
+					hh.mandatoryTours[t].setChosenPark ((int)cbdAltsTable.getValueAt(chosenParkAlt,2));
+                    
 				}
 				else {
 					
