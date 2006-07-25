@@ -114,8 +114,15 @@ public class ZonalDataManager implements java.io.Serializable {
 
 
     public ZonalDataManager(HashMap propertyMap) {
+        
         this.propertyMap = propertyMap;
-
+        
+        
+        // JH, 07/25/2006: create the derived table (formerly done externally with an SPSS script)
+        Derived dr = new Derived(propertyMap);
+        dr.writeDerivedTable();
+        
+        
         // build the zonal data table
         String zonalFile1 = (String) propertyMap.get("TAZMainData.file");
         String zonalFile2 = (String) propertyMap.get("TAZAccessibility.file");
