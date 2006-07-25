@@ -27,12 +27,13 @@ public class Derived {
     float[] parkRate;
     String[] colTitles = { "areatype", "urbtype", "parkrate" };
     HashMap propertyMap;
-    Logger logger;
 
-    public Derived() {
-        logger = Logger.getLogger("com.pb.morpc.report");
-        propertyMap = ResourceUtil.getResourceBundleAsHashMap("morpc");
+    protected static transient Logger logger = Logger.getLogger( Derived.class );
 
+    public Derived(HashMap propertyMap) {
+
+        this.propertyMap = propertyMap;
+        
         try {
             CSVFileReader reader = new CSVFileReader();
             zsed = reader.readFile(new File((String) propertyMap.get("TAZMainData.file")));
@@ -76,12 +77,59 @@ public class Derived {
         completeTable.appendColumn(parkRate, "parkrate");
 
         try {
-            File AccessibilityIndicesFile = new File((String) propertyMap.get("TAZDerived2.file"));
+            File AccessibilityIndicesFile = new File((String) propertyMap.get("TAZDerived.file"));
             CSVFileWriter writer = new CSVFileWriter();
             writer.writeFile(completeTable, AccessibilityIndicesFile, new DecimalFormat("#.00"));
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
+        
+    }
+
+    private void logDerivedTableFreqs() {
+        float[] taz = new float[NoOfZones];
+        ArrayList colTitlesArrayList = new ArrayList();
+
+        for (int i = 0; i < colTitles.length; i++) {
+            colTitlesArrayList.add(colTitles[i]);
+        }
+
+        for (int i = 0; i < NoOfZones; i++) {
+            taz[i] = i + 1;
+        }
+
+        TableDataSet completeTable = new TableDataSet();
+        completeTable.appendColumn(taz, "taz");
+        completeTable.appendColumn(areaType, "areatype");
+        completeTable.appendColumn(urbType, "urbtype");
+        completeTable.appendColumn(parkRate, "parkrate");
+
+        TableDataSet.logColumnFreqReport("Zonal Data", completeTable, completeTable.getColumnPosition("areaType"));
+        TableDataSet.logColumnFreqReport("Zonal Data", completeTable, completeTable.getColumnPosition("urbtype"));
+
+        int columnPosition = completeTable.getColumnPosition("parkrate");
+        
+        logger.info( "Frequency Report table: " + "Zonal Data");
+        logger.info( "Listing for column " + columnPosition + ": " + completeTable.getColumnLabel(columnPosition) );
+        logger.info( String.format("%8s", "Taz") + String.format("%11s", "Value") );
+        
+        float[] columnData = new float[completeTable.getRowCount()];
+        for (int r = 1; r <= completeTable.getRowCount(); r++) {
+            columnData[r - 1] = completeTable.getValueAt(r, columnPosition);
+        }
+
+        
+        int zeroCount = 0;
+        for (int i=0; i < NoOfZones; i++) {
+            
+            if ( columnData[i] != 0 )
+                logger.info( String.format("%8d", i+1) + String.format("%11.5f", columnData[i]) );
+            else
+                zeroCount++;
+            
+        }
+        logger.info( "The other " + zeroCount + " Tazs have values of 0.");
+            
     }
 
     private float[] createAreaType() {
@@ -128,6 +176,12 @@ public class Derived {
             if ((popden < 500) && (empden < 500)) {
                 result[i] = 7;
             }
+            
+            // zonal arrays are 0 based, so index i is taz-1
+            // original logic: if ((i <= 72) && (i != 35) && (i != 54))
+            if ((i <= 71) && (i != 34) && (i != 53))
+                result[i] = 1;
+
         }
 
         return result;
@@ -168,6 +222,7 @@ public class Derived {
         double free75 = 0.0;
 
         for (int i = 0; i < NoOfZones; i++) {
+            
             if (work_wal[i] == 0.0) {
                 lgwrkskm = 0.0;
             }
@@ -202,14 +257,26 @@ public class Derived {
                 result[i] = 0.0;
             }
 
-            resultf[i] = (float) result[i];
+            if ( result[i] > 0 )
+                resultf[i] = (float) result[i];
+            else
+                resultf[i] = 0;
+            
         }
 
         return resultf;
     }
 
+    
     public static void main(String[] args) {
-        Derived dr = new Derived();
+        
+        // pass the name of the properties file (excluding ".properties")
+        HashMap propertyMap = ResourceUtil.getResourceBundleAsHashMap( args[0] );
+
+        Derived dr = new Derived(propertyMap);
+        dr.logDerivedTableFreqs();
         dr.writeDerivedTable();
+        
+        logger.info ( "end of Derived.main()" );
     }
 }
