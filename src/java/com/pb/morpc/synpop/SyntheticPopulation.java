@@ -6,7 +6,7 @@ import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.NDimensionalMatrixBalancerDouble;
 import com.pb.common.matrix.NDimensionalMatrixDouble;
-import com.pb.common.matrix.Vector;
+import com.pb.common.matrix.RowVector;
 
 import com.pb.morpc.matrix.MatrixUtil;
 import com.pb.morpc.models.ChoiceModelApplication;
@@ -222,8 +222,8 @@ public class SyntheticPopulation {
             }
             else {
                 // TableDataSet values are stored with zero based indexing
-                setZonalFinalTargets(zone - 1, new Vector(zeroHHSize),
-                    new Vector(zeroWorker), new Vector(zeroIncome));
+                setZonalFinalTargets(zone - 1, new RowVector(zeroHHSize),
+                    new RowVector(zeroWorker), new RowVector(zeroIncome));
             }
 
 
@@ -418,8 +418,8 @@ public class SyntheticPopulation {
         ZonalData zd = populateZonalData(zone);
 
         // get the marginals (with control average adjustments) for each hhsize and worker dimensions
-        Vector HHSizeMarginals = zonalHHSizeMarginals(zd);
-        Vector WorkerMarginals = zonalWorkerMarginals(zd, HHSizeMarginals);
+        RowVector HHSizeMarginals = zonalHHSizeMarginals(zd);
+        RowVector WorkerMarginals = zonalWorkerMarginals(zd, HHSizeMarginals);
 
         // get the 2D PUMS seed matrix for the puma in which the zone is located
         NDimensionalMatrixDouble seed2d = get2WaySeedTable(zd.getPuma());
@@ -461,11 +461,11 @@ public class SyntheticPopulation {
             }
         }
 
-        Vector IncomeMarginals2 = new Vector(incomeMarg);
+        RowVector IncomeMarginals2 = new RowVector(incomeMarg);
 
-        Vector IncomeMarginals1 = zonalIncomeMarginals(zd);
+        RowVector IncomeMarginals1 = zonalIncomeMarginals(zd);
 
-        Vector IncomeMarginals = new Vector(IncomeMarginals1.size());
+        RowVector IncomeMarginals = new RowVector(IncomeMarginals1.size());
 
         for (int i = 1; i <= IncomeMarginals.size(); i++) {
             value = (IncomeMarginals1.getValueAt(i) * (INCOME_DISTRIBUTION_FACTOR)) +
@@ -548,8 +548,8 @@ public class SyntheticPopulation {
         return hhList;
     }
 
-    private void setZonalFinalTargets(int zone, Vector HHSizeMarginals,
-        Vector WorkerMarginals, Vector IncomeMarginals) {
+    private void setZonalFinalTargets(int zone, RowVector HHSizeMarginals,
+            RowVector WorkerMarginals, RowVector IncomeMarginals) {
         this.finalTargets[zone] = new float[1 + HHSizeMarginals.size() +
             WorkerMarginals.size() + IncomeMarginals.size()];
 
@@ -775,8 +775,8 @@ public class SyntheticPopulation {
         return zd;
     }
 
-    private Vector zonalHHSizeMarginals(ZonalData zd) {
-        Vector marginals;
+    private RowVector zonalHHSizeMarginals(ZonalData zd) {
+        RowVector marginals;
 
         // get the marginal distributions of HHs for the zone by applying percentage curves
         marginals = getHHSizeMarginals(zd);
@@ -796,7 +796,7 @@ public class SyntheticPopulation {
         // adjust the marginal distributions returned from the percentage curves
         // such that the mean of the distributions equals the known mean.
         marginals = MatrixUtil.adjustAverageToControl(marginals,
-                new Vector(PUMSHH.HHSIZE_Categories), zd.getAvgHHSize());
+                new RowVector(PUMSHH.HHSIZE_Categories), zd.getAvgHHSize());
 
         if (debug) {
             // list the contents of the marginal proportions after adjustment
@@ -808,8 +808,8 @@ public class SyntheticPopulation {
         return marginals;
     }
 
-    private Vector zonalWorkerMarginals(ZonalData zd, Vector HHSizeMarginals) {
-        Vector marginals;
+    private RowVector zonalWorkerMarginals(ZonalData zd, RowVector HHSizeMarginals) {
+        RowVector marginals;
 
         // get the marginal distributions of HHs for the zone by applying percentage curves
         marginals = getWorkerMarginals(zd, HHSizeMarginals);
@@ -829,7 +829,7 @@ public class SyntheticPopulation {
         // adjust the marginal distributions returned from the percentage curves
         // such that the mean of the distributions equals the known mean.
         marginals = MatrixUtil.adjustAverageToControl(marginals,
-                new Vector(PUMSHH.WORKER_Categories), zd.getAvgWorkers());
+                new RowVector(PUMSHH.WORKER_Categories), zd.getAvgWorkers());
 
         if (debug) {
             // list the contents of the marginal proportions after adjustment
@@ -841,8 +841,8 @@ public class SyntheticPopulation {
         return marginals;
     }
 
-    private Vector zonalIncomeMarginals(ZonalData zd) {
-        Vector marginals;
+    private RowVector zonalIncomeMarginals(ZonalData zd) {
+        RowVector marginals;
 
         // get the marginal distributions of HHs for the zone by applying percentage curves
         marginals = getIncomeMarginals(zd);
@@ -886,7 +886,7 @@ public class SyntheticPopulation {
         logger.info("");
     }
 
-    private Vector getHHSizeMarginals(ZonalData zd) {
+    private RowVector getHHSizeMarginals(ZonalData zd) {
         HHSizeCurve pctCurve = new HHSizeCurve(zd);
         float[] args = { zd.getAvgHHSize() };
         float[] baseProps = pctCurve.getPercentages(args);
@@ -935,10 +935,10 @@ public class SyntheticPopulation {
         for (int i = 0; i < finalProps.length; i++)
             finalProps[i] = (float) dProps[i];
 
-        return (new Vector(finalProps));
+        return (new RowVector(finalProps));
     }
 
-    private Vector getWorkerMarginals(ZonalData zd, Vector HHSizeMarginals) {
+    private RowVector getWorkerMarginals(ZonalData zd, RowVector HHSizeMarginals) {
         HHWorkerCurve pctCurve = new HHWorkerCurve(zd);
         float[] args = {
             zd.getAvgWorkers(), HHSizeMarginals.getValueAt(1),
@@ -990,10 +990,10 @@ public class SyntheticPopulation {
         for (int i = 0; i < finalProps.length; i++)
             finalProps[i] = (float) dProps[i];
 
-        return (new Vector(finalProps));
+        return (new RowVector(finalProps));
     }
 
-    private Vector getIncomeMarginals(ZonalData zd) {
+    private RowVector getIncomeMarginals(ZonalData zd) {
         HHIncomeCurve pctCurve = new HHIncomeCurve(zd);
         float[] args = { zd.getAvgIncome() / getRegionalAverageIncome() };
         float[] baseProps = pctCurve.getPercentages(args);
@@ -1042,7 +1042,7 @@ public class SyntheticPopulation {
         for (int i = 0; i < finalProps.length; i++)
             finalProps[i] = (float) dProps[i];
 
-        return (new Vector(finalProps));
+        return (new RowVector(finalProps));
     }
 
     private NDimensionalMatrixDouble get3WaySeedTable(int puma) {

@@ -3,7 +3,7 @@ package com.pb.morpc.matrix;
 import com.pb.common.math.MathUtil;
 import com.pb.common.matrix.NDimensionalMatrix;
 import com.pb.common.matrix.NDimensionalMatrixDouble;
-import com.pb.common.matrix.Vector;
+import com.pb.common.matrix.RowVector;
 
 
 /**
@@ -91,7 +91,7 @@ public class MatrixUtil {
     }
 
 
-    public static Vector adjustAverageToControl (Vector seedProportions, Vector seedCategoryValues, float controlAvg) {
+    public static RowVector adjustAverageToControl (RowVector seedProportions, RowVector seedCategoryValues, float controlAvg) {
         
         float epsilon = 0.000001f;
         float[] proportions = seedProportions.copyValues1D();
@@ -135,7 +135,7 @@ public class MatrixUtil {
 		}
     
         
-        return ( new Vector(newProportions) );
+        return ( new RowVector(newProportions) );
     }        
     
     
