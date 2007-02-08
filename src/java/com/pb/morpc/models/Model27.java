@@ -62,7 +62,8 @@ public class Model27 {
 	   ArrayList tableHeadings=new ArrayList();
 
 	   tableHeadings.add("hh_id");
-	   tableHeadings.add("person_id");
+       tableHeadings.add("pums_serialno");
+       tableHeadings.add("person_id");
 	   tableHeadings.add("person_type");
 	   tableHeadings.add("M2");
 
@@ -225,6 +226,7 @@ public class Model27 {
            int numOfSchoolpredInHH=(int)hhTable.getValueAt(i,schoolpred_col);
            int numOfSchooldrivInHH=(int)hhTable.getValueAt(i,schooldriv_col);
            float hhID=hhTable.getValueAt(i,hhTable.getColumnPosition(SyntheticPopulation.HHID_FIELD));
+           float serialno=hhTable.getValueAt(i,hhTable.getColumnPosition(SyntheticPopulation.SERIALNO_FIELD));
            float personID=1;
 
 
@@ -233,56 +235,56 @@ public class Model27 {
                personTypeSum[(int)personType-1]+=numOfWorkers_fInHH;
                if(numWork1_25 > 0){
                    for(int p=1; p<=numWork1_25; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out25.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
+		               if (debug) out25.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
                    }
                }
                if(numWork2_25 > 0){
                    for(int p=1; p<=numWork2_25; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_2};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_2};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out25.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
+		               if (debug) out25.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
                    }
                }
                if(numWorkUniv_25 > 0){
                    for(int p=1; p<=numWorkUniv_25; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_UNIV};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_UNIV};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out25.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
+		               if (debug) out25.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
                    }
                }
                if(numUniv1_25 > 0){
                    for(int p=1; p<=numUniv1_25; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.UNIV_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.UNIV_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out25.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
+		               if (debug) out25.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
                    }
                }
                if(numNonMand_25 > 0){
                    for(int p=1; p<=numNonMand_25; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.NON_MAND};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.NON_MAND};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out25.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
+		               if (debug) out25.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
                    }
                }
                if(numHome_25 > 0){
                    for(int p=1; p<=numHome_25; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.HOME};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.HOME};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out25.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
+		               if (debug) out25.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_25 + "," + numWork2_25 + "," + numWorkUniv_25 + "," + numUniv1_25 + "," + numNonMand_25 + "," + numHome_25 + "," + numOfWorkers_fInHH);
                    }
                }
 	           if (debug) out25.flush ();
@@ -293,56 +295,56 @@ public class Model27 {
                personTypeSum[(int)personType-1]+=numOfWorkers_pInHH;
                if(numWork1_26 > 0){
                    for(int p=1; p<=numWork1_26; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out26.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
+		               if (debug) out26.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
                    }
                }
                if(numWork2_26 > 0){
                    for(int p=1; p<=numWork2_26; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_2};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_2};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out26.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
+		               if (debug) out26.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
                    }
                }
                if(numWorkUniv_26 > 0){
                    for(int p=1; p<=numWorkUniv_26; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_UNIV};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_UNIV};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out26.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
+		               if (debug) out26.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
                    }
                }
                if(numUniv1_26 > 0){
                    for(int p=1; p<=numUniv1_26; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.UNIV_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.UNIV_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out26.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
+		               if (debug) out26.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
                    }
                }
                if(numNonMand_26 > 0){
                    for(int p=1; p<=numNonMand_26; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.NON_MAND};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.NON_MAND};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out26.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
+		               if (debug) out26.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
                    }
                }
                if(numHome_26 > 0){
                    for(int p=1; p<=numHome_26; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.HOME};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.HOME};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out26.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
+		               if (debug) out26.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_26 + "," + numWork2_26 + "," + numWorkUniv_26 + "," + numUniv1_26 + "," + numNonMand_26 + "," + numHome_26 + "," + numOfWorkers_pInHH);
                    }
                }
 	           if (debug) out26.flush ();
@@ -353,65 +355,65 @@ public class Model27 {
                personTypeSum[(int)personType-1]+=numOfStudentsInHH;
                if(numWork1_24 > 0){
                    for(int p=1; p<=numWork1_24; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out24.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
+		               if (debug) out24.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
                    }
                }
                if(numWork2_24 > 0){
                    for(int p=1; p<=numWork2_24; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_2};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_2};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out24.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
+		               if (debug) out24.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
                    }
                }
                if(numUniv1_24 > 0){
                    for(int p=1; p<=numUniv1_24; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.UNIV_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.UNIV_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out24.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
+		               if (debug) out24.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
                    }
                }
                if(numUniv2_24 > 0){
                    for(int p=1; p<=numUniv2_24; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.UNIV_2};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.UNIV_2};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out24.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
+		               if (debug) out24.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
                    }
                }
                if(numUnivWork_24 > 0){
                    for(int p=1; p<=numUnivWork_24; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.UNIV_WORK};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.UNIV_WORK};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out24.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
+		               if (debug) out24.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
                    }
                }
                if(numNonMand_24 > 0){
                    for(int p=1; p<=numNonMand_24; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.NON_MAND};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.NON_MAND};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out24.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
+		               if (debug) out24.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
                    }
                }
                if(numHome_24 > 0){
                    for(int p=1; p<=numHome_24; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.HOME};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.HOME};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out24.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
+		               if (debug) out24.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_24 + "," + numWork2_24 + "," + numUniv1_24 + "," + numUniv2_24 + "," + numUnivWork_24 + "," + numNonMand_24 + "," + numHome_24 + "," + numOfStudentsInHH);
                    }
                }
 		       if (debug) out24.flush ();
@@ -422,47 +424,47 @@ public class Model27 {
                personTypeSum[(int)personType-1]+=numOfNonworkersInHH;
                if(numWork1_27 > 0){
                    for(int p=1; p<=numWork1_27; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out27.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
+		               if (debug) out27.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
                    }
                }
                if(numWork2_27 > 0){
                    for(int p=1; p<=numWork2_27; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_2};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_2};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out27.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
+		               if (debug) out27.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
                    }
                }
                if(numUniv1_27 > 0){
                    for(int p=1; p<=numUniv1_27; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.UNIV_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.UNIV_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out27.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
+		               if (debug) out27.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
                    }
                }
                if(numNonMand_27 > 0){
                    for(int p=1; p<=numNonMand_27; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.NON_MAND};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.NON_MAND};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out27.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
+		               if (debug) out27.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
                    }
                }
                if(numHome_27 > 0){
                    for(int p=1; p<=numHome_27; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.HOME};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.HOME};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out27.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
+		               if (debug) out27.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_27 + "," + numWork2_27 + "," + numUniv1_27 + "," + numNonMand_27 + "," + numHome_27 + "," + numOfNonworkersInHH);
                    }
                }
                if (debug) out27.flush ();
@@ -473,29 +475,29 @@ public class Model27 {
                personTypeSum[(int)personType-1]+=numOfPreschoolInHH;
                if(numSchool1_21 > 0){
                    for(int p=1; p<=numSchool1_21; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.SCHOOL_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.SCHOOL_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out21.println (hhID + "," + personID + "," + rowPointer + "," + numSchool1_21 + "," + numNonMand_21 + "," + numHome_21 + "," + numOfPreschoolInHH);
+		               if (debug) out21.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numSchool1_21 + "," + numNonMand_21 + "," + numHome_21 + "," + numOfPreschoolInHH);
                    }
                }
                if(numNonMand_21 > 0){
                    for(int p=1; p<=numNonMand_21; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.NON_MAND};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.NON_MAND};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out21.println (hhID + "," + personID + "," + rowPointer + "," + numSchool1_21 + "," + numNonMand_21 + "," + numHome_21 + "," + numOfPreschoolInHH);
+		               if (debug) out21.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numSchool1_21 + "," + numNonMand_21 + "," + numHome_21 + "," + numOfPreschoolInHH);
                    }
                }
                if(numHome_21 > 0){
                    for(int p=1; p<=numHome_21; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.HOME};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.HOME};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out21.println (hhID + "," + personID + "," + rowPointer + "," + numSchool1_21 + "," + numNonMand_21 + "," + numHome_21 + "," + numOfPreschoolInHH);
+		               if (debug) out21.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numSchool1_21 + "," + numNonMand_21 + "," + numHome_21 + "," + numOfPreschoolInHH);
                    }
                }
                if (debug) out21.flush ();
@@ -506,56 +508,56 @@ public class Model27 {
                personTypeSum[(int)personType-1]+=numOfSchoolpredInHH;
                if(numWork1_22 > 0){
                    for(int p=1; p<=numWork1_22; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out22.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
+		               if (debug) out22.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numSchool1_22 > 0){
                    for(int p=1; p<=numSchool1_22; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.SCHOOL_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.SCHOOL_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out22.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
+		               if (debug) out22.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numSchool2_22 > 0){
                    for(int p=1; p<=numSchool2_22; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.SCHOOL_2};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.SCHOOL_2};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out22.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
+		               if (debug) out22.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numSchoolWork_22 > 0){
                    for(int p=1; p<=numSchoolWork_22; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.SCHOOL_WORK};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.SCHOOL_WORK};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out22.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
+		               if (debug) out22.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numNonMand_22 > 0){
                    for(int p=1; p<=numNonMand_22; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.NON_MAND};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.NON_MAND};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out22.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
+		               if (debug) out22.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numHome_22 > 0){
                    for(int p=1; p<=numHome_22; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.HOME};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.HOME};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out22.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
+		               if (debug) out22.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_22 + "," + numSchool1_22 + "," + numSchool2_22 + "," + numSchoolWork_22 + "," + numNonMand_22 + "," + numHome_22 + "," + numOfSchoolpredInHH);
                    }
                }
                if (debug) out22.flush ();
@@ -566,56 +568,56 @@ public class Model27 {
                personTypeSum[(int)personType-1]+=numOfSchooldrivInHH;
                if(numWork1_23 > 0){
                    for(int p=1; p<=numWork1_23; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.WORK_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.WORK_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out23.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
+		               if (debug) out23.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numSchool1_23 > 0){
                    for(int p=1; p<=numSchool1_23; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.SCHOOL_1};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.SCHOOL_1};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out23.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
+		               if (debug) out23.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numSchool2_23 > 0){
                    for(int p=1; p<=numSchool2_23; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.SCHOOL_2};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.SCHOOL_2};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out23.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
+		               if (debug) out23.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numSchoolWork_23 > 0){
                    for(int p=1; p<=numSchoolWork_23; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.SCHOOL_WORK};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.SCHOOL_WORK};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out23.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
+		               if (debug) out23.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numNonMand_23 > 0){
                    for(int p=1; p<=numNonMand_23; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.NON_MAND};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.NON_MAND};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out23.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
+		               if (debug) out23.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
                    }
                }
                if(numHome_23 > 0){
                    for(int p=1; p<=numHome_23; p++){
-                       float[] rowOfData={hhID,personID,personType,PatternType.HOME};
+                       float[] rowOfData={hhID,serialno,personID,personType,PatternType.HOME};
                        tableData[rowPointer]=rowOfData;
                        rowPointer++;
                        personID++;
-		               if (debug) out23.println (hhID + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
+		               if (debug) out23.println (hhID + "," + serialno + "," + personID + "," + rowPointer + "," + numWork1_23 + "," + numSchool1_23 + "," + numSchool2_23 + "," + numSchoolWork_23 + "," + numNonMand_23 + "," + numHome_23 + "," + numOfSchoolpredInHH);
                    }
                }
                if (debug) out23.flush ();

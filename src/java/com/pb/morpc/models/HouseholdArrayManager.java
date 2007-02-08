@@ -66,16 +66,15 @@ public class HouseholdArrayManager implements java.io.Serializable {
     public void createBigHHArray() {
         Tour[] it = null;
 
-        String zonalFile;
 
 //		String hhFile = (String) propertyMap.get("SyntheticHousehold.file");
 		String hhFile = (String) propertyMap.get("Model1.outputFile");
         String personFile = (String) propertyMap.get("SyntheticPerson.file");
 
-        int hh_idPosition;
         int hh_id;
+        int hh_idPosition;
+        int serialnoPosition;
         int hh_taz_idPosition;
-        int taz_id;
         int orig_walk_segment_position;
 
 		// read household file
@@ -98,6 +97,14 @@ public class HouseholdArrayManager implements java.io.Serializable {
 
         if (hh_idPosition <= 0) {
             logger.fatal(SyntheticPopulation.HHID_FIELD +
+                " was not a field in the householdData TableDataSet.");
+            System.exit(1);
+        }
+
+        serialnoPosition = hhTable.getColumnPosition(SyntheticPopulation.SERIALNO_FIELD);
+
+        if (serialnoPosition <= 0) {
+            logger.fatal(SyntheticPopulation.SERIALNO_FIELD +
                 " was not a field in the householdData TableDataSet.");
             System.exit(1);
         }
@@ -137,6 +144,7 @@ public class HouseholdArrayManager implements java.io.Serializable {
         for (int i = 0; i < hhTable.getRowCount(); i++) {
             tempHHs[i] = new Household();
             tempHHs[i].setID((int) hhTable.getValueAt(i + 1, hh_idPosition));
+            tempHHs[i].setSerialno((int) hhTable.getValueAt(i + 1, serialnoPosition));
             tempHHs[i].setTazID((int) hhTable.getValueAt(i + 1,
                     hh_taz_idPosition));
             tempHHs[i].setOriginWalkSegment( (int) hhTable.getValueAt(i + 1, orig_walk_segment_position) );

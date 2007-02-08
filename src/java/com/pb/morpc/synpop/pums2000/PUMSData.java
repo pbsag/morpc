@@ -187,12 +187,22 @@ public class PUMSData {
         int personType = 0;
         int invalid = 0;
         int personsField = 0;
+        int serialnoField = 0;
         int hhid = 0;
 
         // get the PERSONS field index
         for (int i = 0; i < hh.attribs.length; i++) {
             if (hh.attribLabels[i].equals("PERSONS")) {
                 personsField = i;
+
+                break;
+            }
+        }
+
+        // get the SERIALNO field index
+        for (int i = 0; i < hh.attribs.length; i++) {
+            if (hh.attribLabels[i].equals("SERIALNO")) {
+                serialnoField = i;
 
                 break;
             }
@@ -289,6 +299,11 @@ public class PUMSData {
 
                             // set the hhNumber
                             hh.setHHNumber(hhid);
+
+                            // set PUMS serialno for hh
+                            int serialno = hh.attribs[serialnoField];
+                            hh.setHHSerialno(serialno);
+                            
                         }
                     } else {
                         logger.fatal("Expected H record type on record: " +
@@ -385,7 +400,6 @@ public class PUMSData {
     // the following main() is used to test the methods implemented in this object.
     public static void main(String[] args) {
         HashMap propertyMap = ResourceUtil.getResourceBundleAsHashMap("morpc");
-        String output = (String) propertyMap.get("TAZData.file");
         String PUMSFILE = (String) propertyMap.get("PUMSData.file");
         String PUMSDICT = (String) propertyMap.get("PUMSDictionary.file");
 

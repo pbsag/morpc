@@ -19,6 +19,7 @@ public class HH implements Cloneable{
     public float areaType;
     public boolean adjusted;
     private int hhNumber;
+    private int serialno;
     protected static Logger logger = Logger.getLogger("com.pb.common.util");
     
     public HH () {
@@ -42,6 +43,14 @@ public class HH implements Cloneable{
     
     public int getHHNumber () {
         return this.hhNumber;
+    }
+    
+    public void setHHSerialno (int newNumber) {
+        this.serialno = newNumber;
+    }
+    
+    public int getHHSerialno () {
+        return this.serialno;
     }
     
     public Object clone(){

@@ -48,14 +48,15 @@ public class PUMSHH extends HH implements Cloneable {
     };
 
     public PUMSHH() {
-        this.attribLabels = new String[5];
+        this.attribLabels = new String[6];
         attribLabels[0] = "PERSONS";
         attribLabels[1] = "WIF";
         attribLabels[2] = "HINC";
         attribLabels[3] = "PUMA";
         attribLabels[4] = "HWEIGHT";
+        attribLabels[5] = "SERIALNO";
 
-        this.attribs = new int[5];
+        this.attribs = new int[6];
     }
 
     public Object clone() {

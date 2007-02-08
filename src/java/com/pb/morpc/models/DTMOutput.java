@@ -67,14 +67,11 @@ public class DTMOutput implements java.io.Serializable {
 		logger.info ("writing person and vehicle trip matrices.");
 
 		//Write out trip matrices. We want trips by 5 modes and 4 time-of-day periods.
-		int start;
-		int end;
 		int tod;
 		int periodOut;
 		int periodIn;
 		int modeAlt;
 		int numPersons;
-		int hh_id;
 		int tripOrigOB;
 		int tripDestOB;
 		int tripOrigIB;
@@ -129,9 +126,6 @@ public class DTMOutput implements java.io.Serializable {
 						
 						for (int i=0; i < hh.length; i++) {
 		
-							hh_id = hh[i].getID();
-			
-			
 							// write trips for individual mandatory tours
 							if ( w == 1 ) {
 								it = hh[i].getMandatoryTours();
@@ -143,8 +137,6 @@ public class DTMOutput implements java.io.Serializable {
 										if (tod < 1)
 										    continue;
 										    
-										start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
-										end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
 										periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
 										periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
 
@@ -299,8 +291,6 @@ public class DTMOutput implements java.io.Serializable {
 										if (tod < 1)
 											continue;
 										    
-										start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
-										end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
 										periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
 										periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
 
@@ -437,8 +427,6 @@ public class DTMOutput implements java.io.Serializable {
 										if (tod < 1)
 											continue;
 										    
-										start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
-										end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
 										periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
 										periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
 
@@ -597,8 +585,6 @@ public class DTMOutput implements java.io.Serializable {
 													if (tod < 1)
 														continue;
 										    
-													start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
-													end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
 													periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
 													periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
 
@@ -841,6 +827,7 @@ public class DTMOutput implements java.io.Serializable {
 		int t = 0;
 		
 		int hh_id;
+        int serialno;
 		int hh_taz_id;
 		int tlIndex;
 		
@@ -907,7 +894,8 @@ public class DTMOutput implements java.io.Serializable {
 	
 			tableHeadings = new ArrayList();
 			tableHeadings.add(SyntheticPopulation.HHID_FIELD);
-			tableHeadings.add(SyntheticPopulation.HHTAZID_FIELD);
+            tableHeadings.add(SyntheticPopulation.SERIALNO_FIELD);
+            tableHeadings.add(SyntheticPopulation.HHTAZID_FIELD);
 			tableHeadings.add("person_id");
 			tableHeadings.add("personType");
 			tableHeadings.add("patternType");
@@ -982,12 +970,12 @@ public class DTMOutput implements java.io.Serializable {
 			
 
 			
-			int r=0;
 			for (int i=0; i < hh.length; i++) {
 			    
 				tempHH = hh[i];
 				
 				hh_id = hh[i].getID();
+                serialno = hh[i].getSerialno();
 				hh_taz_id = hh[i].getTazID();
 				Person[] persons = hh[i].getPersonArray();
 				
@@ -1054,14 +1042,15 @@ public class DTMOutput implements java.io.Serializable {
 
 					
 						tableData[0] = hh_id;
-						tableData[1] = hh_taz_id;
-						tableData[2] = it[t].getTourPerson();
-						tableData[3] = persons[it[t].getTourPerson()].getPersonType();
-						tableData[4] = persons[it[t].getTourPerson()].getPatternType();
-						tableData[5] = t+1;
-						tableData[6] = 1;
-						tableData[7] = it[t].getTourType();
-						k = 9 + (2*maxPartySize);
+                        tableData[1] = serialno;
+                        tableData[2] = hh_taz_id;
+						tableData[3] = it[t].getTourPerson();
+						tableData[4] = persons[it[t].getTourPerson()].getPersonType();
+						tableData[5] = persons[it[t].getTourPerson()].getPatternType();
+						tableData[6] = t+1;
+						tableData[7] = 1;
+						tableData[8] = it[t].getTourType();
+						k = 10 + (2*maxPartySize);
 						tableData[k] = it[t].getOrigTaz();
 						tableData[k+1] = it[t].getOriginShrtWlk();
 												
@@ -1279,19 +1268,20 @@ public class DTMOutput implements java.io.Serializable {
 
 					
 						tableData[0] = hh_id;
-						tableData[1] = hh_taz_id;
-						tableData[2] = jt[t].getTourPerson();
-						tableData[3] = persons[jt[t].getTourPerson()].getPersonType();
-						tableData[4] = persons[jt[t].getTourPerson()].getPatternType();
-						tableData[5] = t+1;
-						tableData[6] = 2;
-						tableData[7] = jt[t].getTourType();
-						tableData[8] = jtPersons.length;
+                        tableData[1] = serialno;
+                        tableData[2] = hh_taz_id;
+						tableData[3] = jt[t].getTourPerson();
+						tableData[4] = persons[jt[t].getTourPerson()].getPersonType();
+						tableData[5] = persons[jt[t].getTourPerson()].getPatternType();
+						tableData[6] = t+1;
+						tableData[7] = 2;
+						tableData[8] = jt[t].getTourType();
+						tableData[9] = jtPersons.length;
 						for (int j=0; j < jtPersons.length; j++) {
-							tableData[9+(2*j)] = jtPersons[j];
-							tableData[9+(2*j)+1] = persons[jtPersons[j]].getPersonType();
+							tableData[10+(2*j)] = jtPersons[j];
+							tableData[10+(2*j)+1] = persons[jtPersons[j]].getPersonType();
 						}
-						k = 9 + (2*maxPartySize);
+						k = 10 + (2*maxPartySize);
 						tableData[k] = jt[t].getOrigTaz();
 						tableData[k+1] = jt[t].getOriginShrtWlk();
 						tableData[k+2] = jt[t].getDestTaz();
@@ -1508,14 +1498,15 @@ public class DTMOutput implements java.io.Serializable {
 
 					
 						tableData[0] = hh_id;
-						tableData[1] = hh_taz_id;
-						tableData[2] = it[t].getTourPerson();
-						tableData[3] = persons[it[t].getTourPerson()].getPersonType();
-						tableData[4] = persons[it[t].getTourPerson()].getPatternType();
-						tableData[5] = t+1;
-						tableData[6] = 3;
-						tableData[7] = it[t].getTourType();
-						k = 9 + (2*maxPartySize);
+                        tableData[1] = serialno;
+                        tableData[2] = hh_taz_id;
+						tableData[3] = it[t].getTourPerson();
+						tableData[4] = persons[it[t].getTourPerson()].getPersonType();
+						tableData[5] = persons[it[t].getTourPerson()].getPatternType();
+						tableData[6] = t+1;
+						tableData[7] = 3;
+						tableData[8] = it[t].getTourType();
+						k = 10 + (2*maxPartySize);
 						tableData[k] = it[t].getOrigTaz();
 						tableData[k+1] = it[t].getOriginShrtWlk();
 						tableData[k+2] = it[t].getDestTaz();
@@ -1721,15 +1712,16 @@ public class DTMOutput implements java.io.Serializable {
 
 					
 									tableData[0] = hh_id;
-									tableData[1] = hh_taz_id;
-									tableData[2] = st[s].getTourPerson();
-									tableData[3] = persons[st[s].getTourPerson()].getPersonType();
-									tableData[4] = persons[st[s].getTourPerson()].getPatternType();
-									tableData[5] = (t+1)*10 + (s+1);
-									tableData[6] = 4;
-									tableData[7] = st[s].getSubTourType();
+                                    tableData[1] = serialno;
+                                    tableData[2] = hh_taz_id;
+									tableData[3] = st[s].getTourPerson();
+									tableData[4] = persons[st[s].getTourPerson()].getPersonType();
+									tableData[5] = persons[st[s].getTourPerson()].getPatternType();
+									tableData[6] = (t+1)*10 + (s+1);
+									tableData[7] = 4;
+									tableData[8] = st[s].getSubTourType();
 
-									k = 9 + (2*maxPartySize);
+									k = 10 + (2*maxPartySize);
 									tableData[k] = st[s].getOrigTaz();
 									tableData[k+1] = st[s].getOriginShrtWlk();
 									tableData[k+2] = st[s].getDestTaz();

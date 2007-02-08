@@ -52,6 +52,7 @@ public class SyntheticPopulation {
     public static final String LABORFORCE_FIELD = "labf";
     public static final String AVGINCOME_FIELD = "hhinc";
     public static final String HHID_FIELD = "hh_id";
+    public static final String SERIALNO_FIELD = "pums_serialno";
     public static final String HHTAZID_FIELD = "hh_taz_id";
     public static final String AREATYPE_FIELD = "areatype";
     public static final String INCOME_FIELD = "income";
@@ -363,6 +364,7 @@ public class SyntheticPopulation {
         ArrayList headings = new ArrayList();
 
         headings.add(HHID_FIELD);
+        headings.add(SERIALNO_FIELD);
         headings.add(HHTAZID_FIELD);
         headings.add(HHORIGTAZWALKSEGMENT_FIELD);
         headings.add(INCOME_FIELD);
@@ -382,12 +384,13 @@ public class SyntheticPopulation {
             if (zonalHHList[zone] != null) {
                 for (int i = 0; i < zonalHHList[zone].length; i++) {
                     tableData[hh][0] = zonalHHList[zone][i].getHHNumber();
-                    tableData[hh][1] = zone;
-                    tableData[hh][2] = getInitialOriginWalkSegment (zone);
-                    tableData[hh][3] = PUMSHH.getIncomeCategory(zonalHHList[zone][i].attribs[2]) + 1;
+                    tableData[hh][1] = zonalHHList[zone][i].getHHSerialno();
+                    tableData[hh][2] = zone;
+                    tableData[hh][3] = getInitialOriginWalkSegment (zone);
+                    tableData[hh][4] = PUMSHH.getIncomeCategory(zonalHHList[zone][i].attribs[2]) + 1;
 
                     for (int j = 0; j < zonalHHList[zone][i].personTypes.length; j++)
-                        tableData[hh][zonalHHList[zone][i].personTypes[j] + 3]++;
+                        tableData[hh][zonalHHList[zone][i].personTypes[j] + 4]++;
 
                     hh++;
                 }
@@ -1334,7 +1337,7 @@ public class SyntheticPopulation {
 
         try {
             CSVFileWriter writer = new CSVFileWriter();
-            writer.writeFile(hhTableDataSet, new File(OUTPUT_HHFILE), new DecimalFormat("#.00"));
+            writer.writeFile(hhTableDataSet, new File(OUTPUT_HHFILE), new DecimalFormat("#########"));
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
@@ -1354,7 +1357,7 @@ public class SyntheticPopulation {
         }
 
 
-        for (int i = 3; i <= 10; i++)
+        for (int i = 4; i <= 12; i++)
             TableDataSet.logColumnFreqReport("Synthetic Households",
                 hhTableDataSet, i);
 

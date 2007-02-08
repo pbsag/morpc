@@ -23,6 +23,7 @@ public class Household implements java.io.Externalizable {
     private int ID;
 	private short taz;
 	private short origTaz;
+    private int serialno;
 
 	private short tourCategory;
 	private short personID;
@@ -81,6 +82,14 @@ public class Household implements java.io.Externalizable {
     //wu sun added for 2000 pums
     public int getDistrict(){
       return district;
+    }
+    
+    public void setSerialno(int serialno) {
+        this.serialno = serialno;
+    }
+    
+    public int getSerialno() {
+        return serialno;
     }
 
     /**

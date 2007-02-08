@@ -191,7 +191,7 @@ public class AutoOwnership {
         // write updated household table to new output file  
         try {
             CSVFileWriter writer = new CSVFileWriter();
-            writer.writeFile(hhTable, new File(outputFile), new DecimalFormat("#.000000"));
+            writer.writeFile(hhTable, new File(outputFile), new DecimalFormat("#########"));
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
