@@ -2592,6 +2592,7 @@ public class Household implements java.io.Externalizable {
         ID = in.readInt();
         taz = in.readShort();
         origTaz = in.readShort();
+        serialno = in.readInt();
 
         tourCategory = in.readShort();
         personID = in.readShort();
@@ -2691,6 +2692,7 @@ public class Household implements java.io.Externalizable {
         out.writeInt(ID);
         out.writeShort(taz);
         out.writeShort(origTaz);
+        out.writeInt(serialno);
 
         out.writeShort(tourCategory);
         out.writeShort(personID);
