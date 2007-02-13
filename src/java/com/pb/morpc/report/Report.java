@@ -1,6 +1,6 @@
 package com.pb.morpc.report;
 
-import com.pb.common.datafile.CSVFileReader;
+import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.NDimensionalMatrix;
 import com.pb.common.util.ResourceUtil;
@@ -22,7 +22,9 @@ import org.apache.log4j.Logger;
  * @version 1.0, Oct. 29, 2003
  */
 public class Report {
-    private Logger logger;
+
+    protected static Logger logger = Logger.getLogger(Report.class);
+
     TableDataSet HHTable;
     TableDataSet PersonTable;
     TableDataSet M5678Table;
@@ -33,14 +35,13 @@ public class Report {
     String reportDirectory;
     protected String loggingInfo;
 
-    public Report() {
+    public Report(HashMap propertyMap) {
         //get a logger object
-        logger = Logger.getLogger("com.pb.morpc.report");
-        propertyMap = ResourceUtil.getResourceBundleAsHashMap("morpc");
+        this.propertyMap = propertyMap;
         reportDirectory = (String) propertyMap.get("report.directory");
 
         try {
-            CSVFileReader reader = new CSVFileReader();
+            OLD_CSVFileReader reader = new OLD_CSVFileReader();
             HHTable = reader.readFile(new File((String) propertyMap.get("SyntheticHousehold.file")));
         } catch (Exception e) {
 			e.printStackTrace();
@@ -48,7 +49,7 @@ public class Report {
         }
 /*
         try {
-            CSVFileReader reader = new CSVFileReader();
+            OLD_CSVFileReader reader = new OLD_CSVFileReader();
 			reader.setDelimSet( " ,\t\n\r\f\"");
             PersonTable = reader.readFile(new File((String) propertyMap.get("SyntheticPerson.file")));
         } catch (Exception e) {
@@ -57,7 +58,7 @@ public class Report {
         }
 */
         try {
-            CSVFileReader reader = new CSVFileReader();
+            OLD_CSVFileReader reader = new OLD_CSVFileReader();
             M1Table = reader.readFile(new File((String) propertyMap.get("Model1.outputFile")));
         } catch (Exception e) {
 			e.printStackTrace();
@@ -65,7 +66,7 @@ public class Report {
         }
 
         try {
-            CSVFileReader reader = new CSVFileReader();
+            OLD_CSVFileReader reader = new OLD_CSVFileReader();
             M21Table = reader.readFile(new File((String) propertyMap.get("Model21.outputFile")));
         } catch (Exception e) {
 			e.printStackTrace();
@@ -73,7 +74,7 @@ public class Report {
         }
 
         try {
-            CSVFileReader reader = new CSVFileReader();
+            OLD_CSVFileReader reader = new OLD_CSVFileReader();
             M5678Table = reader.readFile(new File((String) propertyMap.get("Model567.outputFile")));
         } catch (Exception e) {
 			e.printStackTrace();
@@ -81,7 +82,7 @@ public class Report {
         }
 
         try {
-            CSVFileReader reader = new CSVFileReader();
+            OLD_CSVFileReader reader = new OLD_CSVFileReader();
             DistrictTable = reader.readFile(new File((String) propertyMap.get("TAZEquivalency.file")));
         } catch (Exception e) {
 			e.printStackTrace();
@@ -1695,20 +1696,34 @@ public class Report {
 
     private NDimensionalMatrix populatePersontypeFrqJointMatrix(
         NDimensionalMatrix emptyMatrix, int[] shape, Vector sValues) {
+        int[] p0, p1, p2, p3, p4, p5;
         NDimensionalMatrix result = emptyMatrix;
         int NoRows = M5678Table.getRowCount();
-        int[] p0 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_0_type"));
-        int[] p1 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_1_type"));
-        int[] p2 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_2_type"));
-        int[] p3 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_3_type"));
-        int[] p4 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_4_type"));
-        int[] p5 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_5_type"));
+        if (M5678Table.getColumnPosition("jt_person_0_type") >= 0)
+            p0 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_0_type"));
+        else
+            p0 = null;
+        if (M5678Table.getColumnPosition("jt_person_1_type") >= 0)
+            p1 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_1_type"));
+        else
+            p1 = null;
+        if (M5678Table.getColumnPosition("jt_person_2_type") >= 0)
+            p2 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_2_type"));
+        else
+            p2 = null;
+        if (M5678Table.getColumnPosition("jt_person_3_type") >= 0)
+            p3 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_3_type"));
+        else
+            p3 = null;
+        if (M5678Table.getColumnPosition("jt_person_4_type") >= 0)
+            p4 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_4_type"));
+        else
+            p4 = null;
+        if (M5678Table.getColumnPosition("jt_person_5_type") >= 0)
+            p5 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_5_type"));
+        else
+            p5 = null;
+
         int[][] persontypeCount = new int[NoRows][shape[1]];
 
         float[] tourCat = M5678Table.getColumnAsFloat(M5678Table.getColumnPosition(
@@ -1718,29 +1733,35 @@ public class Report {
         //populate matrix
         for (int i = 0; i < NoRows; i++) {
             if (tourCat[i] == 2.0) {
-                if (p0[i] != 0) {
-                    persontypeCount[i][p0[i] - 1]++;
-                }
+                if ( p0 != null)
+                    if (p0[i] != 0) {
+                        persontypeCount[i][p0[i] - 1]++;
+                    }
 
-                if (p1[i] != 0) {
-                    persontypeCount[i][p1[i] - 1]++;
-                }
+                if ( p1 != null)
+                    if (p1[i] != 0) {
+                        persontypeCount[i][p1[i] - 1]++;
+                    }
 
-                if (p2[i] != 0) {
-                    persontypeCount[i][p2[i] - 1]++;
-                }
+                if ( p2 != null)
+                    if (p2[i] != 0) {
+                        persontypeCount[i][p2[i] - 1]++;
+                    }
 
-                if (p3[i] != 0) {
-                    persontypeCount[i][p3[i] - 1]++;
-                }
+                if ( p3 != null)
+                    if (p3[i] != 0) {
+                        persontypeCount[i][p3[i] - 1]++;
+                    }
 
-                if (p4[i] != 0) {
-                    persontypeCount[i][p4[i] - 1]++;
-                }
+                if ( p4 != null)
+                    if (p4[i] != 0) {
+                        persontypeCount[i][p4[i] - 1]++;
+                    }
 
-                if (p5[i] != 0) {
-                    persontypeCount[i][p5[i] - 1]++;
-                }
+                if ( p5 != null)
+                    if (p5[i] != 0) {
+                        persontypeCount[i][p5[i] - 1]++;
+                    }
 
                 //populate each cell
                 for (int j = 0; j < shape[1]; j++) {
@@ -1756,20 +1777,34 @@ public class Report {
 
     private NDimensionalMatrix populatePurposePersontypeJointMatrix(
         NDimensionalMatrix emptyMatrix, int[] shape, Vector sValues) {
+        int[] p0, p1, p2, p3, p4, p5;
         NDimensionalMatrix result = emptyMatrix;
         int NoRows = M5678Table.getRowCount();
-        int[] p0 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_0_type"));
-        int[] p1 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_1_type"));
-        int[] p2 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_2_type"));
-        int[] p3 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_3_type"));
-        int[] p4 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_4_type"));
-        int[] p5 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
-                    "jt_person_5_type"));
+        if (M5678Table.getColumnPosition("jt_person_0_type") >= 0)
+            p0 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_0_type"));
+        else
+            p0 = null;
+        if (M5678Table.getColumnPosition("jt_person_1_type") >= 0)
+            p1 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_1_type"));
+        else
+            p1 = null;
+        if (M5678Table.getColumnPosition("jt_person_2_type") >= 0)
+            p2 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_2_type"));
+        else
+            p2 = null;
+        if (M5678Table.getColumnPosition("jt_person_3_type") >= 0)
+            p3 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_3_type"));
+        else
+            p3 = null;
+        if (M5678Table.getColumnPosition("jt_person_4_type") >= 0)
+            p4 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_4_type"));
+        else
+            p4 = null;
+        if (M5678Table.getColumnPosition("jt_person_5_type") >= 0)
+            p5 = M5678Table.getColumnAsInt(M5678Table.getColumnPosition("jt_person_5_type"));
+        else
+            p5 = null;
+        
         int[] purpose = M5678Table.getColumnAsInt(M5678Table.getColumnPosition(
                     "purpose"));
         int[][] persontypeCount = new int[NoRows][shape[1]];
@@ -1782,29 +1817,36 @@ public class Report {
         //populate matrix
         for (int i = 0; i < NoRows; i++) {
             if (tourCat[i] == 2.0) {
-                if (p0[i] != 0) {
-                    persontypeCount[i][p0[i] - 1]++;
-                }
+                
+                if ( p0 != null)
+                    if (p0[i] != 0) {
+                        persontypeCount[i][p0[i] - 1]++;
+                    }
 
-                if (p1[i] != 0) {
-                    persontypeCount[i][p1[i] - 1]++;
-                }
+                if ( p1 != null)
+                    if (p1[i] != 0) {
+                        persontypeCount[i][p1[i] - 1]++;
+                    }
 
-                if (p2[i] != 0) {
-                    persontypeCount[i][p2[i] - 1]++;
-                }
+                if ( p2 != null)
+                    if (p2[i] != 0) {
+                        persontypeCount[i][p2[i] - 1]++;
+                    }
 
-                if (p3[i] != 0) {
-                    persontypeCount[i][p3[i] - 1]++;
-                }
+                if ( p3 != null)
+                    if (p3[i] != 0) {
+                        persontypeCount[i][p3[i] - 1]++;
+                    }
 
-                if (p4[i] != 0) {
-                    persontypeCount[i][p4[i] - 1]++;
-                }
+                if ( p4 != null)
+                    if (p4[i] != 0) {
+                        persontypeCount[i][p4[i] - 1]++;
+                    }
 
-                if (p5[i] != 0) {
-                    persontypeCount[i][p5[i] - 1]++;
-                }
+                if ( p5 != null)
+                    if (p5[i] != 0) {
+                        persontypeCount[i][p5[i] - 1]++;
+                    }
             }
 
             //populate each cell
@@ -1889,8 +1931,7 @@ public class Report {
             key = (String) itr.next();
 
             if (key.endsWith(".report")) {
-                property = ResourceUtil.getResourceBundleAsHashMap((String) propertyMap.get(
-                            key));
+                property = ResourceUtil.getResourceBundleAsHashMap((String) propertyMap.get(key));
                 result.add(property);
             }
         }
