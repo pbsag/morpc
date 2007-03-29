@@ -26,14 +26,14 @@ import org.apache.log4j.Logger;
 
 public class MorpcModelBase {
 
-	static final String CMD_LOCATION = "c:\\winnt\\system32";
-//	static final String CMD_LOCATION = "c:\\windows\\system32";
-	static final String TPP_TO_BINARY_PROGRAM_DIRECTORY = "c:\\model\\6_Pgms\\0_skim";
+//	static final String CMD_LOCATION = "c:\\winnt\\system32";
+	static final String CMD_LOCATION = "c:\\windows\\system32";
+	static final String TPP_TO_BINARY_PROGRAM_DIRECTORY = "c:\\jim\\projects\\model\\6_Pgms\\0_skim";
 //	static final String TPP_TO_BINARY_PROGRAM_DIRECTORY = "c:\\jim\\util\\workspace3.0m4\\common-base\\src\\c\\matrix\\tpplus_to_binary\\release";
-	static final String TPP_TO_BINARY_PROGRAM = "convertTpplusBinary.exe";
-	static final String BINARY_TO_TPP_PROGRAM_DIRECTORY = "c:\\model\\6_Pgms\\0_skim";
+	static final String TPP_TO_BINARY_PROGRAM = "convertTpplusBinaryMorpc.exe";
+	static final String BINARY_TO_TPP_PROGRAM_DIRECTORY = "c:\\jim\\projects\\model\\6_Pgms\\0_skim";
 //	static final String BINARY_TO_TPP_PROGRAM_DIRECTORY = "c:\\jim\\util\\workspace3.0m4\\common-base\\src\\c\\matrix\\binary_to_tpplus\\release";
-	static final String BINARY_TO_TPP_PROGRAM = "convertBinaryTpplus.exe";
+	static final String BINARY_TO_TPP_PROGRAM = "convertBinaryTpplusMorpc.exe";
 
 	/*
 	String TPP_TO_BINARY_PROGRAM_DIRECTORY = null;
