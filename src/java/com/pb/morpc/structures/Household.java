@@ -1601,98 +1601,100 @@ public class Household implements java.io.Externalizable {
 	 * return the size for the given destination choice alternative for low income work purpose
 	*/
 	public float getWorkLowDcSizeAlt (int alt) {
-		return ZonalDataManager.loSize[TourType.WORK][alt];
+		return ZonalDataManager.sizeFinal[TourType.WORK][0][alt];
 	}
 
 	/**
 	 * return the size for the given destination choice alternative for medium income work purpose
 	*/
 	public float getWorkMedDcSizeAlt (int alt) {
-		return ZonalDataManager.mdSize[TourType.WORK][alt];
+		return ZonalDataManager.sizeFinal[TourType.WORK][1][alt];
 	}
 
 	/**
 	 * return the size for the given destination choice alternative for high income work purpose
 	*/
 	public float getWorkHiDcSizeAlt (int alt) {
-		return ZonalDataManager.hiSize[TourType.WORK][alt];
+		return ZonalDataManager.sizeFinal[TourType.WORK][2][alt];
 	}
 
 	/**
 	 * return the size for the given destination choice alternative for low or medium income work purpose
-	*/
 	public float getWorkLoMdDcSizeAlt (int alt) {
 		return ZonalDataManager.loMdSize[TourType.WORK][alt];
 	}
+    */
 
 	/**
 	 * return the total size for the given destination choice alternative for work purpose
 	*/
 	public float getWorkDcSizeAlt (int alt) {
-		return getDcSizeAlt ( TourType.WORK, alt );
+        float result = ZonalDataManager.sizeFinal[TourType.WORK][0][alt] + ZonalDataManager.sizeFinal[TourType.WORK][1][alt] + ZonalDataManager.sizeFinal[TourType.WORK][2][alt];
+		return result;
 	}
 
 	/**
 	 * return the total size for the given destination choice alternative for university purpose
 	*/
 	public float getUnivDcSizeAlt (int alt) {
-		return getDcSizeAlt ( TourType.UNIVERSITY, alt );
+        float result = ZonalDataManager.sizeFinal[TourType.UNIVERSITY][0][alt];
+        return result;
 	}
 
 	/**
 	 * return the total size for the given destination choice alternative for school purpose
 	*/
 	public float getSchoolDcSizeAlt (int alt) {
-		return getDcSizeAlt ( TourType.SCHOOL, alt );
+        float result = ZonalDataManager.sizeFinal[TourType.SCHOOL][0][alt];
+        return result;
 	}
 
 	/**
 	 * return the total size for the given destination choice alternative for escorting purpose
 	*/
 	public float getEscortDcSizeAlt (int alt) {
-		return getDcSizeAlt ( TourType.ESCORTING, alt );
+        float result = ZonalDataManager.sizeFinal[TourType.ESCORTING][0][alt];
+        return result;
 	}
 
 	/**
 	 * return the total size for the given destination choice alternative for shopping purpose
 	*/
 	public float getShopDcSizeAlt (int alt) {
-		return getDcSizeAlt ( TourType.SHOP, alt );
+        float result = ZonalDataManager.sizeFinal[TourType.SHOP][0][alt];
+        return result;
 	}
 
 	/**
 	 * return the total size for the given destination choice alternative for maintenance purpose
 	*/
 	public float getMaintDcSizeAlt (int alt) {
-		return getDcSizeAlt ( TourType.OTHER_MAINTENANCE, alt );
+        float result = ZonalDataManager.sizeFinal[TourType.OTHER_MAINTENANCE][0][alt];
+        return result;
 	}
 
 	/**
 	 * return the total size for the given destination choice alternative for discretionary purpose
 	*/
 	public float getDiscrDcSizeAlt (int alt) {
-		return getDcSizeAlt ( TourType.DISCRETIONARY, alt );
+        float result = ZonalDataManager.sizeFinal[TourType.DISCRETIONARY][0][alt];
+        return result;
 	}
 
 	/**
 	 * return the total size for the given destination choice alternative for eating out purpose
 	*/
 	public float getEatDcSizeAlt (int alt) {
-		return getDcSizeAlt ( TourType.EAT, alt );
+        float result = ZonalDataManager.sizeFinal[TourType.EAT][0][alt];
+        return result;
 	}
 
 	/**
 	 * return the total size for the given destination choice alternative for at-work purpose
 	*/
 	public float getAtWorkDcSizeAlt (int alt) {
-		return getDcSizeAlt ( TourType.ATWORK, alt );
-	}
-
-	/**
-	 * return the total size for the given destination choice alternative for the given purpose
-	*/
-	private float getDcSizeAlt (int purpose, int alt) {
-		return ZonalDataManager.totSize[purpose][alt];
+        float result = ZonalDataManager.sizeFinal[TourType.ATWORK][0][alt];
+        return result;
 	}
 
 
