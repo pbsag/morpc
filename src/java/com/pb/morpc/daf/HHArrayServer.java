@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 
 //Wu added for Summit Aggregation
 import com.pb.morpc.structures.SummitAggregationRecord;
-//import java.text.DecimalFormat;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
