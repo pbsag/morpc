@@ -14,6 +14,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 import org.apache.log4j.Logger;
 
@@ -32,7 +33,9 @@ public class ZonalDataManager implements java.io.Serializable {
     // this number are assigned to a daf node. 
 	public static final int MAX_DISTRIBUTED_PROCESSORES = 4;
 
-	public static final int WALK_SEGMENTS = 3;
+    public static final int WALK_SEGMENTS = 3;
+    public static final int INCOME_CATEGORIES = 3;
+    public static final String[] adjPurpLabels = { "wLo", "wMd", "wHi", "univ", "schl", "esc", "shop", "main", "disc", "eat", "atWk" };
 
 	
     protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
@@ -45,11 +48,7 @@ public class ZonalDataManager implements java.io.Serializable {
     // then they must be added to the method ( createNonStaticData() )
     // which copies all public static data members into a HashMap for message passing.
     public static float[][] walkPctArray;
-    public static float[][] loSize;
-	public static float[][] mdSize;
-	public static float[][] hiSize;
-	public static float[][] loMdSize;
-	public static float[][] totSize;
+    public static float[][][] sizeFinal;
 	public static float[] parkRate;
 	public static float[] urbType;
 	public static float[] cnty;
@@ -78,36 +77,17 @@ public class ZonalDataManager implements java.io.Serializable {
 	int numberOfSubzones;
     private Vector tables = new Vector();
     private HashMap propertyMap;
-    private float[][] size;
     private float[][] attractions;
-    private float[][] loSizeOriginal;
-    private float[][] mdSizeOriginal;
-    private float[][] hiSizeOriginal;
-    private float[][] loMdSizeOriginal;
-    private float[][] totSizeOriginal;
-    private float[][] loSizeScaled;
-    private float[][] mdSizeScaled;
-    private float[][] hiSizeScaled;
-    private float[][] loMdSizeScaled;
-    private float[][] totSizeScaled;
-    private float[][] loSizePrevious;
-    private float[][] mdSizePrevious;
-    private float[][] hiSizePrevious;
-    private float[][] loMdSizePrevious;
-    private float[][] totSizePrevious;
-    private float[] loShadowPrice;
-    private float[] mdShadowPrice;
-    private float[] hiShadowPrice;
-    private float[] univShadowPrice;
-    private float[] schoolShadowPrice;
-	private float[] loAttrs;
-	private float[] mdAttrs;
-	private float[] hiAttrs;
-	private float[] univAttrs;
-	private float[] schoolAttrs;
-    private float[] totAttrs = new float[5];
-    private float[] totProds = new float[5];
-    private float[][] prods = new float[5][];
+    private float[][][] sizeOriginal;
+    private float[][][] sizeBalance;
+    private float[][][] sizeScaled;
+    private float[][][] sizePrevious;
+    private float[][][] shadowPrice;
+	private float[][][] attrs;
+    private float[][][] prods;
+	
+    private float[][][] totProds;
+    private float[][][] totAttrs;
 
 
 
@@ -163,30 +143,73 @@ public class ZonalDataManager implements java.io.Serializable {
         */
         getZoneRelatedData(zoneTable);
 
-        loMdSize = new float[TourType.TYPES + 1][];
-        loSize = new float[TourType.TYPES + 1][];
-        mdSize = new float[TourType.TYPES + 1][];
-        hiSize = new float[TourType.TYPES + 1][];
-        totSize = new float[TourType.TYPES + 1][];
 
-        loMdSizeOriginal = new float[TourType.TYPES + 1][];
-        loSizeOriginal = new float[TourType.TYPES + 1][];
-        mdSizeOriginal = new float[TourType.TYPES + 1][];
-        hiSizeOriginal = new float[TourType.TYPES + 1][];
-        totSizeOriginal = new float[TourType.TYPES + 1][];
+        
+        // size variables referenced by Household object acting as DMU object with
+        // getXxx() and getXxxAlt(alt) methods invoked by UEC objects
+        sizeFinal = new float[TourType.TYPES + 1][][];
 
-        loMdSizeScaled = new float[TourType.TYPES + 1][];
-        loSizeScaled = new float[TourType.TYPES + 1][];
-        mdSizeScaled = new float[TourType.TYPES + 1][];
-        hiSizeScaled = new float[TourType.TYPES + 1][];
-        totSizeScaled = new float[TourType.TYPES + 1][];
+        // original copies of size variables before any adjustments
+        sizeOriginal = new float[TourType.TYPES + 1][][];
+        
+        // copies of size variables after adjustments, used in balancing calculations
+        sizeBalance = new float[TourType.TYPES + 1][][];
 
-        loMdSizePrevious = new float[TourType.TYPES + 1][];
-        loSizePrevious = new float[TourType.TYPES + 1][];
-        mdSizePrevious = new float[TourType.TYPES + 1][];
-        hiSizePrevious = new float[TourType.TYPES + 1][];
-        totSizePrevious = new float[TourType.TYPES + 1][];
+        // final adjusted, balanced size variables resulting from balancing calculations
+        sizeScaled = new float[TourType.TYPES + 1][][];
 
+        // copy of final adjusted, balanced size variables used in shadow pricing adjustments
+        sizePrevious = new float[TourType.TYPES + 1][][];
+
+        // shadow prices
+        shadowPrice = new float[TourType.TYPES + 1][][];
+
+        // tour productions and attractions resulting from DC model
+        attrs = new float[TourType.TYPES + 1][][];
+        prods = new float[TourType.TYPES + 1][][];
+        
+        // total prods and attrs are maintained by with/without override adjustments, purpose, and income categories for work purpose.
+        totProds = new float[2][TourType.TYPES + 1][];
+        totAttrs = new float[2][TourType.TYPES + 1][];
+
+        
+        // Allocate size array to hold original subzone size variables by type.
+        // TourType.WORK has 3 categories of subzone size values, 1 for each income category.
+        // Other purposes have only 1 category of subzone size values.
+        for (int i=1; i <= TourType.TYPES; i++) {
+            if ( i == TourType.WORK ) {
+                sizeFinal[i] = new float[INCOME_CATEGORIES][];
+                sizeOriginal[i] = new float[INCOME_CATEGORIES][];
+                sizeBalance[i] = new float[INCOME_CATEGORIES][];
+                sizeScaled[i] = new float[INCOME_CATEGORIES][];
+                sizePrevious[i] = new float[INCOME_CATEGORIES][];
+                shadowPrice[i] = new float[INCOME_CATEGORIES][];
+                attrs[i] = new float[INCOME_CATEGORIES][];
+                prods[i] = new float[INCOME_CATEGORIES][];
+                totProds[0][i] = new float[INCOME_CATEGORIES];
+                totProds[1][i] = new float[INCOME_CATEGORIES];
+                totAttrs[0][i] = new float[INCOME_CATEGORIES];
+                totAttrs[1][i] = new float[INCOME_CATEGORIES];
+            }
+            else {
+                sizeFinal[i] = new float[1][];
+                sizeOriginal[i] = new float[1][];
+                sizeBalance[i] = new float[1][];
+                sizeScaled[i] = new float[1][];
+                sizePrevious[i] = new float[1][];
+                shadowPrice[i] = new float[1][];
+                attrs[i] = new float[1][];
+                prods[i] = new float[1][];
+                
+                totProds[0][i] = new float[1];
+                totProds[1][i] = new float[1];
+                totAttrs[0][i] = new float[1];
+                totAttrs[1][i] = new float[1];
+            }
+        }
+
+
+        
         numberOfZones = zoneTable.getRowCount();
         numberOfSubzones = numberOfZones * WALK_SEGMENTS;
 
@@ -673,95 +696,112 @@ public class ZonalDataManager implements java.io.Serializable {
             }
         }
 
-        loMdSize[tourType] = new float[numberOfSubzones + 1];
-        loSize[tourType] = new float[numberOfSubzones + 1];
-        mdSize[tourType] = new float[numberOfSubzones + 1];
-        hiSize[tourType] = new float[numberOfSubzones + 1];
-        totSize[tourType] = new float[numberOfSubzones + 1];
 
-        loMdSizeOriginal[tourType] = new float[numberOfSubzones + 1];
-        loSizeOriginal[tourType] = new float[numberOfSubzones + 1];
-        mdSizeOriginal[tourType] = new float[numberOfSubzones + 1];
-        hiSizeOriginal[tourType] = new float[numberOfSubzones + 1];
-        totSizeOriginal[tourType] = new float[numberOfSubzones + 1];
+        
+        // allolcate space for subzone size values in size arrays for the specific type.  If it's WORK, there are INCOME_CATEGORIES subzone size arrays
+        if ( tourType == TourType.WORK ) {
+            for (int i=0; i < INCOME_CATEGORIES; i++) {
+                sizeFinal[tourType][i] = new float[numberOfSubzones + 1];
+                sizeOriginal[tourType][i] = new float[numberOfSubzones + 1];
+                sizeBalance[tourType][i] = new float[numberOfSubzones + 1];
+                sizeScaled[tourType][i] = new float[numberOfSubzones + 1];
+                sizePrevious[tourType][i] = new float[numberOfSubzones + 1];
+                shadowPrice[tourType][i] = new float[numberOfSubzones + 1];
+                attrs[tourType][i] = new float[numberOfSubzones + 1];
+                prods[tourType][i] = new float[numberOfSubzones + 1];
 
-        loMdSizeScaled[tourType] = new float[numberOfSubzones + 1];
-        loSizeScaled[tourType] = new float[numberOfSubzones + 1];
-        mdSizeScaled[tourType] = new float[numberOfSubzones + 1];
-        hiSizeScaled[tourType] = new float[numberOfSubzones + 1];
-        totSizeScaled[tourType] = new float[numberOfSubzones + 1];
+                Arrays.fill(shadowPrice[tourType][i], 1.0f);
+            }
+        }
+        else {
+            sizeFinal[tourType][0] = new float[numberOfSubzones + 1];
+            sizeOriginal[tourType][0] = new float[numberOfSubzones + 1];
+            sizeBalance[tourType][0] = new float[numberOfSubzones + 1];
+            sizeScaled[tourType][0] = new float[numberOfSubzones + 1];
+            sizePrevious[tourType][0] = new float[numberOfSubzones + 1];
+            shadowPrice[tourType][0] = new float[numberOfSubzones + 1];
+            attrs[tourType][0] = new float[numberOfSubzones + 1];
+            prods[tourType][0] = new float[numberOfSubzones + 1];
 
-        loMdSizePrevious[tourType] = new float[numberOfSubzones + 1];
-        loSizePrevious[tourType] = new float[numberOfSubzones + 1];
-        mdSizePrevious[tourType] = new float[numberOfSubzones + 1];
-        hiSizePrevious[tourType] = new float[numberOfSubzones + 1];
-        totSizePrevious[tourType] = new float[numberOfSubzones + 1];
-
-        loShadowPrice = new float[numberOfSubzones + 1];
-        mdShadowPrice = new float[numberOfSubzones + 1];
-        hiShadowPrice = new float[numberOfSubzones + 1];
-        univShadowPrice = new float[numberOfSubzones + 1];
-        schoolShadowPrice = new float[numberOfSubzones + 1];
-
-        loAttrs = new float[numberOfSubzones + 1];
-        mdAttrs = new float[numberOfSubzones + 1];
-        hiAttrs = new float[numberOfSubzones + 1];
-        univAttrs = new float[numberOfSubzones + 1];
-        schoolAttrs = new float[numberOfSubzones + 1];
+            Arrays.fill(shadowPrice[tourType][0], 1.0f);
+        }
 
         float regionalSize = 0.0f;
 
-        Arrays.fill(loShadowPrice, 1.0f);
-        Arrays.fill(mdShadowPrice, 1.0f);
-        Arrays.fill(hiShadowPrice, 1.0f);
-        Arrays.fill(univShadowPrice, 1.0f);
-        Arrays.fill(schoolShadowPrice, 1.0f);
 
+
+
+        // allocate zonal size variables to subzones, if WORK, save by income category
         int k = 1;
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             for (int j = 0; j < WALK_SEGMENTS; j++) {
-                totSize[tourType][k] = (size[0][i] + size[1][i] + size[2][i]) * walkPctArray[j][i];
-                loMdSize[tourType][k] = (size[0][i] + size[1][i]) * walkPctArray[j][i];
-                loSize[tourType][k] = (size[0][i]) * walkPctArray[j][i];
-                mdSize[tourType][k] = (size[1][i]) * walkPctArray[j][i];
-                hiSize[tourType][k] = (size[2][i]) * walkPctArray[j][i];
-
-                regionalSize += totSize[tourType][k];
-
+                
+                if ( tourType == TourType.WORK ) {
+                    for (int m=0; m < INCOME_CATEGORIES; m++) {
+                        sizeFinal[tourType][m][k] = size[m][i] * walkPctArray[j][i];
+                        regionalSize += sizeFinal[tourType][m][k];
+                    }
+                }
+                else {
+                    sizeFinal[tourType][0][k] = (size[0][i] + size[1][i] + size[2][i]) * walkPctArray[j][i];
+                    regionalSize += sizeFinal[tourType][0][k];
+                }
+                
                 k++;
+                
             }
         }
 
-        // save original size variable arrays
-        for (int i = 1; i <= numberOfSubzones; i++) {
-            totSizeOriginal[tourType][i] = totSize[tourType][i];
-            loMdSizeOriginal[tourType][i] = loMdSize[tourType][i];
-            loSizeOriginal[tourType][i] = loSize[tourType][i];
-            mdSizeOriginal[tourType][i] = mdSize[tourType][i];
-            hiSizeOriginal[tourType][i] = hiSize[tourType][i];
+        
+        
+        // save original size variable arrays and arrays to be used in balancing
+        for (k = 1; k <= numberOfSubzones; k++) {
+            if ( tourType == TourType.WORK ) {
+                for (int m=0; m < INCOME_CATEGORIES; m++) {
+                    sizeOriginal[tourType][m][k] = sizeFinal[tourType][m][k];
+                    sizeBalance[tourType][m][k] = sizeFinal[tourType][m][k];
+                }
+            }
+            else {
+                sizeOriginal[tourType][0][k] = sizeFinal[tourType][0][k];
+                sizeBalance[tourType][0][k] = sizeFinal[tourType][0][k];
+            }
         }
 
-        logger.info("total regional destination choice size for purpose " +
-            tourType + " = " + regionalSize);
+        logger.info("total original, unadjusted regional destination choice size for purpose " + tourType + " = " + regionalSize);
+        
     }
 
 
 
 
     public void balanceSizeVariables(Household[] hh) {
-        int subzone;
         int orig;
-        int type = 0;
+        int typeCategory = -1;
 
-
-        for (int i = 0; i < 5; i++) {
-            prods[i] = new float[numberOfSubzones + 1];
-			totProds[i] = 0;
-			totAttrs[i] = 0;
+        Iterator it = null;
+        
+        
+        for (int i=1; i <= TourType.TYPES; i++) {
+            if ( i == TourType.WORK ) {
+                for (int m=0; m < INCOME_CATEGORIES; m++) {
+                    for (int n=0; n < 2; n++) {
+                        totProds[n][i][m] = 0;
+                        totAttrs[n][i][m] = 0;
+                    }
+                }
+            }
+            else {
+                for (int n=0; n < 2; n++) {
+                    totProds[n][i][0] = 0;
+                    totAttrs[n][i][0] = 0;
+                }
+            }
         }
 
+        
         // determine number of tour productions of each type
+        // sum unadjusted, unscaled attractions by type for reporting
         Tour[] mt = null;
 
         for (int i = 0; i < hh.length; i++) {
@@ -771,136 +811,638 @@ public class ZonalDataManager implements java.io.Serializable {
                 continue;
             }
 
+            orig = hh[i].getTazID();
             for (int t = 0; t < mt.length; t++) {
-                orig = hh[i].getTazID();
 
+                // determine type category, 0-2 if WORK, 0 otherwise
+                typeCategory = 0;
                 if (mt[t].getTourType() == TourType.WORK) {
                     if (hh[i].getHHIncome() == 1) {
-                        type = 0;
-                    } else if (hh[i].getHHIncome() == 2) {
-                        type = 1;
-                    } else if (hh[i].getHHIncome() == 3) {
-                        type = 2;
+                        typeCategory = 0;
                     }
-                } else if (mt[t].getTourType() == TourType.UNIVERSITY) {
-                    type = 3;
-                } else if (mt[t].getTourType() == TourType.SCHOOL) {
-                    type = 4;
-                }
+                    else if (hh[i].getHHIncome() == 2) {
+                        typeCategory = 1;
+                    }
+                    else if (hh[i].getHHIncome() == 3) {
+                        typeCategory = 2;
+                    }
+                } 
 
                 for (int w = 0; w < WALK_SEGMENTS; w++) {
-                    subzone = ((orig - 1) * WALK_SEGMENTS) + w;
-                    prods[type][subzone] += walkPctArray[w][orig];
-                    totProds[type] += walkPctArray[w][orig];
+                    int subzone = ((orig - 1) * WALK_SEGMENTS) + w + 1;
+                    prods[mt[t].getTourType()][typeCategory][subzone] += walkPctArray[w][orig];
+                    totProds[0][mt[t].getTourType()][typeCategory] += walkPctArray[w][orig];
                 }
             }
         }
 
-        logger.info("total productions by mandatory type:");
-        logger.info("work lo = " + totProds[0]);
-        logger.info("work md = " + totProds[1]);
-        logger.info("work hi = " + totProds[2]);
-        logger.info("university = " + totProds[3]);
-        logger.info("school = " + totProds[4]);
+        logger.info("");
+        logger.info("total tour productions by mandatory type before adjustments, before scaling:");
+        logger.info("work lo=" + totProds[0][TourType.WORK][0]);
+        logger.info("work md=" + totProds[0][TourType.WORK][1]);
+        logger.info("work hi=" + totProds[0][TourType.WORK][2]);
+        logger.info("university= " + totProds[0][TourType.UNIVERSITY][0]);
+        logger.info("school= " + totProds[0][TourType.SCHOOL][0]);
 
-        // sum total attractions by type
-        for (int i = 1; i <= numberOfSubzones; i++) {
-            totAttrs[0] += loSizeOriginal[TourType.WORK][i];
-            totAttrs[1] += mdSizeOriginal[TourType.WORK][i];
-            totAttrs[2] += hiSizeOriginal[TourType.WORK][i];
-            totAttrs[3] += totSizeOriginal[TourType.UNIVERSITY][i];
-            totAttrs[4] += totSizeOriginal[TourType.SCHOOL][i];
+        // copy productions totals to with overrides arrays
+        for (int k=1; k < numberOfSubzones; k++) {
+            for (int j=0; j < INCOME_CATEGORIES; j++)
+                totProds[1][TourType.WORK][j] = totProds[0][TourType.WORK][j];
+            for (int j=TourType.UNIVERSITY; j <= TourType.TYPES; j++)
+                totProds[1][j][0] = totProds[0][j][0];
         }
 
-        logger.info("total initial attractions by mandatory type:");
-        logger.info("work lo = " + totAttrs[0]);
-        logger.info("work md = " + totAttrs[1]);
-        logger.info("work hi = " + totAttrs[2]);
-        logger.info("university = " + totAttrs[3]);
-        logger.info("school = " + totAttrs[4]);
+        
+        
+        // sum size variables into total without overrides
+        for (int k=1; k < numberOfSubzones; k++) {
+            totAttrs[0][TourType.WORK][0] += sizeBalance[TourType.WORK][0][k];
+            totAttrs[0][TourType.WORK][1] += sizeBalance[TourType.WORK][1][k];
+            totAttrs[0][TourType.WORK][2] += sizeBalance[TourType.WORK][2][k];
+            totAttrs[0][TourType.UNIVERSITY][0] += sizeBalance[TourType.UNIVERSITY][0][k];
+            totAttrs[0][TourType.SCHOOL][0] += sizeBalance[TourType.SCHOOL][0][k];
 
+            totAttrs[0][TourType.ESCORTING][0] += sizeBalance[TourType.ESCORTING][0][k];
+            totAttrs[0][TourType.SHOP][0] += sizeBalance[TourType.SHOP][0][k];
+            totAttrs[0][TourType.OTHER_MAINTENANCE][0] += sizeBalance[TourType.OTHER_MAINTENANCE][0][k];
+            totAttrs[0][TourType.DISCRETIONARY][0] += sizeBalance[TourType.DISCRETIONARY][0][k];
+            totAttrs[0][TourType.EAT][0] += sizeBalance[TourType.EAT][0][k];
+            totAttrs[0][TourType.ATWORK][0] += sizeBalance[TourType.ATWORK][0][k];
+        }
+
+        // copy size variable totals to with overrides arrays
+        for (int k=1; k < numberOfSubzones; k++) {
+            for (int j=0; j < INCOME_CATEGORIES; j++)
+                totAttrs[1][TourType.WORK][j] = totAttrs[0][TourType.WORK][j];
+            for (int j=TourType.UNIVERSITY; j <= TourType.TYPES; j++)
+                totAttrs[1][j][0] = totAttrs[0][j][0];
+        }
+        
+        logger.info("");
+        logger.info("total initial size values by mandatory type before adjustments, before scaling:");
+        logger.info("work lo=" + totAttrs[0][TourType.WORK][0]);
+        logger.info("work md=" + totAttrs[0][TourType.WORK][1]);
+        logger.info("work hi=" + totAttrs[0][TourType.WORK][2]);
+        logger.info("university = " + totAttrs[0][TourType.UNIVERSITY][0]);
+        logger.info("school = " + totAttrs[0][TourType.SCHOOL][0]);
+
+        logger.info("");
+        logger.info("total initial size values by non-mandatory type before adjustments, before scaling:");
+        logger.info("escort=" + totAttrs[0][TourType.ESCORTING][0]);
+        logger.info("shop=" + totAttrs[0][TourType.SHOP][0]);
+        logger.info("other maint.=" + totAttrs[0][TourType.OTHER_MAINTENANCE][0]);
+        logger.info("discretionary= " + totAttrs[0][TourType.DISCRETIONARY][0]);
+        logger.info("eat= " + totAttrs[0][TourType.EAT][0]);
+        logger.info("at-work= " + totAttrs[0][TourType.ATWORK][0]);
+
+        
+
+        // log out un-adjusted, un-scaled totProds and totAttrs values summed over all subzones.
+        logger.info( "" );
+        logger.info( "" );
+        logger.info( "Original, un-adjusted, un-scaled totProds (mandatory) and total size variables over all zones before adjustments, before scaling" );
+        logger.info( String.format("%8s %8s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s", "", "", "", "wLo", "wMd", "wHi", "univ", "schl", "esc", "shop", "main", "disc", "eat", "atWk") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10s %10s %10s %10s %10s %10s", "tot Ps", "", "",
+                totProds[0][TourType.WORK][0], totProds[0][TourType.WORK][1], totProds[0][TourType.WORK][2], totProds[0][TourType.UNIVERSITY][0],
+                totProds[0][TourType.SCHOOL][0], "N/A", "N/A", "N/A", "N/A", "N/A", "N/A") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f", "tot As", "", "",
+                totAttrs[0][TourType.WORK][0], totAttrs[0][TourType.WORK][1], totAttrs[0][TourType.WORK][2], totAttrs[0][TourType.UNIVERSITY][0],
+                totAttrs[0][TourType.SCHOOL][0], totAttrs[0][TourType.ESCORTING][0], totAttrs[0][TourType.SHOP][0], totAttrs[0][TourType.OTHER_MAINTENANCE][0],
+                totAttrs[0][TourType.DISCRETIONARY][0], totAttrs[0][TourType.EAT][0], totAttrs[0][TourType.ATWORK][0]) );
+        
+
+        
+        // get an ArrayList of Adjustment objects and apply adjustments prior to scaling calculations
+        // make an array of length of zones that indicate if over-ride adjustments have been defined for each zone
+        ArrayList adjustmentSet = getAttractionsAdjustments();
+
+
+        // log out the adjustments specified
+        logger.info( "" );
+        logger.info( "Size Variable Adjustments Specified" );
+        String logString = String.format("%8s %8s %8s", "Zone", "Code", "" );
+        for (int i=0; i < adjPurpLabels.length; i++)
+            logString += String.format(" %10s", adjPurpLabels[i] );
+        logger.info( logString );
+        
+        it = adjustmentSet.iterator();
+        while ( it.hasNext() ) {
+            Adjustment adj = (Adjustment)it.next();
+            
+            logString = String.format("%8d %8s %8s", adj.zone, adj.code, "");
+            for (int i=0; i < adj.adjustment.length; i++)
+                logString += String.format(" %10.2f", adj.adjustment[i] );
+            logger.info( logString );
+
+        }
+        
+
+        // log out original size values for subzones affected by specified adjustments
+        logger.info( "" );
+        logger.info( "Size variables for subzones with adjustments specified, before adjustments, before scaling" );
+        logger.info( String.format("%8s %8s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s", "Zone", "Segment", "Subzone", "wLo", "wMd", "wHi", "univ", "schl", "esc", "shop", "main", "disc", "eat", "atWk") );
+        boolean[] subzoneLogged = new boolean[numberOfSubzones+1];
+        it = adjustmentSet.iterator();
+        while ( it.hasNext() ) {
+            Adjustment adj = (Adjustment)it.next();
+            for (int w = 0; w < WALK_SEGMENTS; w++) {
+                int i = ((adj.zone - 1) * WALK_SEGMENTS) + w + 1;
+                if ( subzoneLogged[i] == false ) {
+                    logger.info( String.format("%8d %8d %8d %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f", adj.zone, w, i,
+                            sizeBalance[TourType.WORK][0][i], sizeBalance[TourType.WORK][1][i], sizeBalance[TourType.WORK][2][i], sizeBalance[TourType.UNIVERSITY][0][i],
+                            sizeBalance[TourType.SCHOOL][0][i], sizeBalance[TourType.ESCORTING][0][i], sizeBalance[TourType.SHOP][0][i], sizeBalance[TourType.OTHER_MAINTENANCE][0][i],
+                            sizeBalance[TourType.DISCRETIONARY][0][i], sizeBalance[TourType.EAT][0][i], sizeBalance[TourType.ATWORK][0][i]) );
+                    subzoneLogged[i] = true;
+                }
+            }
+        }
+
+        
+        
+        boolean[][] subzoneOverRides = new boolean[numberOfSubzones+1][TourType.TYPES+2]; // num purposes + 2 for 2 extra income categories for work purpose
+        
+        // apply adjustments
+        it = adjustmentSet.iterator();
+        while ( it.hasNext() ) {
+            Adjustment adj = (Adjustment)it.next();
+            applySizeVariableAdjustments( adj );
+
+            if ( adj.code.equalsIgnoreCase("O") ) {
+                for (int w = 0; w < WALK_SEGMENTS; w++) {
+                    int subzone = ((adj.zone - 1) * WALK_SEGMENTS) + w + 1;
+                    int purp = -1;
+                    for (int p=0; p < adj.adjustment.length; p++)
+                        if ( adj.adjustment[p] != 0.0 ) {
+                            subzoneOverRides[subzone][p] = true;
+                        }
+                }
+            }
+            
+        }
+        
+        
+        
+        // log out adjusted, but un-scaled totProds and totAttrs values summed over all subzones.
+        logger.info( "" );
+        logger.info( "TotProds (mandatory) and size variables over all zones after adjustments, before scaling" );
+        logger.info( String.format("%-17s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s", "without override", "", "wLo", "wMd", "wHi", "univ", "schl", "esc", "shop", "main", "disc", "eat", "atWk") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10s %10s %10s %10s %10s %10s", "tot Ps", "", "",
+                totProds[0][TourType.WORK][0], totProds[0][TourType.WORK][1], totProds[0][TourType.WORK][2], totProds[0][TourType.UNIVERSITY][0],
+                totProds[0][TourType.SCHOOL][0], "N/A", "N/A", "N/A", "N/A", "N/A", "N/A") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f", "tot As", "", "",
+                totAttrs[0][TourType.WORK][0], totAttrs[0][TourType.WORK][1], totAttrs[0][TourType.WORK][2], totAttrs[0][TourType.UNIVERSITY][0],
+                totAttrs[0][TourType.SCHOOL][0], totAttrs[0][TourType.ESCORTING][0], totAttrs[0][TourType.SHOP][0], totAttrs[0][TourType.OTHER_MAINTENANCE][0],
+                totAttrs[0][TourType.DISCRETIONARY][0], totAttrs[0][TourType.EAT][0], totAttrs[0][TourType.ATWORK][0]) );
+        logger.info( "" );
+        logger.info( String.format("%-17s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s", "with override", "", "wLo", "wMd", "wHi", "univ", "schl", "esc", "shop", "main", "disc", "eat", "atWk") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10s %10s %10s %10s %10s %10s", "tot Ps", "", "",
+                totProds[1][TourType.WORK][0], totProds[1][TourType.WORK][1], totProds[1][TourType.WORK][2], totProds[1][TourType.UNIVERSITY][0],
+                totProds[1][TourType.SCHOOL][0], "N/A", "N/A", "N/A", "N/A", "N/A", "N/A") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f", "tot As", "", "",
+                totAttrs[1][TourType.WORK][0], totAttrs[1][TourType.WORK][1], totAttrs[1][TourType.WORK][2], totAttrs[1][TourType.UNIVERSITY][0],
+                totAttrs[1][TourType.SCHOOL][0], totAttrs[1][TourType.ESCORTING][0], totAttrs[1][TourType.SHOP][0], totAttrs[1][TourType.OTHER_MAINTENANCE][0],
+                totAttrs[1][TourType.DISCRETIONARY][0], totAttrs[1][TourType.EAT][0], totAttrs[1][TourType.ATWORK][0]) );
+        
+        
+        // log out adjusted, but un-scaled size values for subzones affected by specified adjustments
+        logger.info( "" );
+        logger.info( "Size variables for subzones with adjustments specified, after adjustments, before scaling" );
+        logger.info( String.format("%8s %8s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s", "Zone", "Segment", "Subzone", "wLo", "wMd", "wHi", "univ", "schl", "esc", "shop", "main", "disc", "eat", "atWk") );
+        Arrays.fill(subzoneLogged, false);
+        it = adjustmentSet.iterator();
+        while ( it.hasNext() ) {
+            Adjustment adj = (Adjustment)it.next();
+            for (int w = 0; w < WALK_SEGMENTS; w++) {
+                int i = ((adj.zone - 1) * WALK_SEGMENTS) + w + 1;
+                if ( subzoneLogged[i] == false ) {
+                    logger.info( String.format("%8d %8d %8d %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f", adj.zone, w, i,
+                            sizeBalance[TourType.WORK][0][i], sizeBalance[TourType.WORK][1][i], sizeBalance[TourType.WORK][2][i], sizeBalance[TourType.UNIVERSITY][0][i],
+                            sizeBalance[TourType.SCHOOL][0][i], sizeBalance[TourType.ESCORTING][0][i], sizeBalance[TourType.SHOP][0][i], sizeBalance[TourType.OTHER_MAINTENANCE][0][i],
+                            sizeBalance[TourType.DISCRETIONARY][0][i], sizeBalance[TourType.EAT][0][i], sizeBalance[TourType.ATWORK][0][i]) );
+                    subzoneLogged[i] = true;
+                }
+            }
+        }
+        
+
+        
+        
         // balance initial size variables
         for (int i = 1; i <= numberOfSubzones; i++) {
-            if (totAttrs[0] > 0.0) {
-                loSizeScaled[TourType.WORK][i] = (loSizeOriginal[TourType.WORK][i] * totProds[0]) / totAttrs[0];
-            } else {
-                loSizeScaled[TourType.WORK][i] = 0.0f;
+            
+            // if the subzone belongs to a zone that had an adjustment over-ride, skip scaling values for the subzone for its purpose
+
+            // set scaled values for mandatory work types if an override was specified for the subzone and purpose.
+            for (int j=0; j < INCOME_CATEGORIES; j++) {
+                if ( subzoneOverRides[i][j] ) {
+                    sizeScaled[TourType.WORK][j][i] = 0.0f;
+                    if ( sizeBalance[TourType.WORK][j][i] > 0 )
+                        sizeScaled[TourType.WORK][j][i] = sizeBalance[TourType.WORK][j][i];
+                }
+                else {
+                    sizeScaled[TourType.WORK][j][i] = 0.0f;
+                    if (totAttrs[0][TourType.WORK][j] > 0.0)
+                        sizeScaled[TourType.WORK][j][i] = (sizeBalance[TourType.WORK][j][i] * totProds[0][TourType.WORK][j]) / totAttrs[0][TourType.WORK][j];
+                }
             }
 
-            if (totAttrs[1] > 0.0) {
-                mdSizeScaled[TourType.WORK][i] = (mdSizeOriginal[TourType.WORK][i] * totProds[1]) / totAttrs[1];
-            } else {
-                mdSizeScaled[TourType.WORK][i] = 0.0f;
+            // set scaled values for mandatory non-work types if an override was specified for the subzone and purpose.
+            if ( subzoneOverRides[i][TourType.UNIVERSITY+1] ) {
+                sizeScaled[TourType.UNIVERSITY][0][i] = 0.0f;
+                if ( sizeBalance[TourType.UNIVERSITY][0][i] > 0 )
+                    sizeScaled[TourType.UNIVERSITY][0][i] = sizeBalance[TourType.UNIVERSITY][0][i];
+            }
+            else {
+                sizeScaled[TourType.UNIVERSITY][0][i] = 0.0f;
+                if (totAttrs[0][TourType.UNIVERSITY][0] > 0.0)
+                    sizeScaled[TourType.UNIVERSITY][0][i] = (sizeBalance[TourType.UNIVERSITY][0][i] * totProds[0][TourType.UNIVERSITY][0]) / totAttrs[0][TourType.UNIVERSITY][0];
+            }
+            
+            if ( subzoneOverRides[i][TourType.SCHOOL+1] ) {
+                sizeScaled[TourType.SCHOOL][0][i] = 0.0f;
+                if ( sizeBalance[TourType.SCHOOL][0][i] > 0 )
+                    sizeScaled[TourType.SCHOOL][0][i] = sizeBalance[TourType.SCHOOL][0][i];
+            }
+            else {
+                sizeScaled[TourType.SCHOOL][0][i] = 0.0f;
+                if (totAttrs[0][TourType.SCHOOL][0] > 0.0)
+                    sizeScaled[TourType.SCHOOL][0][i] = (sizeBalance[TourType.SCHOOL][0][i] * totProds[0][TourType.SCHOOL][0]) / totAttrs[0][TourType.SCHOOL][0];
+            }
+                
+                
+            // no scaling of values is done for non-mandatory types, so just set the scaled value.
+            for (int j=TourType.ESCORTING; j <= TourType.ATWORK; j++) {
+                sizeScaled[j][0][i] = 0.0f;
+                if ( sizeBalance[j][0][i] > 0 )
+                    sizeScaled[j][0][i] = sizeBalance[j][0][i];
             }
 
-            if (totAttrs[2] > 0.0) {
-                hiSizeScaled[TourType.WORK][i] = (hiSizeOriginal[TourType.WORK][i] * totProds[2]) / totAttrs[2];
-            } else {
-                hiSizeScaled[TourType.WORK][i] = 0.0f;
-            }
+        }
 
-            if (totAttrs[3] > 0.0) {
-                totSizeScaled[TourType.UNIVERSITY][i] = (totSizeOriginal[TourType.UNIVERSITY][i] * totProds[3]) / totAttrs[3];
-            } else {
-                totSizeScaled[TourType.UNIVERSITY][i] = 0.0f;
-            }
 
-            if (totAttrs[4] > 0.0) {
-                totSizeScaled[TourType.SCHOOL][i] = (totSizeOriginal[TourType.SCHOOL][i] * totProds[4]) / totAttrs[4];
-            } else {
-                totSizeScaled[TourType.SCHOOL][i] = 0.0f;
+        
+        // log out final adjusted and scaled size values for subzones affected by specified adjustments
+        logger.info( "" );
+        logger.info( "Size variables for subzones with adjustments specified, after adjustments, after scaling" );
+        logger.info( String.format("%8s %8s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s", "Zone", "Segment", "Subzone", "wLo", "wMd", "wHi", "univ", "schl", "esc", "shop", "main", "disc", "eat", "atWk") );
+        Arrays.fill(subzoneLogged, false);
+        it = adjustmentSet.iterator();
+        while ( it.hasNext() ) {
+            Adjustment adj = (Adjustment)it.next();
+            for (int w = 0; w < WALK_SEGMENTS; w++) {
+                int i = ((adj.zone - 1) * WALK_SEGMENTS) + w + 1;
+                if ( subzoneLogged[i] == false ) {
+                    logger.info( String.format("%8d %8d %8d %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f", adj.zone, w, i,
+                        sizeScaled[TourType.WORK][0][i], sizeScaled[TourType.WORK][1][i], sizeScaled[TourType.WORK][2][i], sizeScaled[TourType.UNIVERSITY][0][i],
+                        sizeScaled[TourType.SCHOOL][0][i], sizeScaled[TourType.ESCORTING][0][i], sizeScaled[TourType.SHOP][0][i], sizeScaled[TourType.OTHER_MAINTENANCE][0][i],
+                        sizeScaled[TourType.DISCRETIONARY][0][i], sizeScaled[TourType.EAT][0][i], sizeScaled[TourType.ATWORK][0][i]) );
+                    subzoneLogged[i] = true;
+                }
+            }
+        }
+        
+        
+        
+        // set final size variables for mandatory typers to scaled values
+        // non-mandatory type size values aren't scaled.
+        for (int k=1; k <= numberOfSubzones; k++) {
+
+            for (int m=0; m < INCOME_CATEGORIES; m++)
+                sizeFinal[TourType.WORK][m][k] = sizeScaled[TourType.WORK][m][k];
+
+            // set scaled values for non-work mandatory and all non-mandatory types
+            for (int j=TourType.UNIVERSITY; j <= TourType.ATWORK; j++)
+                sizeFinal[j][0][k] = sizeScaled[j][0][k];
+
+        }
+
+        
+        
+        // sum scaled attractions for all types for reporting
+        for (int i=1; i <= TourType.TYPES; i++) {
+            if ( i == TourType.WORK ) {
+                for (int m=0; m < INCOME_CATEGORIES; m++) {
+                    totAttrs[0][i][m] = 0.0f;
+                    totAttrs[1][i][m] = 0.0f;
+                }
+            }
+            else {
+                totAttrs[0][i][0] = 0.0f;
+                totAttrs[1][i][0] = 0.0f;
             }
         }
 
-        // set initial size variables to scaled values
-        for (int i = 1; i <= numberOfSubzones; i++) {
-            loSize[TourType.WORK][i] = loSizeScaled[TourType.WORK][i];
-            mdSize[TourType.WORK][i] = mdSizeScaled[TourType.WORK][i];
-            hiSize[TourType.WORK][i] = hiSizeScaled[TourType.WORK][i];
-            loMdSize[TourType.WORK][i] = loSizeScaled[TourType.WORK][i] +
-                mdSizeScaled[TourType.WORK][i];
-            totSize[TourType.WORK][i] = loSizeScaled[TourType.WORK][i] +
-                mdSizeScaled[TourType.WORK][i] +
-                hiSizeScaled[TourType.WORK][i];
-            totSize[TourType.UNIVERSITY][i] = totSizeScaled[TourType.UNIVERSITY][i];
-            totSize[TourType.SCHOOL][i] = totSizeScaled[TourType.SCHOOL][i];
-        }
+		for (int k=1; k <= numberOfSubzones; k++) {
 
-		for (int i = 0; i < 5; i++)
-			totAttrs[i] = 0;
-
-		// sum scaled attractions by type for reporting
-		for (int i = 1; i <= numberOfSubzones; i++) {
-			totAttrs[0] += loSize[TourType.WORK][i];
-			totAttrs[1] += mdSize[TourType.WORK][i];
-			totAttrs[2] += hiSize[TourType.WORK][i];
-			totAttrs[3] += totSize[TourType.UNIVERSITY][i];
-			totAttrs[4] += totSize[TourType.SCHOOL][i];
+            for (int i=1; i <= TourType.TYPES; i++) {
+                if ( i == TourType.WORK ) {
+                    for (int m=0; m < INCOME_CATEGORIES; m++) {
+                        if ( subzoneOverRides[k][m] == false )
+                            totAttrs[0][i][m] += sizeFinal[i][m][k];
+                        totAttrs[1][i][m] += sizeFinal[i][m][k];
+                    }
+                }
+                else {
+                    if ( subzoneOverRides[k][i+1] == false )
+                        totAttrs[0][i][0] += sizeFinal[i][0][k];
+                    totAttrs[1][i][0] += sizeFinal[i][0][k];
+                }
+            }
+            
 		}
 
-		logger.info("total balanced attractions by mandatory type:");
-		logger.info("work lo = " + totAttrs[0]);
-		logger.info("work md = " + totAttrs[1]);
-		logger.info("work hi = " + totAttrs[2]);
-		logger.info("university = " + totAttrs[3]);
-		logger.info("school = " + totAttrs[4]);
+
+        // log out adjusted and scaled totProds and totAttrs values summed over all subzones.
+        logger.info( "" );
+        logger.info( "TotProds (mandatory) and size variables over all zones after adjustments, after scaling" );
+        logger.info( String.format("%-17s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s", "without override", "", "wLo", "wMd", "wHi", "univ", "schl", "esc", "shop", "main", "disc", "eat", "atWk") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10s %10s %10s %10s %10s %10s", "tot Ps", "", "",
+                totProds[0][TourType.WORK][0], totProds[0][TourType.WORK][1], totProds[0][TourType.WORK][2], totProds[0][TourType.UNIVERSITY][0],
+                totProds[0][TourType.SCHOOL][0], "N/A", "N/A", "N/A", "N/A", "N/A", "N/A") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f", "tot As", "", "",
+                totAttrs[0][TourType.WORK][0], totAttrs[0][TourType.WORK][1], totAttrs[0][TourType.WORK][2], totAttrs[0][TourType.UNIVERSITY][0],
+                totAttrs[0][TourType.SCHOOL][0], totAttrs[0][TourType.ESCORTING][0], totAttrs[0][TourType.SHOP][0], totAttrs[0][TourType.OTHER_MAINTENANCE][0],
+                totAttrs[0][TourType.DISCRETIONARY][0], totAttrs[0][TourType.EAT][0], totAttrs[0][TourType.ATWORK][0]) );
+        logger.info( "" );
+        logger.info( String.format("%-17s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s", "with override", "", "wLo", "wMd", "wHi", "univ", "schl", "esc", "shop", "main", "disc", "eat", "atWk") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10s %10s %10s %10s %10s %10s", "tot Ps", "", "",
+                totProds[1][TourType.WORK][0], totProds[1][TourType.WORK][1], totProds[1][TourType.WORK][2], totProds[1][TourType.UNIVERSITY][0],
+                totProds[1][TourType.SCHOOL][0], "N/A", "N/A", "N/A", "N/A", "N/A", "N/A") );
+        logger.info( String.format("%8s %8s %8s %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f", "tot As", "", "",
+                totAttrs[1][TourType.WORK][0], totAttrs[1][TourType.WORK][1], totAttrs[1][TourType.WORK][2], totAttrs[1][TourType.UNIVERSITY][0],
+                totAttrs[1][TourType.SCHOOL][0], totAttrs[1][TourType.ESCORTING][0], totAttrs[1][TourType.SHOP][0], totAttrs[1][TourType.OTHER_MAINTENANCE][0],
+                totAttrs[1][TourType.DISCRETIONARY][0], totAttrs[1][TourType.EAT][0], totAttrs[1][TourType.ATWORK][0]) );
+        
+        
+        
+        logger.info("");
+        logger.info("");
+        logger.info("total adjusted, scaled size variables by mandatory type:");
+        logger.info("work lo=" + totAttrs[1][TourType.WORK][0]);
+        logger.info("work md=" + totAttrs[1][TourType.WORK][1]);
+        logger.info("work hi=" + totAttrs[1][TourType.WORK][2]);
+        logger.info("university = " + totAttrs[1][TourType.UNIVERSITY][0]);
+        logger.info("school = " + totAttrs[1][TourType.SCHOOL][0]);
+        
+        logger.info("");
+        logger.info("total adjusted size variables by non-mandatory type:");
+        logger.info("escorting = " + totAttrs[1][TourType.ESCORTING][0]);
+        logger.info("shopping = " + totAttrs[1][TourType.SHOP][0]);
+        logger.info("other maint. = " + totAttrs[1][TourType.OTHER_MAINTENANCE][0]);
+        logger.info("discretionary = " + totAttrs[1][TourType.DISCRETIONARY][0]);
+        logger.info("eat = " + totAttrs[1][TourType.EAT][0]);
+        logger.info("at-work = " + totAttrs[1][TourType.ATWORK][0]);
+        logger.info("");
+        
 
 
+        // set size variables used in shadow price adjustmnents in mandatory DC model
+        for (int k=1; k <= numberOfSubzones; k++) {
 
-        // set initial size variables used in DC model for reporting
-        for (int i = 1; i <= numberOfSubzones; i++) {
-            loSizePrevious[TourType.WORK][i] = loSizeScaled[TourType.WORK][i];
-            mdSizePrevious[TourType.WORK][i] = mdSizeScaled[TourType.WORK][i];
-            hiSizePrevious[TourType.WORK][i] = hiSizeScaled[TourType.WORK][i];
-            totSizePrevious[TourType.UNIVERSITY][i] = totSizeScaled[TourType.UNIVERSITY][i];
-            totSizePrevious[TourType.SCHOOL][i] = totSizeScaled[TourType.SCHOOL][i];
+            for (int i=1; i <= TourType.TYPES; i++) {
+                if ( i == TourType.WORK ) {
+                    for (int m=0; m < INCOME_CATEGORIES; m++)
+                        sizePrevious[i][m][k] = sizeScaled[i][m][k];
+                }
+                else {
+                    sizePrevious[i][0][k] = sizeScaled[i][0][k];
+                }
+            }
+            
         }
 
+        
         hh = null;
     }
 
 
+    
+    private ArrayList getAttractionsAdjustments() {
+        
+        /* define a set of adjustments to make, for testing purposes
+        
+        // create an Adjustment object for a zone - (multiply, add, overRide, zone)
+        // for a tourType - (wLo, wMd, wHi, Uni, Sch).
+        // These will eventually bea read in from a file
+        
+        // put adjustment objects in an ArrayList to return 
+        ArrayList adjustmentSet = new ArrayList();
+        
+        double[] testAdj1 = { 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0 };
+        double[] testAdj2 = { 0.0, 75.0, 0.0, 0.0, 50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+        double[] testAdj3 = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1100.0, 0.0, 0.0, 0.0, 0.0 };
+        
+        adjustmentSet.add( new Adjustment( 800, "M", testAdj1 ) );
+        adjustmentSet.add( new Adjustment( 800, "A", testAdj2 ) );
+        adjustmentSet.add( new Adjustment( 300, "O", testAdj3 ) );
+        
+        end of code to define testing adjustments  */
+        
+        
+        ArrayList adjustmentSet = readAdjustmentsFile();
+        return adjustmentSet;
+        
+    }
+    
+    
+    private ArrayList readAdjustmentsFile () {
+        
+        String filename = (String) propertyMap.get("AttractionAdjustments.file");
+        if ( filename == null || filename.equals("") )
+            return new ArrayList();
 
+        
+        // put adjustment objects in an ArrayList to return 
+        ArrayList adjustmentSet = new ArrayList();
+        TableDataSet table = null;
+        
+        try {
+            CSVFileReader reader = new CSVFileReader();
+            table = reader.readFile(new File(filename));
+        }
+        catch (IOException e) {
+            logger.error ( "exception thrown reading attraction adjustnments file: " + filename, e );
+        }
+        
+        for (int row=1; row <= table.getRowCount(); row++) {
+            String[] rowStringValues = table.getRowValuesAsString(row);
+            
+            int zone = Integer.parseInt(rowStringValues[0]);
+            String code = rowStringValues[1].toUpperCase();
+
+            double[] values = new double[rowStringValues.length-2];
+            for (int j=2; j < rowStringValues.length; j++)
+                values[j-2] = Double.parseDouble(rowStringValues[j]);
+
+            adjustmentSet.add( new Adjustment( zone, code, values ) );
+            
+        }
+        
+        return adjustmentSet;
+    }
+
+    private void applySizeVariableAdjustments( Adjustment adj ) {    
+
+
+        // make adjustments as specified
+        for (int w = 0; w < WALK_SEGMENTS; w++) {
+            int subzone = ((adj.zone - 1) * WALK_SEGMENTS) + w + 1;
+
+            for ( int p=0; p < adj.adjustment.length; p++ ) {
+                
+                // it is assumed that only non-zero adjustment values will be indications of an adjustment to be made
+                if ( adj.adjustment[p] == 0.0 )
+                    continue;
+                
+                // get the original size value for the specific purpose
+                float origValue = 0.0f;
+                float adjValue = 0.0f;
+
+                switch ( p ) {
+                    // work purposes
+                    case 0:
+                        origValue = sizeBalance[TourType.WORK][0][subzone];
+                        break;
+                    case 1:
+                        origValue = sizeBalance[TourType.WORK][1][subzone];
+                        break;
+                    case 2:
+                        origValue = sizeBalance[TourType.WORK][2][subzone];
+                        break;
+                    // non-work purposes
+                    default:
+                        // p-1 maps to the tourType indices for non-work purposes.
+                        origValue = sizeBalance[p-1][0][subzone];
+                        break;
+                }
+                
+                adjValue = origValue;
+                
+                
+                
+                // apply adjustments and save adjusted size value for the specific purpose.
+                // scaling for zones with O adjustments will be based on total Ps and As without the over-rides.
+                // scaling for zones with M or A adjustments will be based on Ps and As that include those adjustments
+                
+                // if over-ride value, ignore any multiply and/or add values also specified:
+                if ( adj.code.equalsIgnoreCase("O") ) {
+                    
+                    // get over-ride value for this subzone
+                    adjValue = (float)(walkPctArray[w][adj.zone]*adj.adjustment[p]);
+
+                    //  adjust attr and prod totals for mandatory types; don't need to adjust for non-mandatory as no scaling is done.
+                    switch ( p ) {
+                        // mandatory purposes
+                        case 0:
+                            totProds[0][TourType.WORK][0] -= adjValue;
+                            totAttrs[0][TourType.WORK][0] -= origValue;
+                            totAttrs[1][TourType.WORK][0] += ( adjValue - origValue );
+                            break;
+                        case 1:
+                            totProds[0][TourType.WORK][1] -= adjValue;
+                            totAttrs[0][TourType.WORK][1] -= origValue;
+                            totAttrs[1][TourType.WORK][1] += ( adjValue - origValue );
+                            break;
+                        case 2:
+                            totProds[0][TourType.WORK][2] -= adjValue;
+                            totAttrs[0][TourType.WORK][2] -= origValue;
+                            totAttrs[1][TourType.WORK][2] += ( adjValue - origValue );
+                            break;
+                        case 3:
+                            totProds[0][TourType.UNIVERSITY][0] -= adjValue;
+                            totAttrs[0][TourType.UNIVERSITY][0] -= origValue;
+                            totAttrs[1][TourType.UNIVERSITY][0] += ( adjValue - origValue );
+                            break;
+                        case 4:
+                            totProds[0][TourType.SCHOOL][0] -= adjValue;
+                            totAttrs[0][TourType.SCHOOL][0] -= origValue;
+                            totAttrs[1][TourType.SCHOOL][0] += ( adjValue - origValue );
+                            break;
+                        // non-mandatory purposes
+                        default:
+                            // p-1 maps to the tourType indices for non-work purposes.
+                            // don't need to adjust totals for non-mandatory purposes since no scaling is done,
+                            // but attr totals are modified so that the adjustment is reflected in totals when logged.
+                            totAttrs[0][p-1][0] -= origValue;
+                            totAttrs[1][p-1][0] += ( adjValue - origValue );
+                            break;
+                    }
+
+                }
+                // otherwise, apply multiply and/or add:
+                
+                else {
+                    if ( adj.code.equalsIgnoreCase("M") )
+                        adjValue *= adj.adjustment[p];
+                    if ( adj.code.equalsIgnoreCase("A") )
+                        adjValue += walkPctArray[w][adj.zone]*adj.adjustment[p];
+
+                    //  adjust attr and prod totals for mandatory types by the adjustment increment; don't need to adjust for non-mandatory as no scaling is done.
+                    switch ( p ) {
+                        // mandatory purposes
+                        case 0:
+                            totAttrs[0][TourType.WORK][0] += (adjValue - origValue);
+                            totAttrs[1][TourType.WORK][0] += (adjValue - origValue);
+                            break;
+                        case 1:
+                            totAttrs[0][TourType.WORK][1] += (adjValue - origValue);
+                            totAttrs[1][TourType.WORK][1] += (adjValue - origValue);
+                            break;
+                        case 2:
+                            totAttrs[0][TourType.WORK][2] += (adjValue - origValue);
+                            totAttrs[1][TourType.WORK][2] += (adjValue - origValue);
+                            break;
+                        case 3:
+                            totAttrs[0][TourType.UNIVERSITY][0] += (adjValue - origValue);
+                            totAttrs[1][TourType.UNIVERSITY][0] += (adjValue - origValue);
+                            break;
+                        case 4:
+                            totAttrs[0][TourType.SCHOOL][0] += (adjValue - origValue);
+                            totAttrs[1][TourType.SCHOOL][0] += (adjValue - origValue);
+                            break;
+                        // non-mandatory purposes
+                        default:
+                            // p-1 maps to the tourType indices for non-work purposes.
+                            // don't need to adjust totals for non-mandatory purposes since no scaling is done,
+                            // but totals are modified so that the adjustment is reflected in totals when logged.
+                            totAttrs[0][p-1][0] += ( adjValue - origValue );
+                            totAttrs[1][p-1][0] += ( adjValue - origValue );
+                            break;
+                    }
+
+                }
+
+                
+                
+                // apply adjusted values to size variable arrays for specific purpose
+                switch ( p ) {
+                    // mandatory - work purposes
+                    case 0:
+                        sizeBalance[TourType.WORK][0][subzone] = adjValue;
+                        break;
+                    case 1:
+                        sizeBalance[TourType.WORK][1][subzone] = adjValue;
+                        break;
+                    case 2:
+                        sizeBalance[TourType.WORK][2][subzone] = adjValue;
+                        break;
+                    // non-work purposes
+                    // p-1 maps to the tourType indices for non-work purposes.
+                    default:
+                        sizeBalance[p-1][0][subzone] = adjValue;
+                        break;
+                }
+            
+            }
+
+        }
+        
+        
+    }
+    
+    
+    
+    
 	public void sumAttractions(Household[] hh) {
 		int subzone;
 		int destTaz;
@@ -908,31 +1450,37 @@ public class ZonalDataManager implements java.io.Serializable {
 		int type = 0;
 
 
-
-		for (int i = 1; i <= numberOfSubzones; i++) {
-			loAttrs[i] = 0;
-			mdAttrs[i] = 0;
-			hiAttrs[i] = 0;
-			univAttrs[i] = 0;
-			schoolAttrs[i] = 0;
+        // zero the attrs arrays
+		for (int k=1; k <= numberOfSubzones; k++) {
+            for (int i=1; i <= TourType.TYPES; i++) {
+                if ( i == TourType.WORK ) {
+                    for (int m=0; m < INCOME_CATEGORIES; m++)
+                        attrs[i][m][k] = 0.0f;
+                }
+                else {
+                    attrs[i][0][k] = 0.0f;
+                }
+            }
 		}
 
 
 		// determine number of modeled tour attractions of each type
+        // only need to count mandatory attractions, as they're the only ones scaled.
 		Tour[] mt = null;
 
 		for (int i = 0; i < hh.length; i++) {
 			mt = hh[i].getMandatoryTours();
 
-			if (mt == null) {
+			if (mt == null)
 				continue;
-			}
 
-			for (int t = 0; t < mt.length; t++) {
+
+			for (int t=0; t < mt.length; t++) {
 
 			    destTaz = mt[t].getDestTaz();
 				destWalkSeg = mt[t].getDestShrtWlk();
 
+                type = 0;
 				if (mt[t].getTourType() == TourType.WORK) {
 					if (hh[i].getHHIncome() == 1) {
 						type = 0;
@@ -941,15 +1489,11 @@ public class ZonalDataManager implements java.io.Serializable {
 					} else if (hh[i].getHHIncome() == 3) {
 						type = 2;
 					}
-				} else if (mt[t].getTourType() == TourType.UNIVERSITY) {
-					type = 3;
-				} else if (mt[t].getTourType() == TourType.SCHOOL) {
-					type = 4;
 				}
 
 				subzone = ((destTaz - 1) * WALK_SEGMENTS) + destWalkSeg + 1;
 
-				incrementModeledAttractions( subzone, type );
+                attrs[mt[t].getTourType()][type][subzone]++;
 
 			}
 		}
@@ -958,139 +1502,92 @@ public class ZonalDataManager implements java.io.Serializable {
 
 
 
-    public void incrementModeledAttractions(int k, int index) {
-        // increment the number of attractions computed for subzone k, index:
-        // 0=low, 1=med, 2=hi, 3=univ, 4=school.
-        switch (index) {
-        case 0:
-            loAttrs[k]++;
-
-            break;
-
-        case 1:
-            mdAttrs[k]++;
-
-            break;
-
-        case 2:
-            hiAttrs[k]++;
-
-            break;
-
-        case 3:
-            univAttrs[k]++;
-
-            break;
-
-        case 4:
-            schoolAttrs[k]++;
-
-            break;
-        }
-    }
-
     public void reportMaxDiff() {
+        
+        // only reporting for the 5 mandatory tourtype categories.
+        
         int[] maxI = new int[5];
         float[] diff = new float[5];
-        Arrays.fill(diff, 0.0f);
 
         for (int i = 1; i <= numberOfSubzones; i++) {
-            if (Math.abs(loSizeScaled[TourType.WORK][i] - loAttrs[i]) > diff[0]) {
-                diff[0] = Math.abs(loSizeScaled[TourType.WORK][i] - loAttrs[i]);
+            
+            if (Math.abs(sizeScaled[TourType.WORK][0][i] - attrs[TourType.WORK][0][i]) > diff[0]) {
+                diff[0] = Math.abs(sizeScaled[TourType.WORK][0][i] - attrs[TourType.WORK][0][i]);
                 maxI[0] = i;
             }
 
-            if (Math.abs(mdSizeScaled[TourType.WORK][i] - mdAttrs[i]) > diff[1]) {
-                diff[1] = Math.abs(mdSizeScaled[TourType.WORK][i] - mdAttrs[i]);
+            if (Math.abs(sizeScaled[TourType.WORK][1][i] - attrs[TourType.WORK][1][i]) > diff[1]) {
+                diff[1] = Math.abs(sizeScaled[TourType.WORK][1][i] - attrs[TourType.WORK][1][i]);
                 maxI[1] = i;
             }
 
-            if (Math.abs(hiSizeScaled[TourType.WORK][i] - hiAttrs[i]) > diff[2]) {
-                diff[2] = Math.abs(hiSizeScaled[TourType.WORK][i] - hiAttrs[i]);
+            if (Math.abs(sizeScaled[TourType.WORK][2][i] - attrs[TourType.WORK][2][i]) > diff[2]) {
+                diff[2] = Math.abs(sizeScaled[TourType.WORK][2][i] - attrs[TourType.WORK][2][i]);
                 maxI[2] = i;
             }
 
-            if (Math.abs(totSizeScaled[TourType.UNIVERSITY][i] - univAttrs[i]) > diff[3]) {
-                diff[3] = Math.abs(totSizeScaled[TourType.UNIVERSITY][i] -
-                        univAttrs[i]);
+            if (Math.abs(sizeScaled[TourType.UNIVERSITY][0][i] - attrs[TourType.UNIVERSITY][0][i]) > diff[3]) {
+                diff[3] = Math.abs(sizeScaled[TourType.UNIVERSITY][0][i] - attrs[TourType.UNIVERSITY][0][i]);
                 maxI[3] = i;
             }
 
-            if (Math.abs(totSizeScaled[TourType.SCHOOL][i] - schoolAttrs[i]) > diff[4]) {
-                diff[4] = Math.abs(totSizeScaled[TourType.SCHOOL][i] -
-                        schoolAttrs[i]);
+            if (Math.abs(sizeScaled[TourType.SCHOOL][0][i] - attrs[TourType.SCHOOL][0][i]) > diff[4]) {
+                diff[4] = Math.abs(sizeScaled[TourType.SCHOOL][0][i] - attrs[TourType.SCHOOL][0][i]);
                 maxI[4] = i;
             }
+
         }
 
-        logger.info(
-            "maximum residual discrepency between scaled size variables and modeled attractions by type:");
-        logger.info("work lo:     scaled size=" +
-            loSizeScaled[TourType.WORK][maxI[0]] + ", model attrs=" +
-            loAttrs[maxI[0]] + ", abs diff=" + diff[0] + ", rel diff=" +
-            (diff[0] / loSizeScaled[TourType.WORK][maxI[0]]));
-        logger.info("work md:     scaled size=" +
-            mdSizeScaled[TourType.WORK][maxI[1]] + ", model attrs=" +
-            mdAttrs[maxI[1]] + ", abs diff=" + diff[1] + ", rel diff=" +
-            (diff[1] / mdSizeScaled[TourType.WORK][maxI[1]]));
-        logger.info("work hi:     scaled size=" +
-            hiSizeScaled[TourType.WORK][maxI[2]] + ", model attrs=" +
-            hiAttrs[maxI[2]] + ", abs diff=" + diff[2] + ", rel diff=" +
-            (diff[2] / hiSizeScaled[TourType.WORK][maxI[2]]));
-        logger.info("university:  scaled size=" +
-            totSizeScaled[TourType.UNIVERSITY][maxI[3]] + ", model attrs=" +
-            univAttrs[maxI[3]] + ", abs diff=" + diff[3] + ", rel diff=" +
-            (diff[3] / totSizeScaled[TourType.UNIVERSITY][maxI[3]]));
-        logger.info("school:      scaled size=" +
-            totSizeScaled[TourType.SCHOOL][maxI[4]] + ", model attrs=" +
-            schoolAttrs[maxI[4]] + ", abs diff=" + diff[4] + ", rel diff=" +
-            (diff[4] / totSizeScaled[TourType.SCHOOL][maxI[4]]));
+        
+        logger.info( "maximum residual discrepency between scaled size variables and modeled attractions by mandatory type:" );
+        logger.info("work lo:     scaled size=" + sizeScaled[TourType.WORK][0][maxI[0]] + ", model attrs=" + attrs[TourType.WORK][0][maxI[0]] + ", abs diff=" + diff[0] + ", rel diff=" + (diff[0] / sizeScaled[TourType.WORK][0][maxI[0]]));
+        logger.info("work md:     scaled size=" + sizeScaled[TourType.WORK][1][maxI[1]] + ", model attrs=" + attrs[TourType.WORK][1][maxI[1]] + ", abs diff=" + diff[1] + ", rel diff=" + (diff[1] / sizeScaled[TourType.WORK][1][maxI[1]]));
+        logger.info("work hi:     scaled size=" + sizeScaled[TourType.WORK][2][maxI[2]] + ", model attrs=" + attrs[TourType.WORK][2][maxI[2]] + ", abs diff=" + diff[2] + ", rel diff=" + (diff[2] / sizeScaled[TourType.WORK][2][maxI[2]]));
+        logger.info("university:  scaled size=" + sizeScaled[TourType.UNIVERSITY][0][maxI[3]] + ", model attrs=" + attrs[TourType.UNIVERSITY][0][maxI[3]] + ", abs diff=" + diff[3] + ", rel diff=" + (diff[3] / sizeScaled[TourType.UNIVERSITY][0][maxI[3]]));
+        logger.info("school:      scaled size=" + sizeScaled[TourType.SCHOOL][0][maxI[4]] + ", model attrs=" + attrs[TourType.SCHOOL][0][maxI[4]] + ", abs diff=" + diff[4] + ", rel diff=" + (diff[4] / sizeScaled[TourType.SCHOOL][0][maxI[4]]));
+        
     }
 
 
     public void updateSizeVariables() {
+        
+        // only size variables for mandatory types are adjusted by shadow prices
+
         for (int i = 1; i <= numberOfSubzones; i++) {
-            loSize[TourType.WORK][i] = loSizeScaled[TourType.WORK][i] * loShadowPrice[i];
-            mdSize[TourType.WORK][i] = mdSizeScaled[TourType.WORK][i] * mdShadowPrice[i];
-            hiSize[TourType.WORK][i] = hiSizeScaled[TourType.WORK][i] * hiShadowPrice[i];
-            totSize[TourType.UNIVERSITY][i] = totSizeScaled[TourType.UNIVERSITY][i] * univShadowPrice[i];
-            totSize[TourType.SCHOOL][i] = totSizeScaled[TourType.SCHOOL][i] * schoolShadowPrice[i];
-
-            if (loSize[TourType.WORK][i] < 0.0f) {
-                loSize[TourType.WORK][i] = 0.0f;
+            for (int m=0; m < INCOME_CATEGORIES; m++) {
+                sizeFinal[TourType.WORK][m][i] = sizeScaled[TourType.WORK][m][i] * shadowPrice[TourType.WORK][m][i];
+                if ( sizeFinal[TourType.WORK][m][i] < 0.0f )
+                    sizeFinal[TourType.WORK][m][i] = 0.0f;
             }
 
-            if (mdSize[TourType.WORK][i] < 0.0f) {
-                mdSize[TourType.WORK][i] = 0.0f;
-            }
+            sizeFinal[TourType.UNIVERSITY][0][i] = sizeScaled[TourType.UNIVERSITY][0][i] * shadowPrice[TourType.UNIVERSITY][0][i];
+            if ( sizeFinal[TourType.UNIVERSITY][0][i] < 0.0f )
+                sizeFinal[TourType.UNIVERSITY][0][i] = 0.0f;
 
-            if (hiSize[TourType.WORK][i] < 0.0f) {
-                hiSize[TourType.WORK][i] = 0.0f;
-            }
-
-            if (totSize[TourType.UNIVERSITY][i] < 0.0f) {
-                totSize[TourType.UNIVERSITY][i] = 0.0f;
-            }
-
-            if (totSize[TourType.SCHOOL][i] < 0.0f) {
-                totSize[TourType.SCHOOL][i] = 0.0f;
-            }
-
-            loMdSize[TourType.WORK][i] = loSize[TourType.WORK][i] + mdSize[TourType.WORK][i];
-            totSize[TourType.WORK][i] = loSize[TourType.WORK][i] + mdSize[TourType.WORK][i] + hiSize[TourType.WORK][i];
+            sizeFinal[TourType.SCHOOL][0][i] = sizeScaled[TourType.SCHOOL][0][i] * shadowPrice[TourType.SCHOOL][0][i];
+            if ( sizeFinal[TourType.SCHOOL][0][i] < 0.0f )
+                sizeFinal[TourType.SCHOOL][0][i] = 0.0f;
         }
+        
     }
+    
+    
 
     public void updateShadowPrices() {
+        
+        // shadow proces are maintained for mandatory types only
+        
         for (int i = 1; i <= numberOfSubzones; i++) {
-			loShadowPrice[i] *= ((loSizeScaled[TourType.WORK][i] + 1) / (loAttrs[i] + 1));
-			mdShadowPrice[i] *= ((mdSizeScaled[TourType.WORK][i] + 1) / (mdAttrs[i] + 1));
-			hiShadowPrice[i] *= ((hiSizeScaled[TourType.WORK][i] + 1) / (hiAttrs[i] + 1));
-			univShadowPrice[i] *= ((totSizeScaled[TourType.UNIVERSITY][i] + 1) / (univAttrs[i] + 1));
-			schoolShadowPrice[i] *= ((totSizeScaled[TourType.SCHOOL][i] + 1) / (schoolAttrs[i] + 1));
+            for (int m=0; m < INCOME_CATEGORIES; m++)
+                shadowPrice[TourType.WORK][m][i] *= ((sizeScaled[TourType.WORK][m][i]+1) / (attrs[TourType.WORK][m][i]+1));
+
+            shadowPrice[TourType.UNIVERSITY][0][i] *= ((sizeScaled[TourType.UNIVERSITY][0][i]+1) / (attrs[TourType.UNIVERSITY][0][i]+1));
+            shadowPrice[TourType.SCHOOL][0][i] *= ((sizeScaled[TourType.SCHOOL][0][i]+1) / (attrs[TourType.SCHOOL][0][i]+1));
         }
     }
 
+    
+    
     public void updateShadowPricingInfo(int iteration) {
         String outputFile = (String) propertyMap.get("ShadowPricing.outputFile");
 
@@ -1147,41 +1644,41 @@ public class ZonalDataManager implements java.io.Serializable {
             ;
             tableData[i - 1][2] = i -
                 ((tableData[i - 1][1] - 1) * WALK_SEGMENTS) - 1;
-            tableData[i - 1][3] = (float) prods[0][i];
-            tableData[i - 1][4] = (float) prods[1][i];
-            tableData[i - 1][5] = (float) prods[2][i];
-            tableData[i - 1][6] = (float) prods[3][i];
-            tableData[i - 1][7] = (float) prods[4][i];
-            tableData[i - 1][8] = (float) loSizeOriginal[TourType.WORK][i];
-            tableData[i - 1][9] = (float) mdSizeOriginal[TourType.WORK][i];
-            tableData[i - 1][10] = (float) hiSizeOriginal[TourType.WORK][i];
-            tableData[i - 1][11] = (float) totSizeOriginal[TourType.UNIVERSITY][i];
-            tableData[i - 1][12] = (float) totSizeOriginal[TourType.SCHOOL][i];
-            tableData[i - 1][13] = (float) loSizeScaled[TourType.WORK][i];
-            tableData[i - 1][14] = (float) mdSizeScaled[TourType.WORK][i];
-            tableData[i - 1][15] = (float) hiSizeScaled[TourType.WORK][i];
-            tableData[i - 1][16] = (float) totSizeScaled[TourType.UNIVERSITY][i];
-            tableData[i - 1][17] = (float) totSizeScaled[TourType.SCHOOL][i];
-            tableData[i - 1][18] = (float) loSizePrevious[TourType.WORK][i];
-            tableData[i - 1][19] = (float) mdSizePrevious[TourType.WORK][i];
-            tableData[i - 1][20] = (float) hiSizePrevious[TourType.WORK][i];
-            tableData[i - 1][21] = (float) totSizePrevious[TourType.UNIVERSITY][i];
-            tableData[i - 1][22] = (float) totSizePrevious[TourType.SCHOOL][i];
-            tableData[i - 1][23] = (float) loAttrs[i];
-            tableData[i - 1][24] = (float) mdAttrs[i];
-            tableData[i - 1][25] = (float) hiAttrs[i];
-            tableData[i - 1][26] = (float) univAttrs[i];
-            tableData[i - 1][27] = (float) schoolAttrs[i];
-            tableData[i - 1][28] = (float) loSize[TourType.WORK][i];
-            tableData[i - 1][29] = (float) mdSize[TourType.WORK][i];
-            tableData[i - 1][30] = (float) hiSize[TourType.WORK][i];
-            tableData[i - 1][31] = (float) totSize[TourType.UNIVERSITY][i];
-            tableData[i - 1][32] = (float) totSize[TourType.SCHOOL][i];
-            tableData[i - 1][33] = (float) loShadowPrice[i];
-            tableData[i - 1][34] = (float) mdShadowPrice[i];
-            tableData[i - 1][35] = (float) hiShadowPrice[i];
-            tableData[i - 1][36] = (float) univShadowPrice[i];
-            tableData[i - 1][37] = (float) schoolShadowPrice[i];
+            tableData[i - 1][3]  = (float) prods[TourType.WORK][0][i];
+            tableData[i - 1][4]  = (float) prods[TourType.WORK][1][i];
+            tableData[i - 1][5]  = (float) prods[TourType.WORK][2][i];
+            tableData[i - 1][6]  = (float) prods[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][7]  = (float) prods[TourType.SCHOOL][0][i];
+            tableData[i - 1][8]  = (float) sizeOriginal[TourType.WORK][0][i];
+            tableData[i - 1][9]  = (float) sizeOriginal[TourType.WORK][1][i];
+            tableData[i - 1][10] = (float) sizeOriginal[TourType.WORK][2][i];
+            tableData[i - 1][11] = (float) sizeOriginal[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][12] = (float) sizeOriginal[TourType.SCHOOL][0][i];
+            tableData[i - 1][13] = (float) sizeScaled[TourType.WORK][0][i];
+            tableData[i - 1][14] = (float) sizeScaled[TourType.WORK][1][i];
+            tableData[i - 1][15] = (float) sizeScaled[TourType.WORK][2][i];
+            tableData[i - 1][16] = (float) sizeScaled[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][17] = (float) sizeScaled[TourType.SCHOOL][0][i];
+            tableData[i - 1][18] = (float) sizePrevious[TourType.WORK][0][i];
+            tableData[i - 1][19] = (float) sizePrevious[TourType.WORK][1][i];
+            tableData[i - 1][20] = (float) sizePrevious[TourType.WORK][2][i];
+            tableData[i - 1][21] = (float) sizePrevious[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][22] = (float) sizePrevious[TourType.SCHOOL][0][i];
+            tableData[i - 1][23] = (float) attrs[TourType.WORK][0][i];
+            tableData[i - 1][24] = (float) attrs[TourType.WORK][1][i];
+            tableData[i - 1][25] = (float) attrs[TourType.WORK][2][i];
+            tableData[i - 1][26] = (float) attrs[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][27] = (float) attrs[TourType.SCHOOL][0][i];
+            tableData[i - 1][28] = (float) sizeFinal[TourType.WORK][0][i];
+            tableData[i - 1][29] = (float) sizeFinal[TourType.WORK][1][i];
+            tableData[i - 1][30] = (float) sizeFinal[TourType.WORK][2][i];
+            tableData[i - 1][31] = (float) sizeFinal[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][32] = (float) sizeFinal[TourType.SCHOOL][0][i];
+            tableData[i - 1][33] = (float) shadowPrice[TourType.WORK][0][i];
+            tableData[i - 1][34] = (float) shadowPrice[TourType.WORK][1][i];
+            tableData[i - 1][35] = (float) shadowPrice[TourType.WORK][2][i];
+            tableData[i - 1][36] = (float) shadowPrice[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][37] = (float) shadowPrice[TourType.SCHOOL][0][i];
         }
 
         TableDataSet outputTable = TableDataSet.create(tableData, tableHeadings);
@@ -1198,11 +1695,10 @@ public class ZonalDataManager implements java.io.Serializable {
 
         // set initial size variables used in DC model for reporting
         for (int i = 1; i <= numberOfSubzones; i++) {
-            loSizePrevious[TourType.WORK][i] = loSize[TourType.WORK][i];
-            mdSizePrevious[TourType.WORK][i] = mdSize[TourType.WORK][i];
-            hiSizePrevious[TourType.WORK][i] = hiSize[TourType.WORK][i];
-            totSizePrevious[TourType.UNIVERSITY][i] = totSize[TourType.UNIVERSITY][i];
-            totSizePrevious[TourType.SCHOOL][i] = totSize[TourType.SCHOOL][i];
+            for (int m=0; m < INCOME_CATEGORIES; m++)
+                sizePrevious[TourType.WORK][m][i] = sizeFinal[TourType.WORK][m][i];
+            sizePrevious[TourType.UNIVERSITY][0][i] = sizeFinal[TourType.UNIVERSITY][0][i];
+            sizePrevious[TourType.SCHOOL][0][i] = sizeFinal[TourType.SCHOOL][0][i];
         }
 
         tableData = null;
@@ -1578,11 +2074,7 @@ public class ZonalDataManager implements java.io.Serializable {
 	    HashMap staticDataMap = new HashMap();
 
 		staticDataMap.put ( "walkPctArray", walkPctArray );
-		staticDataMap.put ( "loSize", loSize );
-		staticDataMap.put ( "mdSize", mdSize );
-		staticDataMap.put ( "hiSize", hiSize );
-		staticDataMap.put ( "loMdSize", loMdSize );
-		staticDataMap.put ( "totSize", totSize );
+		staticDataMap.put ( "sizeFinal", sizeFinal );
 		staticDataMap.put ( "parkRate", parkRate );
 		staticDataMap.put ( "urbType", urbType );
 		staticDataMap.put ( "cnty", cnty );
@@ -1617,11 +2109,7 @@ public class ZonalDataManager implements java.io.Serializable {
 	public void setStaticData ( HashMap staticDataMap ) {
 
 		walkPctArray     = (float[][])staticDataMap.get ( "walkPctArray" );
-		loSize           = (float[][])staticDataMap.get ( "loSize" );
-		mdSize           = (float[][])staticDataMap.get ( "mdSize" );
-		hiSize           = (float[][])staticDataMap.get ( "hiSize" );
-		loMdSize         = (float[][])staticDataMap.get ( "loMdSize" );
-		totSize          = (float[][])staticDataMap.get ( "totSize" );
+		sizeFinal        = (float[][][])staticDataMap.get ( "sizeFinal" );
 		parkRate         = (float[])staticDataMap.get ( "parkRate" );
 		urbType          = (float[])staticDataMap.get ( "urbType" );
 		cnty             = (float[])staticDataMap.get ( "cnty" );
@@ -1643,14 +2131,21 @@ public class ZonalDataManager implements java.io.Serializable {
 		logsumDcMDMD     = (float[][])staticDataMap.get ( "logsumDcMDMD" );
 		logsumDcPMNT     = (float[][])staticDataMap.get ( "logsumDcPMNT" );
 
-		numberOfZones = loSize[TourType.WORK].length;
+		numberOfZones = walkPctArray.length - 1;
 
 	}
 
 
 
-	public static float getTotSize ( int tourTypeIndex, int altIndex ) {
-		return totSize[tourTypeIndex][altIndex];
+	public static float getTotSize ( int tourTypeIndex, int subzone ) {
+        float result = 0.0f;
+        if ( tourTypeIndex == TourType.WORK )
+            for (int m=0; m < INCOME_CATEGORIES; m++)
+                result += sizeFinal[TourType.WORK][m][subzone];
+        else
+            result = sizeFinal[tourTypeIndex][0][subzone];
+		
+        return result;
 	}
 
 
@@ -1692,7 +2187,27 @@ public class ZonalDataManager implements java.io.Serializable {
 		propertyMap=ResourceUtil.getResourceBundleAsHashMap("morpc"+iteration);
 	}
 
+    
+    
+    
+    
+    // Inner class to define data structure for size variable adjustment data
+    
+    class Adjustment {
+        int zone;               // taz for which adjustment should be made
+        String code;            // adjustment code - M(multiply), A(add) or O(override)
+        double[] adjustment;    // adjustment value
+        Adjustment( int zone, String code, double[] adj ) {
+            this.zone = zone;
+            this.code = code;
+            this.adjustment = adj;
+        }
+    }
+    
 
+    
+    
+    
 	//for testing purpose
     public static void main(String[] args) {
         HashMap propertyMap = ResourceUtil.getResourceBundleAsHashMap("morpc");
