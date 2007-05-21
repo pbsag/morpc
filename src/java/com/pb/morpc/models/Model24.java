@@ -203,7 +203,7 @@ public class Model24 {
 			if (useMessageWindow) mw.setMessage2 ("Writing results to: " + outputFile );
 			try {
                 CSVFileWriter writer = new CSVFileWriter();
-                writer.writeFile(hhTable, new File(outputFile), new DecimalFormat("#.000000"));
+                writer.writeFile(hhTable, new File(outputFile), new DecimalFormat("#########"));
 			}
 			catch (IOException e) {
 				e.printStackTrace();

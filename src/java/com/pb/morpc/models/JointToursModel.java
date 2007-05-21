@@ -135,7 +135,7 @@ public class JointToursModel {
 
             //write M31.csv heading
             if (outputFile31 != null) {
-                writeRecord(outStream, tableHeadings31, file);
+                writeRecord(outStream, tableHeadings31);
             }
 
             // loop over all households in the hh table, write out current M31.csv record
@@ -353,7 +353,7 @@ public class JointToursModel {
                 //check to see if outputFile is defined, and if so write current record to it.
                 //write current record to M31.csv
                 if (outputFile31 != null) {
-                    writeRecord(outStream, tempRecord, file);
+                    writeRecord(outStream, tempRecord);
                 }
             }
 
@@ -515,7 +515,7 @@ public class JointToursModel {
                     }
 
                     //write M32.csv heading
-                    writeRecord(outStream, tableHeadings32, file);
+                    writeRecord(outStream, tableHeadings32);
 
                     // loop over all households in the hh table
                     for (int i = 0; i < hh.length; i++) {
@@ -533,7 +533,7 @@ public class JointToursModel {
                                 choiceFreqs[jt[j].getTourCompositionCode()]++;
 
 								//write current record to M32.csv
-								writeRecord(outStream, tempRecord, file);
+								writeRecord(outStream, tempRecord);
                             }
                         } else {
                             tempRecord[0] = hh_id;
@@ -543,7 +543,7 @@ public class JointToursModel {
 							choiceFreqs[0]++;
 
 							//write current record to M32.csv
-							writeRecord(outStream, tempRecord, file);
+							writeRecord(outStream, tempRecord);
                         }
 
                     }
@@ -823,7 +823,7 @@ public class JointToursModel {
                 }
 
                 //write M33.csv heading
-                writeRecord(outStream, tableHeadings33, file);
+                writeRecord(outStream, tableHeadings33);
 
                 // loop over all households in the hh table
                 for (int i = 0; i < hh.length; i++) {
@@ -853,7 +853,7 @@ public class JointToursModel {
                             choiceFreqs[2]++;
 
                         //write current record to M33.csv
-						writeRecord(outStream, tempRecord, file);
+						writeRecord(outStream, tempRecord);
                       }
                     }
                     else {
@@ -870,7 +870,7 @@ public class JointToursModel {
 					  choiceFreqs[0]++;
 
 					  //write current record to M33.csv
-					  writeRecord(outStream, tempRecord, file);
+					  writeRecord(outStream, tempRecord);
                     }
                   }
                 }
@@ -894,25 +894,21 @@ public class JointToursModel {
         }
     }
 
-    private void writeRecord(PrintWriter outStream, String[] record, File file) {
-        for (int i = 0; i < record.length; i++) {
-            if (i != 0) {
-                outStream.print(",");
-            }
+    private void writeRecord(PrintWriter outStream, String[] record) {
 
-            outStream.print(record[i]);
+        outStream.print( String.format("%s", record[0]) );
+        for (int i=1; i < record.length; i++) {
+            outStream.print( String.format(",%s", record[i]) );
         }
 
         outStream.println();
     }
 
-    private void writeRecord(PrintWriter outStream, float[] record, File file) {
-        for (int i = 0; i < record.length; i++) {
-            if (i != 0) {
-                outStream.print(",");
-            }
-
-            outStream.print(record[i]);
+    private void writeRecord(PrintWriter outStream, float[] record) {
+        
+        outStream.print( String.format("%.0f", record[0]) );
+        for (int i=1; i < record.length; i++) {
+            outStream.print( String.format(",%.0f", record[i]) );
         }
 
         outStream.println();

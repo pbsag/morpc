@@ -768,7 +768,7 @@ public class Model27 {
 			if (useMessageWindow) mw.setMessage2 ("Writing results to: " + outputFile );
 	        try {
                 CSVFileWriter writer = new CSVFileWriter();
-                writer.writeFile(hhTable, new File(outputFile), new DecimalFormat("#.000000"));
+                writer.writeFile(hhTable, new File(outputFile), new DecimalFormat("#########"));
 	        }
 	        catch (IOException e) {
 	            e.printStackTrace();
@@ -791,7 +791,7 @@ public class Model27 {
 			// write updated household table to new output file
 			try {
                 CSVFileWriter writer = new CSVFileWriter();
-                writer.writeFile(personTable, new File(personFile), new DecimalFormat("#.000000"));
+                writer.writeFile(personTable, new File(personFile), new DecimalFormat("#########"));
 			}
 			catch (IOException e) {
 				e.printStackTrace();

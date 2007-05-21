@@ -846,9 +846,12 @@ public class DTMOutput implements java.io.Serializable {
 		Tour[] it;
 		Tour[] st;
 		
-		ArrayList tableHeadings = null;
+        ArrayList tableHeadings = null;
+        ArrayList tableFormats = null;
 		float[] tableData = null;
-
+        String fieldFormat = null;
+        
+        
 		int[] tripsByMode = new int[7];
 		
 		Household tempHH = null;
@@ -950,6 +953,65 @@ public class DTMOutput implements java.io.Serializable {
 			tableHeadings.add("CRL_IVT_OB");
 			tableHeadings.add("CRL_IVT_IB");
 
+            
+            tableFormats = new ArrayList();
+            tableFormats.add("%.0f");     //HHID_FIELD
+            tableFormats.add("%.0f");     //SERIALNO_FIELD
+            tableFormats.add("%.0f");     //HHTAZID_FIELD
+            tableFormats.add("%.0f");     //person_id
+            tableFormats.add("%.0f");     //personType
+            tableFormats.add("%.0f");     //patternType
+            tableFormats.add("%.0f");     //tour_id
+            tableFormats.add("%.0f");     //tourCategory
+            tableFormats.add("%.0f");     //purpose
+            tableFormats.add("%.0f");     //jt_party_size
+            for (int i=0; i < maxPartySize; i++) {
+                tableFormats.add("%.0f"); //jt_person_i_id
+                tableFormats.add("%.0f"); //jt_person_i_type
+            }
+            tableFormats.add("%.0f");     //tour_orig
+            tableFormats.add("%.0f");     //tour_orig_WLKseg
+            tableFormats.add("%.0f");     //M5_DC_TAZid
+            tableFormats.add("%.0f");     //M5_DC_WLKseg
+            tableFormats.add("%.0f");     //M6_TOD
+            tableFormats.add("%.0f");     //M6_TOD_StartHr
+            tableFormats.add("%.0f");     //M6_TOD_EndHr
+            tableFormats.add("%.0f");     //M6_TOD_StartPeriod
+            tableFormats.add("%.0f");     //M6_TOD_EndPeriod
+            tableFormats.add("%.0f");     //TOD_Output_StartPeriod
+            tableFormats.add("%.0f");     //TOD_Output_EndPeriod
+            tableFormats.add("%.0f");     //M7_MC
+            tableFormats.add("%.0f");     //M7_Tour_SubmodeOB
+            tableFormats.add("%.0f");     //M7_Tour_SubmodeIB
+            tableFormats.add("%.0f");     //M81_SFC
+            tableFormats.add("%.0f");     //M82_SLC_OB
+            tableFormats.add("%.0f");     //M82_SLC_OB_Subzone
+            tableFormats.add("%.0f");     //M82_SLC_IB
+            tableFormats.add("%.0f");     //M82_SLC_IB_Subzone
+            tableFormats.add("%.0f");     //M83_SMC_Ik
+            tableFormats.add("%.0f");     //M83_SMC_Kj
+            tableFormats.add("%.0f");     //M83_SMC_Jk
+            tableFormats.add("%.0f");     //M83_SMC_Ki
+            tableFormats.add("%.2f");   //IJ_Dist
+            tableFormats.add("%.2f");   //JI_Dist
+            tableFormats.add("%.2f");   //IK_Dist
+            tableFormats.add("%.2f");   //KJ_Dist");
+            tableFormats.add("%.2f");   //JK_Dist");
+            tableFormats.add("%.2f");   //KI_Dist");
+            tableFormats.add("%.0f");     //M9_Parking_Zone
+            tableFormats.add("%.0f");     //Dist_Orig_Park
+            tableFormats.add("%.0f");     //Dist_Park_Dest
+            tableFormats.add("%.2f");   //LBS_IVT_OB
+            tableFormats.add("%.2f");   //LBS_IVT_IB
+            tableFormats.add("%.2f");   //EBS_IVT_OB
+            tableFormats.add("%.2f");   //EBS_IVT_IB
+            tableFormats.add("%.2f");   //BRT_IVT_OB
+            tableFormats.add("%.2f");   //BRT_IVT_IB
+            tableFormats.add("%.2f");   //LRT_IVT_OB
+            tableFormats.add("%.2f");   //LRT_IVT_IB
+            tableFormats.add("%.2f");   //CRL_IVT_OB
+            tableFormats.add("%.2f");   //CRL_IVT_IB
+
 			// define an array for use in writing output file
 			tableData = new float[tableHeadings.size()];
 
@@ -961,8 +1023,7 @@ public class DTMOutput implements java.io.Serializable {
 				//Print titles
 				outStream.print( (String)tableHeadings.get(0) );
 				for (int i = 1; i < tableHeadings.size(); i++) {
-					outStream.print(",");
-					outStream.print( (String)tableHeadings.get(i) );
+					outStream.print( String.format(",%s", (String)tableHeadings.get(i)) );
 				}
 				outStream.println();
 			
@@ -1189,10 +1250,11 @@ public class DTMOutput implements java.io.Serializable {
 						
 						if (outputFileDTM != null) {
 
-							outStream.print( tableData[0] );
+                            fieldFormat = (String)tableFormats.get(0);
+                            outStream.print( String.format(fieldFormat, tableData[0]) );
 							for (int c=1; c < tableHeadings.size(); c++) {
-								outStream.print(",");
-								outStream.print( tableData[c] );
+                                fieldFormat = "," + (String)tableFormats.get(c);
+                                outStream.print( String.format(fieldFormat, tableData[c]) );
 							}
 							outStream.println();
 
@@ -1420,12 +1482,13 @@ public class DTMOutput implements java.io.Serializable {
 						
 						if (outputFileDTM != null) {
 
-							outStream.print( tableData[0] );
-							for (int c=1; c < tableHeadings.size(); c++) {
-								outStream.print(",");
-								outStream.print( tableData[c] );
-							}
-							outStream.println();
+                            fieldFormat = (String)tableFormats.get(0);
+                            outStream.print( String.format(fieldFormat, tableData[0]) );
+                            for (int c=1; c < tableHeadings.size(); c++) {
+                                fieldFormat = "," + (String)tableFormats.get(c);
+                                outStream.print( String.format(fieldFormat, tableData[c]) );
+                            }
+                            outStream.println();
 
 						}					
 					
@@ -1645,11 +1708,12 @@ public class DTMOutput implements java.io.Serializable {
 						
 						if (outputFileDTM != null) {
 
-							outStream.print( tableData[0] );
-							for (int c=1; c < tableHeadings.size(); c++) {
-								outStream.print(",");
-								outStream.print( tableData[c] );
-							}
+                            fieldFormat = (String)tableFormats.get(0);
+                            outStream.print( String.format(fieldFormat, tableData[0]) );
+                            for (int c=1; c < tableHeadings.size(); c++) {
+                                fieldFormat = "," + (String)tableFormats.get(c);
+                                outStream.print( String.format(fieldFormat, tableData[c]) );
+                            }
 							outStream.println();
 
 						}					
@@ -1860,11 +1924,12 @@ public class DTMOutput implements java.io.Serializable {
 
 									if (outputFileDTM != null) {
 
-										outStream.print( tableData[0] );
-										for (int c=1; c < tableHeadings.size(); c++) {
-											outStream.print(",");
-											outStream.print( tableData[c] );
-										}
+                                        fieldFormat = (String)tableFormats.get(0);
+                                        outStream.print( String.format(fieldFormat, tableData[0]) );
+                                        for (int c=1; c < tableHeadings.size(); c++) {
+                                            fieldFormat = "," + (String)tableFormats.get(c);
+                                            outStream.print( String.format(fieldFormat, tableData[c]) );
+                                        }
 										outStream.println();
 					
 									}

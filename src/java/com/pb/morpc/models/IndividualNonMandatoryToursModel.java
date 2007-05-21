@@ -779,10 +779,9 @@ public class IndividualNonMandatoryToursModel {
 					choiceFreqs[alt]++;
 					
 					// write out .csv file record for this tour
-					outStream.print( tableData[0] );
+                    outStream.print( String.format("%.0f", tableData[0]) );
 					for (int c=1; c < tableHeadings.size(); c++) {
-						outStream.print(",");
-						outStream.print( tableData[c] );
+                        outStream.print( String.format(",%.0f", tableData[c]) );
 					}
 					outStream.println();
 					
@@ -1118,10 +1117,9 @@ public class IndividualNonMandatoryToursModel {
 	    
 	                        
 								// write out .csv file record for this tour
-								outStream.print( tableData[0] );
+                                outStream.print( String.format("%.0f", tableData[0]) );
 								for (int c=1; c < tableHeadings.size(); c++) {
-									outStream.print(",");
-									outStream.print( tableData[c] );
+                                    outStream.print( String.format(",%.0f", tableData[c]) );
 								}
 								outStream.println();
 							}
@@ -1139,10 +1137,9 @@ public class IndividualNonMandatoryToursModel {
 							choiceFreqs[0]++;
 
 							// write out .csv file record for this tour
-							outStream.print( tableData[0] );
+                            outStream.print( String.format("%.0f", tableData[0]) );
 							for (int c=1; c < tableHeadings.size(); c++) {
-								outStream.print(",");
-								outStream.print( tableData[c] );
+                                outStream.print( String.format(",%.0f", tableData[c]) );
 							}
 							outStream.println();
 						}
@@ -1542,10 +1539,9 @@ public class IndividualNonMandatoryToursModel {
 								choiceFreqs[personChoice[p-1]]++;
 	                        
 								// write out .csv file record for this tour
-								outStream.print( tableData[0] );
+                                outStream.print( String.format("%.0f", tableData[0]) );
 								for (int c=1; c < tableHeadings.size(); c++) {
-									outStream.print(",");
-									outStream.print( tableData[c] );
+                                    outStream.print( String.format(",%.0f", tableData[c]) );
 								}
 								outStream.println();
 							}
@@ -1950,10 +1946,9 @@ public class IndividualNonMandatoryToursModel {
 								choiceFreqs[personChoice[p-1]]++;
 	                        
 								// write out .csv file record for this tour
-								outStream.print( tableData[0] );
+                                outStream.print( String.format("%.0f", tableData[0]) );
 								for (int c=1; c < tableHeadings.size(); c++) {
-									outStream.print(",");
-									outStream.print( tableData[c] );
+                                    outStream.print( String.format(",%.0f", tableData[c]) );
 								}
 								outStream.println();
 							}
@@ -2357,10 +2352,9 @@ public class IndividualNonMandatoryToursModel {
 								choiceFreqs[personChoice[p-1]]++;
 	                        
 								// write out .csv file record for this tour
-								outStream.print( tableData[0] );
+                                outStream.print( String.format("%.0f", tableData[0]) );
 								for (int c=1; c < tableHeadings.size(); c++) {
-									outStream.print(",");
-									outStream.print( tableData[c] );
+                                    outStream.print( String.format(",%.0f", tableData[c]) );
 								}
 								outStream.println();
 							}
@@ -2702,10 +2696,9 @@ public class IndividualNonMandatoryToursModel {
 							choiceFreqs[tourChoice[t]]++;
 							
 							// write out .csv file record for this tour
-							outStream.print( tableData[0] );
+                            outStream.print( String.format("%.0f", tableData[0]) );
 							for (int c=1; c < tableHeadings.size(); c++) {
-								outStream.print(",");
-								outStream.print( tableData[c] );
+                                outStream.print( String.format(",%.0f", tableData[c]) );
 							}
 							outStream.println();
 						}
@@ -2721,10 +2714,9 @@ public class IndividualNonMandatoryToursModel {
 						choiceFreqs[0]++;
 
 						// write out .csv file record for this tour
-						outStream.print( tableData[0] );
+						outStream.print( String.format("%.0f", tableData[0]) );
 						for (int c=1; c < tableHeadings.size(); c++) {
-							outStream.print(",");
-							outStream.print( tableData[c] );
+                            outStream.print( String.format(",%.0f", tableData[c]) );
 						}
 						outStream.println();
 					}
