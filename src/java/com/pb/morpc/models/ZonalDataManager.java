@@ -79,6 +79,7 @@ public class ZonalDataManager implements java.io.Serializable {
     private HashMap propertyMap;
     private float[][] attractions;
     private float[][][] sizeOriginal;
+    private float[][][] sizeOriginalAdj;
     private float[][][] sizeBalance;
     private float[][][] sizeScaled;
     private float[][][] sizePrevious;
@@ -152,6 +153,9 @@ public class ZonalDataManager implements java.io.Serializable {
         // original copies of size variables before any adjustments
         sizeOriginal = new float[TourType.TYPES + 1][][];
         
+        // original copies of size variables after adjustments, before scaling
+        sizeOriginalAdj = new float[TourType.TYPES + 1][][];
+        
         // copies of size variables after adjustments, used in balancing calculations
         sizeBalance = new float[TourType.TYPES + 1][][];
 
@@ -180,6 +184,7 @@ public class ZonalDataManager implements java.io.Serializable {
             if ( i == TourType.WORK ) {
                 sizeFinal[i] = new float[INCOME_CATEGORIES][];
                 sizeOriginal[i] = new float[INCOME_CATEGORIES][];
+                sizeOriginalAdj[i] = new float[INCOME_CATEGORIES][];
                 sizeBalance[i] = new float[INCOME_CATEGORIES][];
                 sizeScaled[i] = new float[INCOME_CATEGORIES][];
                 sizePrevious[i] = new float[INCOME_CATEGORIES][];
@@ -194,6 +199,7 @@ public class ZonalDataManager implements java.io.Serializable {
             else {
                 sizeFinal[i] = new float[1][];
                 sizeOriginal[i] = new float[1][];
+                sizeOriginalAdj[i] = new float[1][];
                 sizeBalance[i] = new float[1][];
                 sizeScaled[i] = new float[1][];
                 sizePrevious[i] = new float[1][];
@@ -703,6 +709,7 @@ public class ZonalDataManager implements java.io.Serializable {
             for (int i=0; i < INCOME_CATEGORIES; i++) {
                 sizeFinal[tourType][i] = new float[numberOfSubzones + 1];
                 sizeOriginal[tourType][i] = new float[numberOfSubzones + 1];
+                sizeOriginalAdj[tourType][i] = new float[numberOfSubzones + 1];
                 sizeBalance[tourType][i] = new float[numberOfSubzones + 1];
                 sizeScaled[tourType][i] = new float[numberOfSubzones + 1];
                 sizePrevious[tourType][i] = new float[numberOfSubzones + 1];
@@ -716,6 +723,7 @@ public class ZonalDataManager implements java.io.Serializable {
         else {
             sizeFinal[tourType][0] = new float[numberOfSubzones + 1];
             sizeOriginal[tourType][0] = new float[numberOfSubzones + 1];
+            sizeOriginalAdj[tourType][0] = new float[numberOfSubzones + 1];
             sizeBalance[tourType][0] = new float[numberOfSubzones + 1];
             sizeScaled[tourType][0] = new float[numberOfSubzones + 1];
             sizePrevious[tourType][0] = new float[numberOfSubzones + 1];
@@ -780,8 +788,27 @@ public class ZonalDataManager implements java.io.Serializable {
         int typeCategory = -1;
 
         Iterator it = null;
+
         
         
+        
+        // set initial sizeBalance values to original size variable values determined when ZonalDataManager object was created.
+        for (int k = 1; k <= numberOfSubzones; k++) {
+            for (int m=0; m < INCOME_CATEGORIES; m++) {
+                sizeBalance[TourType.WORK][m][k] = sizeOriginal[TourType.WORK][m][k];
+            }
+            sizeBalance[TourType.UNIVERSITY][0][k] = sizeOriginal[TourType.UNIVERSITY][0][k];
+            sizeBalance[TourType.SCHOOL][0][k] = sizeOriginal[TourType.SCHOOL][0][k];
+
+            for (int j=TourType.ESCORTING; j <= TourType.ATWORK; j++) {
+                sizeBalance[j][0][k] = sizeOriginal[j][0][k];
+            }
+
+        }
+
+        
+        
+        // initialize total prods and attrs arrays
         for (int i=1; i <= TourType.TYPES; i++) {
             if ( i == TourType.WORK ) {
                 for (int m=0; m < INCOME_CATEGORIES; m++) {
@@ -803,6 +830,14 @@ public class ZonalDataManager implements java.io.Serializable {
         // determine number of tour productions of each type
         // sum unadjusted, unscaled attractions by type for reporting
         Tour[] mt = null;
+
+        // initalize productions arrays
+        for (int k=1; k < numberOfSubzones; k++) {
+            for (int j=0; j < INCOME_CATEGORIES; j++)
+                prods[TourType.WORK][j][k] = 0;
+            prods[TourType.UNIVERSITY][0][k] = 0;
+            prods[TourType.SCHOOL][0][k] = 0;
+        }
 
         for (int i = 0; i < hh.length; i++) {
             mt = hh[i].getMandatoryTours();
@@ -1025,6 +1060,16 @@ public class ZonalDataManager implements java.io.Serializable {
         }
         
 
+
+        
+        // save original adjusted size variable arrays prior to balancing
+        for (int k = 1; k <= numberOfSubzones; k++) {
+            for (int m=0; m < INCOME_CATEGORIES; m++) {
+                sizeOriginalAdj[TourType.WORK][m][k] = sizeBalance[TourType.WORK][m][k];
+            }
+            sizeOriginalAdj[TourType.UNIVERSITY][0][k] = sizeBalance[TourType.UNIVERSITY][0][k];
+            sizeOriginalAdj[TourType.SCHOOL][0][k] = sizeBalance[TourType.SCHOOL][0][k];
+        }
         
         
         // balance initial size variables
@@ -1604,11 +1649,16 @@ public class ZonalDataManager implements java.io.Serializable {
         tableHeadings.add("hi_prods");
         tableHeadings.add("univ_prods");
         tableHeadings.add("school_prods");
-        tableHeadings.add("lo_size_original");
-        tableHeadings.add("md_size_original");
-        tableHeadings.add("hi_size_original");
-        tableHeadings.add("univ_size_original");
-        tableHeadings.add("school_size_original");
+        tableHeadings.add("lo_size_orig");
+        tableHeadings.add("md_size_orig");
+        tableHeadings.add("hi_size_orig");
+        tableHeadings.add("univ_size_orig");
+        tableHeadings.add("school_size_orig");
+        tableHeadings.add("lo_size_orig_adj");
+        tableHeadings.add("md_size_orig_adj");
+        tableHeadings.add("hi_size_orig_adj");
+        tableHeadings.add("univ_size_orig_adj");
+        tableHeadings.add("school_size_orig_adj");
         tableHeadings.add("lo_size_scaled");
         tableHeadings.add("md_size_scaled");
         tableHeadings.add("hi_size_scaled");
@@ -1654,31 +1704,36 @@ public class ZonalDataManager implements java.io.Serializable {
             tableData[i - 1][10] = (float) sizeOriginal[TourType.WORK][2][i];
             tableData[i - 1][11] = (float) sizeOriginal[TourType.UNIVERSITY][0][i];
             tableData[i - 1][12] = (float) sizeOriginal[TourType.SCHOOL][0][i];
-            tableData[i - 1][13] = (float) sizeScaled[TourType.WORK][0][i];
-            tableData[i - 1][14] = (float) sizeScaled[TourType.WORK][1][i];
-            tableData[i - 1][15] = (float) sizeScaled[TourType.WORK][2][i];
-            tableData[i - 1][16] = (float) sizeScaled[TourType.UNIVERSITY][0][i];
-            tableData[i - 1][17] = (float) sizeScaled[TourType.SCHOOL][0][i];
-            tableData[i - 1][18] = (float) sizePrevious[TourType.WORK][0][i];
-            tableData[i - 1][19] = (float) sizePrevious[TourType.WORK][1][i];
-            tableData[i - 1][20] = (float) sizePrevious[TourType.WORK][2][i];
-            tableData[i - 1][21] = (float) sizePrevious[TourType.UNIVERSITY][0][i];
-            tableData[i - 1][22] = (float) sizePrevious[TourType.SCHOOL][0][i];
-            tableData[i - 1][23] = (float) attrs[TourType.WORK][0][i];
-            tableData[i - 1][24] = (float) attrs[TourType.WORK][1][i];
-            tableData[i - 1][25] = (float) attrs[TourType.WORK][2][i];
-            tableData[i - 1][26] = (float) attrs[TourType.UNIVERSITY][0][i];
-            tableData[i - 1][27] = (float) attrs[TourType.SCHOOL][0][i];
-            tableData[i - 1][28] = (float) sizeFinal[TourType.WORK][0][i];
-            tableData[i - 1][29] = (float) sizeFinal[TourType.WORK][1][i];
-            tableData[i - 1][30] = (float) sizeFinal[TourType.WORK][2][i];
-            tableData[i - 1][31] = (float) sizeFinal[TourType.UNIVERSITY][0][i];
-            tableData[i - 1][32] = (float) sizeFinal[TourType.SCHOOL][0][i];
-            tableData[i - 1][33] = (float) shadowPrice[TourType.WORK][0][i];
-            tableData[i - 1][34] = (float) shadowPrice[TourType.WORK][1][i];
-            tableData[i - 1][35] = (float) shadowPrice[TourType.WORK][2][i];
-            tableData[i - 1][36] = (float) shadowPrice[TourType.UNIVERSITY][0][i];
-            tableData[i - 1][37] = (float) shadowPrice[TourType.SCHOOL][0][i];
+            tableData[i - 1][13] = (float) sizeOriginalAdj[TourType.WORK][0][i];
+            tableData[i - 1][14] = (float) sizeOriginalAdj[TourType.WORK][1][i];
+            tableData[i - 1][15] = (float) sizeOriginalAdj[TourType.WORK][2][i];
+            tableData[i - 1][16] = (float) sizeOriginalAdj[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][17] = (float) sizeOriginalAdj[TourType.SCHOOL][0][i];
+            tableData[i - 1][18] = (float) sizeScaled[TourType.WORK][0][i];
+            tableData[i - 1][19] = (float) sizeScaled[TourType.WORK][1][i];
+            tableData[i - 1][20] = (float) sizeScaled[TourType.WORK][2][i];
+            tableData[i - 1][21] = (float) sizeScaled[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][22] = (float) sizeScaled[TourType.SCHOOL][0][i];
+            tableData[i - 1][23] = (float) sizePrevious[TourType.WORK][0][i];
+            tableData[i - 1][24] = (float) sizePrevious[TourType.WORK][1][i];
+            tableData[i - 1][25] = (float) sizePrevious[TourType.WORK][2][i];
+            tableData[i - 1][26] = (float) sizePrevious[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][27] = (float) sizePrevious[TourType.SCHOOL][0][i];
+            tableData[i - 1][28] = (float) attrs[TourType.WORK][0][i];
+            tableData[i - 1][29] = (float) attrs[TourType.WORK][1][i];
+            tableData[i - 1][30] = (float) attrs[TourType.WORK][2][i];
+            tableData[i - 1][31] = (float) attrs[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][32] = (float) attrs[TourType.SCHOOL][0][i];
+            tableData[i - 1][33] = (float) sizeFinal[TourType.WORK][0][i];
+            tableData[i - 1][34] = (float) sizeFinal[TourType.WORK][1][i];
+            tableData[i - 1][35] = (float) sizeFinal[TourType.WORK][2][i];
+            tableData[i - 1][36] = (float) sizeFinal[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][37] = (float) sizeFinal[TourType.SCHOOL][0][i];
+            tableData[i - 1][38] = (float) shadowPrice[TourType.WORK][0][i];
+            tableData[i - 1][39] = (float) shadowPrice[TourType.WORK][1][i];
+            tableData[i - 1][40] = (float) shadowPrice[TourType.WORK][2][i];
+            tableData[i - 1][41] = (float) shadowPrice[TourType.UNIVERSITY][0][i];
+            tableData[i - 1][42] = (float) shadowPrice[TourType.SCHOOL][0][i];
         }
 
         TableDataSet outputTable = TableDataSet.create(tableData, tableHeadings);
