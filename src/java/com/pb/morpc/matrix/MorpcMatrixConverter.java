@@ -291,6 +291,7 @@ public class MorpcMatrixConverter {
 	private void convert ( ArrayList fileList, String tppFileName) {
 
 		Matrix[] mArray = new Matrix[fileList.size()];
+        String[] mNames = new String[fileList.size()];
 		
 		
 //		systemCommand ( "set path" );
@@ -303,11 +304,14 @@ public class MorpcMatrixConverter {
 			MatrixReader binReader = MatrixReader.createReader ( MatrixType.BINARY, new File( (String)fileList.get(i) ) );
 			mArray[i] = binReader.readMatrix();
 			
+            String name = (String)fileList.get(i);
+            mNames[i] = name.substring( 0, name.indexOf('.') );
+            
 			logger.info( "matrix total for table: " + (String)fileList.get(i) + " = " + mArray[i].getSum() );				
 		}
 
 		MatrixWriter tppWriter = MatrixWriter.createWriter (MatrixType.TPPLUS, new File( tppFileName ) );
-		tppWriter.writeMatrices ( Integer.toString(fileList.size()), mArray );
+		tppWriter.writeMatrices ( mNames, mArray );
 	}
 
 

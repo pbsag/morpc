@@ -8,9 +8,7 @@ package com.pb.morpc.models;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
-//import com.pb.common.util.ObjectUtil;
-import com.pb.morpc.matrix.MorpcMatrixZipper;
-import com.pb.morpc.matrix.MorpcMatrixAggregater;
+import com.pb.morpc.matrix.MorpcMatrixAggregaterTpp;
 import com.pb.morpc.models.HouseholdArrayManager;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.synpop.pums2000.PUMSData;
@@ -26,36 +24,20 @@ import org.apache.log4j.Logger;
 
 public class MorpcModelBase {
 
-//	static final String CMD_LOCATION = "c:\\winnt\\system32";
 	static final String CMD_LOCATION = "c:\\windows\\system32";
-	static final String TPP_TO_BINARY_PROGRAM_DIRECTORY = "c:\\jim\\projects\\model\\6_Pgms\\0_skim";
-//	static final String TPP_TO_BINARY_PROGRAM_DIRECTORY = "c:\\jim\\util\\workspace3.0m4\\common-base\\src\\c\\matrix\\tpplus_to_binary\\release";
-	static final String TPP_TO_BINARY_PROGRAM = "convertTpplusBinaryMorpc.exe";
-	static final String BINARY_TO_TPP_PROGRAM_DIRECTORY = "c:\\jim\\projects\\model\\6_Pgms\\0_skim";
-//	static final String BINARY_TO_TPP_PROGRAM_DIRECTORY = "c:\\jim\\util\\workspace3.0m4\\common-base\\src\\c\\matrix\\binary_to_tpplus\\release";
-	static final String BINARY_TO_TPP_PROGRAM = "convertBinaryTpplusMorpc.exe";
-
-	/*
-	String TPP_TO_BINARY_PROGRAM_DIRECTORY = null;
-    String BINARY_TO_TPP_PROGRAM_DIRECTORY = null;
-    String TPP_TO_BINARY_PROGRAM=null;
-    String BINARY_TO_TPP_PROGRAM=null;
-    */    
-    static Logger logger = Logger.getLogger("com.pb.morpc.models");
+    static Logger logger = Logger.getLogger(MorpcModelBase.class);
     
 	protected HashMap propertyMap = null;
 	protected HouseholdArrayManager hhMgr = null;
 	protected ZonalDataManager zdm = null;
     protected TODDataManager tdm = null;
 
-//    static final String PROPERTIES_FILE_BASENAME = "morpc";
     static final String PROPERTIES_FILE_BASENAME = "morpc_bench";
-	
+
+    
 	
     public MorpcModelBase () {
 
-
-		
         propertyMap = ResourceUtil.getResourceBundleAsHashMap ( PROPERTIES_FILE_BASENAME );
 
 
@@ -68,33 +50,19 @@ public class MorpcModelBase {
 		SeededRandom.setSeed ( Integer.parseInt( (String)propertyMap.get("RandomSeed") ) );
 
 		
-		
-		// call a C program to read the tpplus skims matrices and create the binary format skims matrices needed for the model run
-		if ( ((String)propertyMap.get("RUN_TPPLUS_SKIMS_CONVERTER")).equalsIgnoreCase("true") ) {
-		    
-			String tppDir = (String)propertyMap.get("SkimsDirectory.tpplus");
-			String binDir = (String)propertyMap.get("SkimsDirectory.binary");
-		    runDOSCommand ( TPP_TO_BINARY_PROGRAM_DIRECTORY + "\\" + TPP_TO_BINARY_PROGRAM + " " + tppDir + " " + binDir );
-			logger.info( "done converting tpplus to binary skim matrices" );				
+        // if new skims were generated as part of this model run or prior to it, run aggregation step for TPP submode skims
+        if ( ((String)propertyMap.get("AGGREGATE_TPPLUS_SKIM_MATRICES")).equalsIgnoreCase("TRUE") ) {
+            
+            logger.info( "aggregating slc skim matrices" );                
+            MorpcMatrixAggregaterTpp ma = new MorpcMatrixAggregaterTpp(propertyMap);
+            ma.aggregateSlcSkims();
+            logger.info( "finished aggregating slc skim matrices" );                
 
-		    
-			MorpcMatrixAggregater ma = new MorpcMatrixAggregater(propertyMap);
-			ma.aggregateSlcSkims();
-			logger.info( "done aggregating slc skim matrices" );				
-
-			
-			MorpcMatrixZipper mx = new MorpcMatrixZipper (propertyMap);
-			mx.convertHwyBinaryToZip();	
-			mx.convertWTBinaryToZip();	
-			mx.convertDTBinaryToZip();	
-			logger.info( "done converting MORPC Binary matrices to Zip matrices" );				
-			
-			ma = null;
-			mx = null;
-		}
-		
-		
-		
+        }
+        
+        
+        
+        
 		// build a synthetic population
 		if ( ((String)propertyMap.get("RUN_POPULATION_SYNTHESIS_MODEL")).equalsIgnoreCase("true") )
 			runPopulationSynthesizer();
@@ -104,11 +72,19 @@ public class MorpcModelBase {
 		// assign auto ownership attributes to population
 		if ( ((String)propertyMap.get("RUN_AUTO_OWNERSHIP_MODEL")).equalsIgnoreCase("true") ) {
 
-			//update accessibily indices, and then write it to hard drive as a .csv file.
-			AccessibilityIndices accInd=new AccessibilityIndices( PROPERTIES_FILE_BASENAME );
-			accInd.writeIndices();
+            logger.info( "computing accessibilities." );                
+
+            //update accessibily indices, and then write it to hard drive as a .csv file.
+            if ( ((String)propertyMap.get("format")).equalsIgnoreCase("tpplus") ) {
+                AccessibilityIndicesTpp accInd = new AccessibilityIndicesTpp( PROPERTIES_FILE_BASENAME );
+                accInd.writeIndices();
+            }
+            else {
+                AccessibilityIndices accInd = new AccessibilityIndices( PROPERTIES_FILE_BASENAME );
+                accInd.writeIndices();
+            }
 	
-			logger.info ("Memory after computing accessibilities");
+			logger.info ("finished computing accessibilities");
 
 			runAutoOwnershipModel();
 		    

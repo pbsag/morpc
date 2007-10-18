@@ -124,18 +124,13 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
 		count++;		
 
-		int dummy = 0;
-		if (hh_id == 1908) {
-		    dummy = 1;
-		}
-
 		// get the array of mandatory tours for this household.	
 		if (hh.getMandatoryTours() == null)
 			return;
 			
 		
-		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
+//		// get person array for this household.
+//		Person[] persons = hh.getPersonArray();
 
 
 		hh.setTourCategory( TourType.MANDATORY_CATEGORY );
@@ -193,10 +188,10 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			hh.setTourID ( t );
 
 
-			int orig = hh_taz_id;
+//			int orig = hh_taz_id;
 			int chosenMode = hh.mandatoryTours[t].getMode();
-			int chosenDest = hh.mandatoryTours[t].getDestTaz();
-			int chosenShrtWlkSeg = hh.mandatoryTours[t].getDestShrtWlk();
+//			int chosenDest = hh.mandatoryTours[t].getDestTaz();
+//			int chosenShrtWlkSeg = hh.mandatoryTours[t].getDestShrtWlk();
 			int autoTransit = hh.mandatoryTours[t].getMode() < 3 ? 0 : 1;
 
 			
@@ -711,7 +706,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			
 
 		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
+//		Person[] persons = hh.getPersonArray();
 
 
 		hh.setTourCategory( TourType.JOINT_CATEGORY );
@@ -752,10 +747,10 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			hh.setPersonID ( person );
 			hh.setTourID ( t );
 
-			int orig = hh_taz_id;
+//			int orig = hh_taz_id;
 			int chosenMode = hh.jointTours[t].getMode();
-			int chosenDest = hh.jointTours[t].getDestTaz();
-			int chosenShrtWlkSeg = hh.jointTours[t].getDestShrtWlk();
+//			int chosenDest = hh.jointTours[t].getDestTaz();
+//			int chosenShrtWlkSeg = hh.jointTours[t].getDestShrtWlk();
 			int autoTransit = hh.jointTours[t].getMode() < 3 ? 0 : 1;
 
 
@@ -1273,7 +1268,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			
 			
 		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
+//		Person[] persons = hh.getPersonArray();
 
 
 		hh.setTourCategory( TourType.NON_MANDATORY_CATEGORY );
@@ -1315,10 +1310,10 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			hh.setPersonID ( person );
 			hh.setTourID ( t );
 
-			int orig = hh_taz_id;
+//			int orig = hh_taz_id;
 			int chosenMode = hh.indivTours[t].getMode();
-			int chosenDest = hh.indivTours[t].getDestTaz();
-			int chosenShrtWlkSeg = hh.indivTours[t].getDestShrtWlk();
+//			int chosenDest = hh.indivTours[t].getDestTaz();
+//			int chosenShrtWlkSeg = hh.indivTours[t].getDestShrtWlk();
 			int autoTransit = hh.indivTours[t].getMode() < 3 ? 0 : 1;
 
 
@@ -1826,10 +1821,10 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 		long markTime=0;
 
 
-		Tour[] st;
-		int todAlt;
-		int startP;
-		int endP;
+//		Tour[] st;
+//		int todAlt;
+//		int startP;
+//		int endP;
 
 
 		int tourTypeIndex=0;
@@ -1846,7 +1841,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 		
 
 		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
+//		Person[] persons = hh.getPersonArray();
 
 
 		hh.setTourCategory( TourType.AT_WORK_CATEGORY );
@@ -1892,10 +1887,10 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				}
 			
 
-				int orig = hh.mandatoryTours[t].subTours[s].getOrigTaz();
+//				int orig = hh.mandatoryTours[t].subTours[s].getOrigTaz();
 				int chosenMode = hh.mandatoryTours[t].subTours[s].getMode();
-				int chosenDest = hh.mandatoryTours[t].subTours[s].getDestTaz();
-				int chosenShrtWlkSeg = hh.mandatoryTours[t].subTours[s].getDestShrtWlk();
+//				int chosenDest = hh.mandatoryTours[t].subTours[s].getDestTaz();
+//				int chosenShrtWlkSeg = hh.mandatoryTours[t].subTours[s].getDestShrtWlk();
 				int autoTransit = hh.mandatoryTours[t].subTours[s].getMode() < 3 ? 0 : 1;
 
         
@@ -2245,10 +2240,10 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 		long markTime=0;
 
-		Tour[] st;
-		int todAlt;
-		int startP;
-		int endP;
+//		Tour[] st;
+//		int todAlt;
+//		int startP;
+//		int endP;
 
 
 		hh_id     = hh.getID();

@@ -15,11 +15,11 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.DiskObjectArray;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
-import com.pb.morpc.matrix.MorpcMatrixAggregater;
+import com.pb.morpc.matrix.MorpcMatrixAggregaterTpp;
 import com.pb.morpc.matrix.MorpcMatrixZipper;
-import com.pb.morpc.models.AccessibilityIndices;
+import com.pb.morpc.models.AccessibilityIndicesTpp;
 import com.pb.morpc.models.AutoOwnership;
-import com.pb.morpc.models.DTMOutput;
+import com.pb.morpc.models.DTMOutput2;
 import com.pb.morpc.models.IndividualNonMandatoryToursModel;
 import com.pb.morpc.models.JointToursModel;
 import com.pb.morpc.models.Model21;
@@ -210,46 +210,30 @@ public class MorpcModelServer extends MessageProcessingTask {
         }
 		
         
-	    // call a C program to read the tpplus skims matrices and create the binary format skims matrices needed for the model run
-	    if (((String) propertyMap.get("RUN_TPPLUS_SKIMS_CONVERTER")).equalsIgnoreCase( "true")) {
-	
-	        String TPP_TO_BINARY_PROGRAM_DIRECTORY = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM_DIRECTORY");
-	        String TPP_TO_BINARY_PROGRAM = (String) propertyMap.get("TPP_TO_BINARY_PROGRAM");
-		
-	        String tppDir = (String) propertyMap.get("SkimsDirectory.tpplus");
-	        String binDir = (String) propertyMap.get("SkimsDirectory.binary");
-	        runDOSCommand(TPP_TO_BINARY_PROGRAM_DIRECTORY + "\\" + TPP_TO_BINARY_PROGRAM + " " + tppDir + " " + binDir);
-	        logger.info("done converting tpplus to binary skim matrices");
-		
-	        MorpcMatrixAggregater ma = new MorpcMatrixAggregater(propertyMap);
-	        ma.aggregateSlcSkims();
-	        logger.info("done aggregating slc skim matrices");
-		
-	        MorpcMatrixZipper mx = new MorpcMatrixZipper(propertyMap);
-	        mx.convertHwyBinaryToZip();
-	        mx.convertWTBinaryToZip();
-	        mx.convertDTBinaryToZip();
-	        logger.info("done converting MORPC Binary matrices to Zip matrices");
-	
-	        copyFileToWorkers("zip");
+        // if new skims were generated as part of this model run or prior to it, run aggregation step for TPP submode skims
+        if ( ((String)propertyMap.get("AGGREGATE_TPPLUS_SKIM_MATRICES")).equalsIgnoreCase("TRUE") ) {
+            
+            logger.info( "aggregating slc skim matrices" );                
+            MorpcMatrixAggregaterTpp ma = new MorpcMatrixAggregaterTpp(propertyMap);
+            ma.aggregateSlcSkims();
+            logger.info( "finished aggregating slc skim matrices" );                
+
+	        copyFileToWorkers("tpplus");
 	        logger.info("done copying Zip matrices to workers");
 	
-	        ma = null;
-	        mx = null;
-	
-	        //update accessibily indices, and then write it to hard drive as a .csv file.
-	        AccessibilityIndices accInd = new AccessibilityIndices(iterationPropertyFiles[iteration]);
-	        accInd.writeIndices();
-	
+            AccessibilityIndicesTpp accInd = new AccessibilityIndicesTpp( iterationPropertyFiles[iteration] );
+            accInd.writeIndices();
+            accInd = null;
+
 	        copyFileToWorkers("socec");
 	        logger.info("done copy socec files to workers");
-	
-	        accInd = null;
-	            
-	    }
-        
 
+        }
+
+
+	
         runCoreModel(iteration);
+        
 
         // write binary matrices and summary tables and .csv output files for DTM
         PortManager pManager = PortManager.getInstance();
@@ -272,41 +256,31 @@ public class MorpcModelServer extends MessageProcessingTask {
 
         hhs = (Household[]) waitMsg.getValue(MessageID.HHS_ARRAY_KEY);
 
-        DTMOutput dtmOut = new DTMOutput(propertyMap, zdm);
-        try {
-            dtmOut.writeDTMOutput(hhs);
-        }
-        catch (Exception e) {
-        	logger.error ("", e);
-            e.printStackTrace();
-        }
 
-        if (((String) propertyMap.get("WRITE_TRIP_TABLES")).equalsIgnoreCase("true")) {
+        // write summary tables and .csv output files for DTM
+        DTMOutput2 dtmOut = new DTMOutput2(propertyMap,zdm);
+		try {
+			dtmOut.writeDTMOutput( hhs );
+		} 
+		catch (Exception e) {
+            logger.fatal ("Caught runtime exception writing DTMOutput csv file.", e);
+		}
+		
 
-            String BINARY_TO_TPP_PROGRAM_DIRECTORY = (String) propertyMap.get("BINARY_TO_TPP_PROGRAM_DIRECTORY");
-            String BINARY_TO_TPP_PROGRAM = (String) propertyMap.get("BINARY_TO_TPP_PROGRAM");
-
-			try {
-				dtmOut.writeTripTables( hhs );
-				dtmOut = null;
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-
-            // call a C program to write tpplus trip matrices from the binary format trip matrices
-            if (((String) propertyMap.get("RUN_TPPLUS_TRIPS_CONVERTER")).equalsIgnoreCase( "true")) {
-
-                String tppDir = (String) propertyMap.get("TripsDirectory.tpplus");
-                String binDir = (String) propertyMap.get("TripsDirectory.binary");
-                runDOSCommand(BINARY_TO_TPP_PROGRAM_DIRECTORY + "\\" + BINARY_TO_TPP_PROGRAM + " " + binDir + " " + tppDir);
-
-                String command = "copy " + tppDir + "\\" + "*.tpp " + tppDir+"\\Iter"+(iteration+1);
-                command=command.replace('/', '\\');
-                runDOSCommand(command);
+		
+		if ( ((String)propertyMap.get("WRITE_TRIP_TABLES")).equalsIgnoreCase("true") ) {
+            
+            try {
+                dtmOut.writeTripTables( hhs );
+                dtmOut = null;
             }
+            catch (Exception e) {
+                logger.fatal ("Caught runtime exception writing trip tables.", e);
+            }
+		    
+		}
 
-        }
+
 
         dtmOut = null;
 
@@ -340,6 +314,8 @@ public class MorpcModelServer extends MessageProcessingTask {
         
     }
 
+
+
     private void runCoreModel(int iteration) {
     	
 		//if FTA_Restart_run is false, run AutoOwnership and Daily Pattern steps, otherwise skip them
@@ -347,26 +323,26 @@ public class MorpcModelServer extends MessageProcessingTask {
 	        // assign auto ownership attributes to population
 	        if (((String) propertyMap.get("RUN_AUTO_OWNERSHIP_MODEL")).equalsIgnoreCase( "true")) {
 	
-				//update accessibily indices, and then write it to hard drive as a .csv file.
-				AccessibilityIndices accInd = new AccessibilityIndices(iterationPropertyFiles[iteration]);
-				accInd.writeIndices();
+                //update accessibily indices, and then write it to hard drive as a .csv file.
+                logger.info( "computing accessibilities." );                
+                AccessibilityIndicesTpp accInd = new AccessibilityIndicesTpp( iterationPropertyFiles[iteration] );
+                accInd.writeIndices();
+    			logger.info("done with computing accessibilities");
+    
+    	
+    			copyFileToWorkers("socec");
+    			logger.info("done copy socec files to workers");
+    
+                accInd = null;
+                
+                runAutoOwnershipModel();
+            
+            }
 	
-	            if (LOGGING) {
-	                logger.info("Memory after computing accessibilities");
-	                showMemory();
-	            }
-	
-				copyFileToWorkers("socec");
-				logger.info("done copy socec files to workers");
-	
-	            accInd = null;
-	            
-	            runAutoOwnershipModel();
-	
-	        }
 	        // assign person type and daily activity pattern attributes and generate mandatory tours
 	        if (((String) propertyMap.get("RUN_DAILY_PATTERN_MODELS")).equalsIgnoreCase("true"))
 	            runDailyActivityPatternModels();
+	            
         }
 
         PortManager pManager = PortManager.getInstance();
@@ -1252,10 +1228,10 @@ public class MorpcModelServer extends MessageProcessingTask {
                 
             }
         }
-        else if (fileType.equals("zip")) {
+        else if (fileType.equals("tpplus")) {
 			
-            String sourceFiles = "*.zip";
-            String sourceDir = (String) propertyMap.get("SkimsDirectory.zip");
+            String sourceFiles = "*.skm";
+            String sourceDir = (String) propertyMap.get("SkimsDirectory.tpplus");
             targetDir = sourceDir;
 
             for (int i = 0; i < NoWorkers; i++) {

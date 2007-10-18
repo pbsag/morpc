@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 
 
 public class MorpcModelRunner extends MorpcModelBase {
-    static Logger logger = Logger.getLogger("com.pb.morpc.models");
+    static Logger logger = Logger.getLogger(MorpcModelRunner.class);
 
     public MorpcModelRunner() {
         super();
@@ -25,6 +25,7 @@ public class MorpcModelRunner extends MorpcModelBase {
 
 		
 		if ( ((String)propertyMap.get("RUN_MANDATORY_DTM")).equalsIgnoreCase("true") ) {
+            
             // first apply destination choice for tours with shadow pricing
             zdm.balanceSizeVariables(hhMgr.getHouseholds());
 
@@ -155,30 +156,27 @@ public class MorpcModelRunner extends MorpcModelBase {
     		hhMgr.writeDiskObjectArray( diskObjectArrayFile );
 
     	
-        // write binary matrices and summary tables and .csv output files for DTM
-        DTMOutput dtmOut = new DTMOutput(propertyMap,zdm);
+        
+        // write summary tables and .csv output files for DTM
+        DTMOutput2 dtmOut = new DTMOutput2(propertyMap,zdm);
 		try {
 			dtmOut.writeDTMOutput( hhMgr.getHouseholds() );
 		} 
 		catch (Exception e) {
-			logger.error ("", e);
-			e.printStackTrace();
+            logger.fatal ("Caught runtime exception writing DTMOutput csv file.", e);
 		}
 		
 
 		
 		if ( ((String)propertyMap.get("WRITE_TRIP_TABLES")).equalsIgnoreCase("true") ) {
-		    dtmOut.writeTripTables( hhMgr.getHouseholds() );
-		    dtmOut = null;
-		    
-			// call a C program to write tpplus trip matrices from the binary format trip matrices
-			if ( ((String)propertyMap.get("RUN_TPPLUS_TRIPS_CONVERTER")).equalsIgnoreCase("true") ) {
-
-				String tppDir = (String)propertyMap.get("TripsDirectory.tpplus");
-				String binDir = (String)propertyMap.get("TripsDirectory.binary");
-				runDOSCommand ( BINARY_TO_TPP_PROGRAM_DIRECTORY + "\\" + BINARY_TO_TPP_PROGRAM + " " + binDir + " " + tppDir );
-    
-			}
+            
+            try {
+                dtmOut.writeTripTables( hhMgr.getHouseholds() );
+                dtmOut = null;
+            }
+            catch (Exception e) {
+                logger.fatal ("Caught runtime exception writing trip tables.", e);
+            }
 		    
 		}
 

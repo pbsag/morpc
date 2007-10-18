@@ -108,9 +108,14 @@ public class DTMModelBase implements java.io.Serializable {
 	protected IndexValues index = new IndexValues();
 
 
+    // university tour mode choice alternatives:    Alt1    Alt2    Alt3    Alt4    Alt5
+    //                                              SOV     HOV     WT      DT      NM      SB
 	private int[][] allocationUniv = { { 0, 1, 2, 3, 4 }, { 0, 1, 1, 2, 2 } };
 	private double[][] dispersionParametersUniv = { { 1.00, 1.00, 1.00, 1.00, 1.00 },
 											{ 1.00, 0.53, 0.53, 0.53, 0.53 } };
+    
+    // school tour mode choice alternatives:    Alt1    Alt2    Alt3    Alt4    Alt5    Alt6
+    //                                          SOV     HOV     WT      DT      NM      SB
 	protected int[][] allocationSchool = { { 0, 1, 2, 3, 4, 5 }, { 0, 1, 2, 3, 2, 3 } };
 	protected double[][] dispersionParametersSchool = { { 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 },
 												{ 1.00, 0.5333, 0.5333, 0.5333, 0.5333, 0.5333 } };
@@ -467,13 +472,11 @@ public class DTMModelBase implements java.io.Serializable {
 
 			ZonalDataManager.setOdUtilModeAlt (processorIndex, ModalUtilities);
 			
-			int dummy = 0;
 			if ( processorIndex != hh.getProcessorIndex() ) {
-				dummy = 1;
 				logger.fatal ( "processorIndex in DTMModelBase.setMcODUtility() = " + processorIndex );
 				logger.fatal ( "processorIndex in hh object = " + hh.getProcessorIndex() );
 				logger.fatal ( "the processorIndex values are expected to be the same.");
-				System.exit(-1);
+				throw new RuntimeException();
 			}
 
 	}
@@ -481,10 +484,10 @@ public class DTMModelBase implements java.io.Serializable {
 
 	private void defineUECModelSheets (int tourType, int tourCategory) {
 
-		final int M5_DATA_SHEET = 0;
-		final int M6_DATA_SHEET = 0;
-		final int M7_DATA_SHEET = 0;
-		final int M7_DATA_OD_SHEET = 1;
+//		final int M5_DATA_SHEET = 0;
+//		final int M6_DATA_SHEET = 0;
+//		final int M7_DATA_SHEET = 0;
+//		final int M7_DATA_OD_SHEET = 1;
 		final int M51_MODEL_SHEET = 1;
 		final int M52_MODEL_SHEET = 2;
 		final int M53_MODEL_SHEET = 3;
@@ -630,7 +633,7 @@ public class DTMModelBase implements java.io.Serializable {
 
 	private void defineSoaSheets (int tourType, int tourCategory, int income, int atworkType) {
 
-		final int M5_SOA_DATA_SHEET = 0;
+//		final int M5_SOA_DATA_SHEET = 0;
 		final int M511_SOA_SHEET = 1;
 		final int M512_SOA_SHEET = 2;
 		final int M513_SOA_SHEET = 3;
