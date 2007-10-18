@@ -19,7 +19,7 @@ import com.pb.morpc.matrix.MorpcMatrixAggregaterTpp;
 import com.pb.morpc.matrix.MorpcMatrixZipper;
 import com.pb.morpc.models.AccessibilityIndicesTpp;
 import com.pb.morpc.models.AutoOwnership;
-import com.pb.morpc.models.DTMOutput2;
+import com.pb.morpc.models.DTMOutput;
 import com.pb.morpc.models.IndividualNonMandatoryToursModel;
 import com.pb.morpc.models.JointToursModel;
 import com.pb.morpc.models.Model21;
@@ -258,7 +258,7 @@ public class MorpcModelServer extends MessageProcessingTask {
 
 
         // write summary tables and .csv output files for DTM
-        DTMOutput2 dtmOut = new DTMOutput2(propertyMap,zdm);
+        DTMOutput dtmOut = new DTMOutput(propertyMap,zdm);
 		try {
 			dtmOut.writeDTMOutput( hhs );
 		} 
