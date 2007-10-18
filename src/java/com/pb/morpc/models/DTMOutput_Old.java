@@ -22,18 +22,9 @@ import java.io.*;
  * Model runner class for running destination, time of day, and mode choice for
  * individual tours
  */
-public class DTMOutput implements java.io.Serializable {
+public class DTMOutput_Old implements java.io.Serializable {
 
     static Logger logger = Logger.getLogger("com.pb.morpc.models");
-
-    static final String[] purposeName = { "", "man", "nonman" };
-    static final String[] accessMode = { "", "wt", "dt", "td" };
-    static final String[] primaryMode = { "", "hwy", "transit", "nonmotor" };
-    static final String[] periodName = { "", "am", "pm", "md", "nt" };        
-
-    static final int WT = 1; 
-    static final int DT = 2; 
-    static final int TD = 3; 
 
 
 	int numberOfZones;
@@ -46,7 +37,7 @@ public class DTMOutput implements java.io.Serializable {
 
 
 
-    public DTMOutput (HashMap propertyMap, ZonalDataManager zdm) {
+    public DTMOutput_Old (HashMap propertyMap, ZonalDataManager zdm) {
 
 		this.propertyMap = propertyMap;
 
@@ -70,853 +61,752 @@ public class DTMOutput implements java.io.Serializable {
 
 
 
-    public void writeTripTables ( Household[] hh ) { 
-    
-        float[][] vocRatios = getVehOccRatios ();
-
-        // get directoy name in which to write tpplus files from properties file
-        String outputDirectory = (String)propertyMap.get( "TripsDirectory.tpplus");
+	public void writeTripTables ( Household[] hh ) {
 
 
-        // loop over types - mandatory, non-mandatory
-        for ( int type=1; type <= 2; type++ ) {
+		logger.info ("writing person and vehicle trip matrices.");
 
-            // loop over periods - am, pm, md, nt
-            for ( int period=1; period <= 4; period++ ) {
+		//Write out trip matrices. We want trips by 5 modes and 4 time-of-day periods.
+		int tod;
+		int periodOut;
+		int periodIn;
+		int modeAlt;
+		int numPersons;
+		int tripOrigOB;
+		int tripDestOB;
+		int tripOrigIB;
+		int tripDestIB;
+		int tripPark;
+		int tripStopOB;
+		int tripStopIB;
+		int tripModeIk;
+		int tripModeKj;
+		int tripModeJk;
+		int tripModeKi;
+		int tourSubmodeOB;
+		int tourSubmodeIB;
+		int tourType = 0;
+		float[][] personTripTable = new float[numberOfZones][numberOfZones];
+		float[][] vehicleTripTable = new float[numberOfZones][numberOfZones];
+		float vocRatioOB = 1.0f;
+		float vocRatioIB = 1.0f;
+		Tour[] it;
+		Tour[] st;
+		JointTour[] jt;
 
-                float[][][] trips = null;
-                
-                // write the highway mode trip tables ...
-                int primaryModeIndex = 1;
 
-                // construct filename
-                String tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + periodName[period] + ".tpp";
-                
-                String[] hNames = { "sov person", "sov vehicle", "hov person", "hov vehicle" };
-                String[] hDescriptions = { String.format("%s %s sov person trips", purposeName[type], periodName[period]),
-                        String.format("%s %s sov vehicle trips", purposeName[type], periodName[period]),
-                        String.format("%s %s hov person trips", purposeName[type], periodName[period]),
-                        String.format("%s %s hov vehicle trips", purposeName[type], periodName[period]) };
-                trips = getHwyTripTables ( hh, vocRatios, period, type );
-                writeTpplusMatrices ( tppFileName, trips, hNames, hDescriptions );
+		float[][] vocRatios = getVehOccRatios ();
 
-                
-                
-                // write the walk transit mode trip tables ...
-                int accessModeIndex = 1;
-                primaryModeIndex = 2;
-                String[] subModeNames = { "wt lbs", "wt ebs", "wt brt", "wt lrt", "wt crl", "dt lbs", "dt ebs", "dt brt", "dt lrt", "dt crl", "td lbs", "td ebs", "td brt", "td lrt", "td crl" };
-
-                
-                // construct filename
-                tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + "_" + accessMode[accessModeIndex] + "_" + periodName[period] + ".tpp";
-
-                String[] wtNames = { subModeNames[0], subModeNames[1], subModeNames[2], subModeNames[3], subModeNames[4] };
-
-                String[] wtDescriptions = { String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[0]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[1]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[2]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[3]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[4]) };
-
-                trips = getTransitTripTables ( hh, period, type, accessModeIndex );
-                writeTpplusMatrices ( tppFileName, trips, wtNames, wtDescriptions );
-
-                
-                
-                
-                // write the drive transit mode trip tables ...
-                accessModeIndex = 2;
-
-                // construct filename
-                tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + "_" + accessMode[accessModeIndex] + "_" + periodName[period] + ".tpp";
-                
-                String[] dtNames = { subModeNames[5], subModeNames[6], subModeNames[7], subModeNames[8], subModeNames[9] };
-
-                String[] dtDescriptions = { String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[0]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[1]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[2]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[3]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[4]) };
-
-                trips = getTransitTripTables ( hh, period, type, accessModeIndex );
-                writeTpplusMatrices ( tppFileName, trips, dtNames, dtDescriptions );
-
-                
-                
-                
-                // write the transit drive mode trip tables ...
-                accessModeIndex = 3;
-                             
-                // construct filename
-                tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + "_" + accessMode[accessModeIndex] + "_" + periodName[period] + ".tpp";
-                
-                String[] tdNames = { subModeNames[10], subModeNames[11], subModeNames[12], subModeNames[13], subModeNames[14] };
-
-                String[] tdDescriptions = { String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[0]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[1]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[2]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[3]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[4]) };
-
-                trips = getTransitTripTables ( hh, period, type, accessModeIndex );
-                writeTpplusMatrices ( tppFileName, trips, tdNames, tdDescriptions );
-
-                
-                
-                
-                // write the non-motorized mode trip tables ...
-                primaryModeIndex = 3;
-
-                // construct filename
-                tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + "_" + periodName[period] + ".tpp";
-                
-                String[] nmNames = { "non-motorized" };
-
-                String[] nmDescriptions = { String.format("%s %s %s person trips", purposeName[type], periodName[period], nmNames[0]) };
-
-                float[][][] nmTrips = new float[1][][];
-                nmTrips[0] = getNmTripTables ( hh, period, type );
-                writeTpplusMatrices ( tppFileName, nmTrips, nmNames, nmDescriptions );
-                
-            }
-            
-        }
-            
-    }
-
-    
-
-    private float[][][] getHwyTripTables ( Household[] hh, float[][] vocRatios, int period, int type ) {
-
-        float[][] sovPerson = new float[numberOfZones][numberOfZones];
-        float[][] sovVehicle = new float[numberOfZones][numberOfZones];
-        float[][] hovPerson = new float[numberOfZones][numberOfZones];
-        float[][] hovVehicle = new float[numberOfZones][numberOfZones];
-
-        Tour[] tours = null;
-        
-        
-        // loop through tours in Household objects and look for tours with highway primary modes - sov, hov.
-        for (int i=0; i < hh.length; i++) {
-
-            // if tour mode is sov or hov, pass tour object and trip table arrays into
-            // method to accumulate person and vehicle highway trips, if trips begin in the passed in period.
-
-            try {
-                
-                // Mandatory tours ...
-                if ( type == 1 ) {
-                    tours = hh[i].getMandatoryTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            int tourMode = tours[t].getMode();
-                            if ( tourMode == TourModeType.SOV || tourMode == TourModeType.HOV ) 
-                                accumulateHighwayTripsForTour ( tours[t], tourMode, vocRatios, period, sovPerson, sovVehicle, hovPerson, hovVehicle );
-                        }
-                    }
-                }
-                else if ( type == 2 ) {
-                    // Joint tours ...
-                    tours = hh[i].getJointTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            // if tour mode is sov or hov, pass tour object and trip table arrays into
-                            // method to accumulate person and vehicle highway trips, if any.
-                            int tourMode = tours[t].getMode();
-                            if ( tourMode == TourModeType.SOV || tourMode == TourModeType.HOV ) 
-                                accumulateHighwayTripsForTour ( tours[t], tourMode, vocRatios, period, sovPerson, sovVehicle, hovPerson, hovVehicle );
-                        }
-                    }
-        
-                    // Individual non-mandatory tours ...
-                    tours = hh[i].getIndivTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            // if tour mode is sov or hov, pass tour object and trip table arrays into
-                            // method to accumulate person and vehicle highway trips, if any.
-                            int tourMode = tours[t].getMode();
-                            if ( tourMode == TourModeType.SOV || tourMode == TourModeType.HOV ) 
-                                accumulateHighwayTripsForTour ( tours[t], tourMode, vocRatios, period, sovPerson, sovVehicle, hovPerson, hovVehicle );
-                        }
-                    }
-        
-                    // at-work sub-tours ...
-                    tours = hh[i].getMandatoryTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            if (tours[t].getTourType() == TourType.WORK) {
-                                Tour[] subTours = tours[t].getSubTours();
-                                if (subTours != null) {
-                                    for (int s=0; s < subTours.length; s++) {
-        
-                                        // if tour mode is sov or hov, pass tour object and trip table arrays into
-                                        // method to accumulate person and vehicle highway trips, if any.
-                                        int subTourMode = subTours[s].getMode();
-                                        if ( subTourMode == TourModeType.SOV || subTourMode == TourModeType.HOV ) 
-                                            accumulateHighwayTripsForTour ( subTours[s], subTourMode, vocRatios, period, sovPerson, sovVehicle, hovPerson, hovVehicle );
-                                        
-                                    }
-                                }
+		int m=0;
+		for (int w=1; w <= 2; w++) {
+			for (int v=1; v <= 6; v++) {
+				for (int p=1; p <= 4; p++) {
+					for (int u=1; u <= 5; u++) {
+					    
+					    switch (v) {
+							case 1:
+							case 2:
+							case 3:
+								m = v;
+								break;
+							case 4:
+							case 5:
+								m = 4;
+								break;
+							case 6:
+								m = 5;
+								break;
+					    }
+					    
+					    
+					
+						if (m != 3 && m != 4)
+							u = 6;
+	
+						
+						for (int i=0; i < hh.length; i++) {
+		
+                            int dummy=0;
+                            if ( i == 41 ) {
+                                dummy = 1;
                             }
-                        }
-                    }
-                }
-            }
-            catch (RuntimeException e) {
-                logger.fatal ("Caught runtime exception processing hhid" + i);
-                throw e;
-            }
-            
-        }
-
-        
-        float[][][] result = new float[4][][];
-        result[0] = sovPerson;
-        result[1] = hovPerson;
-        result[2] = sovVehicle;
-        result[3] = hovVehicle;
-        
-        return result;
-
-    }
-    
-
-
-    private float[][][] getTransitTripTables ( Household[] hh, int period, int type, int access ) {
-
-        float[][][] transitPerson = new float[SubmodeType.TYPES][numberOfZones][numberOfZones];
-
-        Tour[] tours = null;
-        
-        
-        // loop through tours in Household objects and look for tours with transit tour modes - WT, DT.
-        for (int i=0; i < hh.length; i++) {
-
-            // pass tour object and trip table arrays into method to accumulate transit person trips
-            // by trip mode and by accessMode, if trips begin in the passed in period.
-
-            try {
-                
-                
-                // Mandatory tours ...
-                if ( type == 1 ) {
-                    
-                    tours = hh[i].getMandatoryTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            int tourMode = tours[t].getMode();
-                            if ( tourMode == TourModeType.WALKTRANSIT || tourMode == TourModeType.DRIVETRANSIT )
-                                accumulateTransitTripsForTour ( tours[t], tourMode, period, access, transitPerson );
-                        }
-                    }
-                    
-                }
-                else if ( type == 2 ) {
-
-                    // Joint tours ...
-                    tours = hh[i].getJointTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            // if tour mode is wt or dt, pass tour object and trip table arrays into
-                            // method to accumulate person transit trips, if any.
-                            int tourMode = tours[t].getMode();
-                            if ( tourMode == TourModeType.WALKTRANSIT || tourMode == TourModeType.DRIVETRANSIT )
-                                accumulateTransitTripsForTour ( tours[t], tourMode, period, access, transitPerson );
-                        }
-                    }
-
-                    // Individual non-mandatory tours ...
-                    tours = hh[i].getIndivTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            // if tour mode is sov or hov, pass tour object and trip table arrays into
-                            // method to accumulate person and vehicle highway trips, if any.
-                            int tourMode = tours[t].getMode();
-                            if ( tourMode == TourModeType.WALKTRANSIT || tourMode == TourModeType.DRIVETRANSIT )
-                                accumulateTransitTripsForTour ( tours[t], tourMode, period, access, transitPerson );
-                        }
-                    }
-
-                    // at-work sub-tours ...
-                    tours = hh[i].getMandatoryTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            if (tours[t].getTourType() == TourType.WORK) {
-                                Tour[] subTours = tours[t].getSubTours();
-                                if (subTours != null) {
-                                    for (int s=0; s < subTours.length; s++) {
-
-                                        // if tour mode is sov or hov, pass tour object and trip table arrays into
-                                        // method to accumulate person and vehicle highway trips, if any.
-                                        int subTourMode = subTours[s].getMode();
-                                        if ( subTourMode == TourModeType.WALKTRANSIT || subTourMode == TourModeType.DRIVETRANSIT )
-                                            accumulateTransitTripsForTour ( subTours[s], subTourMode, period, access, transitPerson );
-                                        
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-            }
-            catch (RuntimeException e) {
-                logger.fatal ("Caught runtime exception processing hhid" + i);
-                throw e;
-            }
-                
-        }
-
-        
-        return transitPerson;
-
-    }
-    
-
-
-    private float[][] getNmTripTables ( Household[] hh, int period, int type ) {
-
-        float[][] result = new float[numberOfZones][numberOfZones];
-
-        Tour[] tours = null;
-        
-        
-        // loop through tours in Household objects and accumulate non-motorized trips from tours with non-motorized tour segments.
-        for (int i=0; i < hh.length; i++) {
-
-            // pass tour object and trip table arrays into method to accumulate non-motorized person trips
-            // if trips begin in the passed in period.
-
-            try {
-                
-                
-                // Mandatory tours ...
-                if ( type == 1 ) {
-                    
-                    tours = hh[i].getMandatoryTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            accumulateNmTripsForTour ( tours[t], period, result );
-                        }
-                    }
-                    
-                }
-                else if ( type == 2 ) {
-
-                    // Joint tours ...
-                    tours = hh[i].getJointTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            accumulateNmTripsForTour ( tours[t], period, result );
-                        }
-                    }
-
-                    // Individual non-mandatory tours ...
-                    tours = hh[i].getIndivTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            accumulateNmTripsForTour ( tours[t], period, result );
-                        }
-                    }
-
-                    // at-work sub-tours ...
-                    tours = hh[i].getMandatoryTours();
-                    if (tours != null) {
-                        for (int t=0; t < tours.length; t++) {
-                            if (tours[t].getTourType() == TourType.WORK) {
-                                Tour[] subTours = tours[t].getSubTours();
-                                if (subTours != null) {
-                                    for (int s=0; s < subTours.length; s++) {
-                                        accumulateNmTripsForTour ( subTours[s], period, result );
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-            }
-            catch (RuntimeException e) {
-                logger.fatal ("Caught runtime exception processing hhid" + i);
-                throw e;
-            }
-                
-        }
-
-        
-        return result;
-
-    }
-    
-
-
-    private void accumulateHighwayTripsForTour ( Tour tour, int tourMode, float[][] vocRatios, int period, float[][] sovPerson, float[][] sovVehicle, float[][] hovPerson, float[][] hovVehicle ) {
-        
-        // check for valid tod alternative.
-        int tod = tour.getTimeOfDayAlt();
-        if (tod < 1)
-            return;
-            
-        int periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
-        int periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
-
-        int tourType = tour.getTourType();
-        int tripPark = tour.getChosenPark();
-        int tripOrigOB = tour.getOrigTaz();
-        int tripDestIB = tour.getOrigTaz();
-        
-        int tripDestOB;
-        int tripOrigIB;
-        if (tripPark > 0) {
-            tripDestOB = tripPark;
-            tripOrigIB = tripPark;
-        }
-        else {
-            tripDestOB = tour.getDestTaz();
-            tripOrigIB = tour.getDestTaz();
-        }
-        
-        // check for valid O/D info.
-        if (tripOrigOB < 1 || tripOrigIB < 1 || tripDestOB < 1 || tripDestIB < 1)
-            return;
-
-        int tripStopOB;
-        int tripStopIB;
-        tripStopOB = tour.getStopLocOB();
-        tripStopIB = tour.getStopLocIB();
-
-        // check for valid stop location info.
-        if (tripStopOB < 0 || tripStopIB < 0)
-            return;
-
-        
-        if ( periodOut == period ) {
-    
-            float vocRatioOB = vocRatios[tourType][periodOut];
-
-            if (tripStopOB > 0) {
-                if ( tourMode == 1 ) {
-                    sovPerson[tripOrigOB-1][tripStopOB-1]++;
-                    sovPerson[tripStopOB-1][tripDestOB-1]++;
-                    sovVehicle[tripOrigOB-1][tripStopOB-1] += 1;
-                    sovVehicle[tripStopOB-1][tripDestOB-1] += 1;
-                }
-                else if ( tourMode == 2 ) {
-                    hovPerson[tripOrigOB-1][tripStopOB-1]++;
-                    hovPerson[tripStopOB-1][tripDestOB-1]++;
-                    hovVehicle[tripOrigOB-1][tripStopOB-1] += 1.0/vocRatioOB;
-                    hovVehicle[tripStopOB-1][tripDestOB-1] += 1.0/vocRatioOB;
-                }
-            }
-            else {
-                if ( tourMode == 1 ) {
-                    sovPerson[tripOrigOB-1][tripDestOB-1]++;
-                    sovVehicle[tripOrigOB-1][tripDestOB-1] += 1;
-                }
-                else if ( tourMode == 2 ) {
-                    hovPerson[tripOrigOB-1][tripDestOB-1]++;
-                    hovVehicle[tripOrigOB-1][tripDestOB-1] += 1.0/vocRatioOB;
-                }
-            }
-
-        }
-    
-        
-        if ( periodIn == period ) {
-
-            float vocRatioIB = vocRatios[tourType][periodIn];
-
-            if (tripStopIB > 0) {
-                if ( tourMode == 1 ) {
-                    sovPerson[tripOrigIB-1][tripStopIB-1]++;
-                    sovPerson[tripStopIB-1][tripDestIB-1]++;
-                    sovVehicle[tripOrigIB-1][tripStopIB-1] += 1;
-                    sovVehicle[tripStopIB-1][tripDestIB-1] += 1;
-                }
-                else if ( tourMode == 2 ) {
-                    hovPerson[tripOrigIB-1][tripStopIB-1]++;
-                    hovPerson[tripStopIB-1][tripDestIB-1]++;
-                    hovVehicle[tripOrigIB-1][tripStopIB-1] += 1.0/vocRatioIB;
-                    hovVehicle[tripStopIB-1][tripDestIB-1] += 1.0/vocRatioIB;
-                }
-            }
-            else {
-                if ( tourMode == 1 ) {
-                    sovPerson[tripOrigIB-1][tripDestIB-1]++;
-                    sovVehicle[tripOrigIB-1][tripDestIB-1] += 1;
-                }
-                else if ( tourMode == 2 ) {
-                    hovPerson[tripOrigIB-1][tripDestIB-1]++;
-                    hovVehicle[tripOrigIB-1][tripDestIB-1] += 1.0/vocRatioIB;
-                }
-            }
-
-        }
-    
-    }
-    
-
-    
-    private void accumulateTransitTripsForTour ( Tour tour, int tourMode, int period, int access, float[][][] transitPerson ) {
-
-        // transitPerson array is dimensioned as one of the following, depending on access type, with indices defined:
-        // WT:  0=WT_LBS, 1=WT_EBS, 2=WT_BRT, 3=WT_LRT, 4=WT_CRL
-        // DT:  0=DT_LBS, 1=DT_EBS, 2=DT_BRT, 3=DT_LRT, 4=DT_CRL
-        // TD:  0=TD_LBS, 1=TD_EBS, 2=TD_BRT, 3=TD_LRT, 4=TD_CRL
-        // [nTazs]:  origin TAZ: number of TAZS
-        // [nTazs]:  destination TAZ: number of TAZS
-
-        
-        // check for valid tod alternative.
-        int tod = tour.getTimeOfDayAlt();
-        if (tod < 1)
-            return;
-            
-        int periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
-        int periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
-
-        int tripPark = tour.getChosenPark();
-        int tripOrigOB = tour.getOrigTaz();
-        int tripDestIB = tour.getOrigTaz();
-        
-        int tripDestOB;
-        int tripOrigIB;
-        if (tripPark > 0) {
-            tripDestOB = tripPark;
-            tripOrigIB = tripPark;
-        }
-        else {
-            tripDestOB = tour.getDestTaz();
-            tripOrigIB = tour.getDestTaz();
-        }
-        
-        // check for valid O/D info.
-        if (tripOrigOB < 1 || tripOrigIB < 1 || tripDestOB < 1 || tripDestIB < 1)
-            return;
-
-        int tripStopOB;
-        int tripStopIB;
-        tripStopOB = tour.getStopLocOB();
-        tripStopIB = tour.getStopLocIB();
-
-        // check for valid stop location info.
-        if (tripStopOB < 0 || tripStopIB < 0)
-            return;
-
-        
-        int tripModeIk = tour.getTripIkMode();
-        int tripModeKj = tour.getTripKjMode();
-        int tripModeJk = tour.getTripJkMode();
-        int tripModeKi = tour.getTripKiMode();
-        int tourSubmodeOB = tour.getSubmodeOB();
-        int tourSubmodeIB = tour.getSubmodeIB();
-        
-        
-    
-    
-        int modeIndex = -1;
-
-        if ( periodOut == period ) {
-
-            if ( tripStopOB > 0 ) {
-
-                // if the trip mode for either segment of this outbound half tour is SubmodeType.TYPES+1, the trip mode is nonmotorized;
-                // if it's > SubmodeType.TYPES+1 or < 1, it's an error.
-                
-                if ( tripModeIk < 1 || tripModeIk > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tripMode for first segment in outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
-                    throw (new RuntimeException());
-                }
-                if ( tripModeKj < 1 || tripModeKj > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tripMode for second segment in outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
-                    throw (new RuntimeException());
-                }
-
-                
-                // for driveTransit half-tours in outbound direction, ik segment is driveTransit and kj segment is walkTransit.
-                if ( tourMode == TourModeType.DRIVETRANSIT ) {
-                    // accumulate trip, if it's transit, for first segment only in DT table
-                    if ( access == DT && tripModeIk <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeIk - 1;
-                        transitPerson[modeIndex][tripOrigOB-1][tripStopOB-1]++;
-                    }
-                    // accumulate trip, if it's transit for second segment only in WT table
-                    if ( access == WT && tripModeKj <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeKj - 1;
-                        transitPerson[modeIndex][tripStopOB-1][tripDestOB-1]++;
-                    }
-                }
-                // for walkTransit half-tours in outbound direction, both ik and kj segments are walkTransit.  
-                else if ( tourMode == TourModeType.WALKTRANSIT ) {
-                    // accumulate trips, if they're transit, for both segments in WT table.
-                    if ( access == WT && tripModeIk <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeIk - 1;
-                        transitPerson[modeIndex][tripOrigOB-1][tripStopOB-1]++;
-                    }
-                    if ( access == WT && tripModeKj <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeKj - 1;
-                        transitPerson[modeIndex][tripStopOB-1][tripDestOB-1]++;
-                    }
-                }
-                
-            }
-            else {
-             
-                if ( tourSubmodeOB < 1 || tourSubmodeOB > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tourSubmodeOB for outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
-                    throw (new RuntimeException());
-                }
-                
-                if ( tourMode == TourModeType.WALKTRANSIT ) {
-                    // accumulate trip from half tour in WT table.
-                    if ( access == WT && tourSubmodeOB <= SubmodeType.TYPES ) {
-                        modeIndex = tourSubmodeOB - 1;
-                        transitPerson[modeIndex][tripOrigOB-1][tripDestOB-1]++;
-                    }
-                }
-                else if ( tourMode == TourModeType.DRIVETRANSIT ) {
-                    // accumulate trip from half tour in DT table.
-                    if ( access == DT && tourSubmodeOB <= SubmodeType.TYPES ) {
-                        modeIndex = tourSubmodeOB - 1;
-                        transitPerson[modeIndex][tripOrigOB-1][tripDestOB-1]++;
-                    }
-                }
-
-            }
-
-        }
-
-    
-        if ( periodIn == period ) {
-
-            if (tripStopIB > 0) {
-
-                // if the trip mode for either segment of this inbound half tour is SubmodeType.TYPES+1, the trip mode is nonmotorized;
-                // if it's > SubmodeType.TYPES+1 or < 1, it's an error.
-                
-                if ( tripModeJk < 1 || tripModeJk > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tripMode for first segment in inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
-                    throw (new RuntimeException());
-                }
-                if ( tripModeKi < 1 || tripModeKi > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tripMode for second segment in inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
-                    throw (new RuntimeException());
-                }
-
-
-                if ( tourMode == TourModeType.DRIVETRANSIT ) {
-                    // for driveTransit half-tours in inbound direction, jk segment is walkTransit and ki segment is driveTransit (TD - inbound direction).
-                    // accumulate trip, if it's transit, for first segment only in WT table
-                    if ( access == WT && tripModeJk <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeJk - 1;
-                        transitPerson[modeIndex][tripOrigIB-1][tripStopIB-1]++;
-                    }
-                    // accumulate trip, if it's transit, for second segment only in TD table
-                    if ( access == TD && tripModeKi <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeKi - 1;
-                        transitPerson[modeIndex][tripStopIB-1][tripDestIB-1]++;
-                    }
-                }
-                else if ( tourMode == TourModeType.WALKTRANSIT ) {
-                    // for walkTransit half-tours in inbound direction, both ik and kj segments are walkTransit.  
-                    // accumulate trips for both segments, if they're transit, in WT table.
-                    if ( access == WT && tripModeJk <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeJk - 1;
-                        transitPerson[modeIndex][tripOrigIB-1][tripStopIB-1]++;
-                    }
-                    if ( access == WT && tripModeKi <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeKi - 1;
-                        transitPerson[modeIndex][tripStopIB-1][tripDestIB-1]++;
-                    }
-                }
-                
-            }
-            else {
-             
-                if ( tourSubmodeIB < 1 || tourSubmodeIB > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tourSubmodeIB for inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
-                    throw (new RuntimeException());
-                }
-                
-                if ( tourMode == TourModeType.WALKTRANSIT ) {
-                    // accumulate trip from the half tour in WT table.
-                    if ( access == WT && tourSubmodeIB <= SubmodeType.TYPES ) {
-                        modeIndex = tourSubmodeIB - 1;
-                        transitPerson[modeIndex][tripOrigIB-1][tripDestIB-1]++;
-                    }
-                }
-                else if ( tourMode == TourModeType.DRIVETRANSIT ) {
-                    // accumulate trip from the half tour in TD table.
-                    if ( access == TD && tourSubmodeIB <= SubmodeType.TYPES ) {
-                        modeIndex = tourSubmodeIB - 1;
-                        transitPerson[modeIndex][tripOrigIB-1][tripDestIB-1]++;
-                    }
-                }
-
-            }
-
-        }
-
-    }
-    
-    
-
-    private void accumulateNmTripsForTour ( Tour tour, int period, float[][] nmPerson ) {
-
-
-        // check for valid tod alternative.
-        int tod = tour.getTimeOfDayAlt();
-        if (tod < 1)
-            return;
-            
-        int periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
-        int periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
-
-        int tripPark = tour.getChosenPark();
-        int tripOrigOB = tour.getOrigTaz();
-        int tripDestIB = tour.getOrigTaz();
-        
-        int tripDestOB;
-        int tripOrigIB;
-        if (tripPark > 0) {
-            tripDestOB = tripPark;
-            tripOrigIB = tripPark;
-        }
-        else {
-            tripDestOB = tour.getDestTaz();
-            tripOrigIB = tour.getDestTaz();
-        }
-        
-        // check for valid O/D info.
-        if (tripOrigOB < 1 || tripOrigIB < 1 || tripDestOB < 1 || tripDestIB < 1)
-            return;
-
-        int tripStopOB;
-        int tripStopIB;
-        tripStopOB = tour.getStopLocOB();
-        tripStopIB = tour.getStopLocIB();
-
-        // check for valid stop location info.
-        if (tripStopOB < 0 || tripStopIB < 0)
-            return;
-
-        
-        int tripModeIk = tour.getTripIkMode();
-        int tripModeKj = tour.getTripKjMode();
-        int tripModeJk = tour.getTripJkMode();
-        int tripModeKi = tour.getTripKiMode();
-        int tourSubmodeOB = tour.getSubmodeOB();
-        int tourSubmodeIB = tour.getSubmodeIB();
-        
-        int tourMode = tour.getMode();
-    
-    
-        if ( periodOut == period ) {
-
-            if ( tripStopOB > 0 ) {
-
-                // if the trip mode for either segment of this outbound half tour is SubmodeType.TYPES+1, the trip mode is nonmotorized;
-                // if it's > SubmodeType.TYPES+1 or < 1, it's an error.
-                
-                if ( tripModeIk < 1 || tripModeIk > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tripMode for first segment in outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
-                    throw (new RuntimeException());
-                }
-                if ( tripModeKj < 1 || tripModeKj > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tripMode for second segment in outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
-                    throw (new RuntimeException());
-                }
-
-                
-                if ( tripModeIk == SubmodeType.TYPES + 1 )
-                    nmPerson[tripOrigOB-1][tripStopOB-1]++;
-                if ( tripModeKj == SubmodeType.TYPES + 1 )
-                    nmPerson[tripStopOB-1][tripDestOB-1]++;
-                
-            }
-            else {
-             
-                if ( tourSubmodeOB < 1 || tourSubmodeOB > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tourSubmodeOB for outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
-                    throw (new RuntimeException());
-                }
-                
-                if ( tourSubmodeOB == SubmodeType.TYPES + 1 )
-                    nmPerson[tripOrigOB-1][tripDestOB-1]++;
-
-            }
-
-        }
-
-    
-        if ( periodIn == period ) {
-
-            if (tripStopIB > 0) {
-
-                // if the trip mode for either segment of this inbound half tour is SubmodeType.TYPES+1, the trip mode is nonmotorized;
-                // if it's > SubmodeType.TYPES+1 or < 1, it's an error.
-                
-                if ( tripModeJk < 1 || tripModeJk > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tripMode for first segment in inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
-                    throw (new RuntimeException());
-                }
-                if ( tripModeKi < 1 || tripModeKi > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tripMode for second segment in inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
-                    throw (new RuntimeException());
-                }
-
-
-                if ( tripModeJk == SubmodeType.TYPES + 1 )
-                    nmPerson[tripOrigIB-1][tripStopIB-1]++;
-                if ( tripModeKi == SubmodeType.TYPES + 1 )
-                    nmPerson[tripStopIB-1][tripDestIB-1]++;
-                
-            }
-            else {
-             
-                if ( tourSubmodeIB < 1 || tourSubmodeIB > SubmodeType.TYPES+1 ) {
-                    logger.fatal( "invalid tourSubmodeIB for inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
-                    throw (new RuntimeException());
-                }
-                
-                if ( tourSubmodeIB == SubmodeType.TYPES + 1 )
-                    nmPerson[tripOrigIB-1][tripDestIB-1]++;
-
-            }
-
-        }
-
-    }
-    
-    
-
-    private void writeTpplusMatrices ( String tppFileName, float[][][] trips, String[] names, String[] descriptions ) {
-
-        Matrix[] outputMatrices = new Matrix[trips.length];
-       
-        logger.info( String.format("matrix total for tables in %s:", tppFileName) );
-        for (int i=0; i < trips.length; i++) {
-            outputMatrices[i] = new Matrix( names[i], descriptions[i], trips[i] );
-            trips[i] = null;
-            logger.info( String.format("    [%d] %-16s: %.0f", i, names[i], outputMatrices[i].getSum()) );
-        }
-        MatrixWriter tppWriter = MatrixWriter.createWriter (MatrixType.TPPLUS, new File( tppFileName ) );
-        tppWriter.writeMatrices(names, outputMatrices);
-
-    }
+                            
+							// write trips for individual mandatory tours
+							if ( w == 1 ) {
+								it = hh[i].getMandatoryTours();
+								if (it != null) {
+			
+									for (int t=0; t < it.length; t++) {
+				
+										tod = it[t].getTimeOfDayAlt();
+										if (tod < 1)
+										    continue;
+										    
+										periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
+										periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
+
+										modeAlt = it[t].getMode();
+										tourType = it[t].getTourType();
+										tripPark = it[t].getChosenPark();
+										tripOrigOB = it[t].getOrigTaz();
+										tripDestIB = it[t].getOrigTaz();
+										if (tripPark > 0) {
+											tripDestOB = tripPark;
+											tripOrigIB = tripPark;
+										}
+										else {
+											tripDestOB = it[t].getDestTaz();
+											tripOrigIB = it[t].getDestTaz();
+										}
+										if (tripOrigOB < 1 || tripOrigIB < 1 || tripDestOB < 1 || tripDestIB < 1)
+											continue;
+
+										tripStopOB = it[t].getStopLocOB();
+										tripStopIB = it[t].getStopLocIB();
+										if (tripStopOB < 0 || tripStopIB < 0)
+											continue;
+
+										tripModeIk = it[t].getTripIkMode();
+										tripModeKj = it[t].getTripKjMode();
+										tripModeJk = it[t].getTripJkMode();
+										tripModeKi = it[t].getTripKiMode();
+										tourSubmodeOB = it[t].getSubmodeOB();
+										tourSubmodeIB = it[t].getSubmodeIB();
+			
+										vocRatioOB = vocRatios[tourType][periodOut];
+										vocRatioIB = vocRatios[tourType][periodIn];
+		
+		
+										
+										if ( modeAlt == m || (v == 3 && modeAlt == 4) ) {
+											if ( periodOut == p ) {
+												if (u <= 5) {
+													if (tripStopOB > 0) {
+														if (v == 3 && modeAlt == 4) {
+															if (tripModeKj == u)
+																personTripTable[tripStopOB-1][tripDestOB-1]++;
+														}
+														else if (v == 3) {
+															if (tripModeIk == u)
+																personTripTable[tripOrigOB-1][tripStopOB-1]++;
+															if (tripModeKj == u)
+																personTripTable[tripStopOB-1][tripDestOB-1]++;
+														}
+														else if (v == 4) {
+															if (tripModeIk == u)
+																personTripTable[tripOrigOB-1][tripStopOB-1]++;
+														}
+													}
+													else {
+														if (m == modeAlt && (v == 3 || v == 4)) {
+														    if (tourSubmodeOB == u)
+														        personTripTable[tripOrigOB-1][tripDestOB-1]++;
+														}
+													}
+												}
+												else {
+													if (tripStopOB > 0) {
+														personTripTable[tripOrigOB-1][tripStopOB-1]++;
+														personTripTable[tripStopOB-1][tripDestOB-1]++;
+														if ( modeAlt == 1 ) {
+															vehicleTripTable[tripOrigOB-1][tripStopOB-1] += 1;
+															vehicleTripTable[tripStopOB-1][tripDestOB-1] += 1;
+														}
+														else if ( modeAlt == 2 ) {
+															vehicleTripTable[tripOrigOB-1][tripStopOB-1] += 1.0/vocRatioOB;
+															vehicleTripTable[tripStopOB-1][tripDestOB-1] += 1.0/vocRatioOB;
+														}
+													}
+													else {
+														personTripTable[tripOrigOB-1][tripDestOB-1]++;
+														if ( modeAlt == 1 )
+															vehicleTripTable[tripOrigOB-1][tripDestOB-1] += 1;
+														else if ( modeAlt == 2 )
+															vehicleTripTable[tripOrigOB-1][tripDestOB-1] += 1.0/vocRatioOB;
+													}
+												}
+											}
+											
+											if ( periodIn == p ) {
+												if (u <= 5) {
+													if (tripStopIB > 0) {
+														if (v == 3 && modeAlt == 4) {
+															if (tripModeJk == u)
+																personTripTable[tripOrigIB-1][tripStopIB-1]++;
+														}
+														else if (v == 3) {
+															if (tripModeJk == u)
+																personTripTable[tripOrigIB-1][tripStopIB-1]++;
+															if (tripModeKi == u)
+																personTripTable[tripStopIB-1][tripDestIB-1]++;
+														}
+														else if (v == 5) {
+															if (tripModeKi == u)
+																personTripTable[tripStopIB-1][tripDestIB-1]++;
+														}
+													}
+													else {
+														if (m == modeAlt && (v==3 || v==5)) {
+															if (tourSubmodeIB == u)
+																personTripTable[tripOrigIB-1][tripDestIB-1]++;
+														}
+													}
+												}
+												else {
+													if (tripStopIB > 0) {
+														personTripTable[tripOrigIB-1][tripStopIB-1]++;
+														personTripTable[tripStopIB-1][tripDestIB-1]++;
+														if ( modeAlt == 1 ) {
+															vehicleTripTable[tripOrigIB-1][tripStopIB-1] += 1;
+															vehicleTripTable[tripStopIB-1][tripDestIB-1] += 1;
+														}
+														else if ( modeAlt == 2 ) {
+															vehicleTripTable[tripOrigIB-1][tripStopIB-1] += 1.0/vocRatioIB;
+															vehicleTripTable[tripStopIB-1][tripDestIB-1] += 1.0/vocRatioIB;
+														}
+													}
+													else {
+														personTripTable[tripOrigIB-1][tripDestIB-1]++;
+														if ( modeAlt == 1 )
+															vehicleTripTable[tripOrigIB-1][tripDestIB-1] += 1;
+														else if ( modeAlt == 2 )
+															vehicleTripTable[tripOrigIB-1][tripDestIB-1] += 1.0/vocRatioIB;
+													}
+												}
+		
+											}
+										}
+				
+									}
+			
+								}
+			
+							}
+							
+							// write trips for all non-mandatory tours
+							else {
+							
+							// write trips for joint tours
+								jt = hh[i].getJointTours();
+								if (jt != null) {
+			
+									for (int t=0; t < jt.length; t++) {
+			
+										tod = jt[t].getTimeOfDayAlt();
+										if (tod < 1)
+											continue;
+										    
+										periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
+										periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
+
+										modeAlt = jt[t].getMode();
+										tripPark = jt[t].getChosenPark();
+										tripOrigOB = jt[t].getOrigTaz();
+										tripDestIB = jt[t].getOrigTaz();
+										if (tripPark > 0) {
+											tripDestOB = tripPark;
+											tripOrigIB = tripPark;
+										}
+										else {
+											tripDestOB = jt[t].getDestTaz();
+											tripOrigIB = jt[t].getDestTaz();
+										}
+										if (tripOrigOB < 1 || tripOrigIB < 1 || tripDestOB < 1 || tripDestIB < 1)
+											continue;
+
+										tripStopOB = jt[t].getStopLocOB();
+										tripStopIB = jt[t].getStopLocIB();
+										if (tripStopOB < 0 || tripStopIB < 0)
+											continue;
+
+										tripModeIk = jt[t].getTripIkMode();
+										tripModeKj = jt[t].getTripKjMode();
+										tripModeJk = jt[t].getTripJkMode();
+										tripModeKi = jt[t].getTripKiMode();
+										tourSubmodeOB = jt[t].getSubmodeOB();
+										tourSubmodeIB = jt[t].getSubmodeIB();
+										numPersons = jt[t].getNumPersons(); 
+			
+										
+										
+										if ( modeAlt == m || (v == 3 && modeAlt == 4) ) {
+											if ( periodOut == p ) {
+												if (u <= 5) {
+													if (tripStopOB > 0) {
+														if (v == 3 && modeAlt == 4) {
+															if (tripModeKj == u)
+															    personTripTable[tripStopOB-1][tripDestOB-1] += numPersons;
+														}
+														else if (v == 3) {
+															if (tripModeIk == u)
+															    personTripTable[tripOrigOB-1][tripStopOB-1] += numPersons;
+															if (tripModeKj == u)
+															    personTripTable[tripStopOB-1][tripDestOB-1] += numPersons;
+														}
+														else if (v == 4) {
+															if (tripModeIk == u)
+															    personTripTable[tripOrigOB-1][tripStopOB-1] += numPersons;
+														}
+													}
+													else {
+														if (m == modeAlt && (v == 3 || v == 4)) {
+															if (tourSubmodeOB == u)
+																personTripTable[tripOrigOB-1][tripDestOB-1] += numPersons;
+														}
+													}
+												}
+												else {
+													if (tripStopOB > 0) {
+														personTripTable[tripOrigOB-1][tripStopOB-1] += numPersons;
+														personTripTable[tripStopOB-1][tripDestOB-1] += numPersons;
+														if ( modeAlt == 2 ) {
+															vehicleTripTable[tripOrigOB-1][tripStopOB-1] += 1;
+															vehicleTripTable[tripStopOB-1][tripDestOB-1] += 1;
+														}
+													}
+													else {
+														personTripTable[tripOrigOB-1][tripDestOB-1] += numPersons;
+														if ( modeAlt == 2 )
+															vehicleTripTable[tripOrigOB-1][tripDestOB-1] += 1;
+													}
+												}
+											}
+											
+											if ( periodIn == p ) {
+												if (u <= 5) {
+													if (tripStopIB > 0) {
+														if (v == 3 && modeAlt == 4) {
+															if (tripModeJk == u)
+																personTripTable[tripOrigIB-1][tripStopIB-1] += numPersons;
+														}
+														else if (v == 3) {
+															if (tripModeJk == u)
+																personTripTable[tripOrigIB-1][tripStopIB-1] += numPersons;
+															if (tripModeKi == u)
+																personTripTable[tripStopIB-1][tripDestIB-1] += numPersons;
+														}
+														else if (v == 5) {
+															if (tripModeKi == u)
+																personTripTable[tripStopIB-1][tripDestIB-1] += numPersons;
+														}
+													}
+													else {
+														if (m == modeAlt && (v==3 || v==5)) {
+															if (tourSubmodeIB == u)
+																personTripTable[tripOrigIB-1][tripDestIB-1] += numPersons;
+														}
+													}
+												}
+												else {
+													if (tripStopIB > 0) {
+														personTripTable[tripOrigIB-1][tripStopIB-1] += numPersons;
+														personTripTable[tripStopIB-1][tripDestIB-1] += numPersons;
+														if ( modeAlt == 2 ) {
+															vehicleTripTable[tripOrigIB-1][tripStopIB-1] += 1;
+															vehicleTripTable[tripStopIB-1][tripDestIB-1] += 1;
+														}
+													}
+													else {
+														personTripTable[tripOrigIB-1][tripDestIB-1] += numPersons;
+														if ( modeAlt == 2 )
+															vehicleTripTable[tripOrigIB-1][tripDestIB-1] += 1;
+													}
+												}
+		
+											}
+										}
+				
+									}
+								
+								}
+			
+			
+				
+								// write trips for individual non-mandatory tours
+								it = hh[i].getIndivTours();
+								if (it != null) {
+			
+									for (int t=0; t < it.length; t++) {
+			
+										tod = it[t].getTimeOfDayAlt();
+										if (tod < 1)
+											continue;
+										    
+										periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
+										periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
+
+										modeAlt = it[t].getMode();
+										tourType = it[t].getTourType();
+										tripPark = it[t].getChosenPark();
+										tripOrigOB = it[t].getOrigTaz();
+										tripDestIB = it[t].getOrigTaz();
+										if (tripPark > 0) {
+											tripDestOB = tripPark;
+											tripOrigIB = tripPark;
+										}
+										else {
+											tripDestOB = it[t].getDestTaz();
+											tripOrigIB = it[t].getDestTaz();
+										}
+										if (tripOrigOB < 1 || tripOrigIB < 1 || tripDestOB < 1 || tripDestIB < 1)
+											continue;
+
+										tripStopOB = it[t].getStopLocOB();
+										tripStopIB = it[t].getStopLocIB();
+										if (tripStopOB < 0 || tripStopIB < 0)
+											continue;
+
+										tripModeIk = it[t].getTripIkMode();
+										tripModeKj = it[t].getTripKjMode();
+										tripModeJk = it[t].getTripJkMode();
+										tripModeKi = it[t].getTripKiMode();
+										tourSubmodeOB = it[t].getSubmodeOB();
+										tourSubmodeIB = it[t].getSubmodeIB();
+			
+										vocRatioOB = vocRatios[tourType][periodOut];
+										vocRatioIB = vocRatios[tourType][periodIn];
+		
+										
+										
+										if ( modeAlt == m || (v == 3 && modeAlt == 4) ) {
+											if ( periodOut == p ) {
+												if (u <= 5) {
+													if (tripStopOB > 0) {
+														if (v == 3 && modeAlt == 4) {
+															if (tripModeKj == u)
+																personTripTable[tripStopOB-1][tripDestOB-1]++;
+														}
+														else if (v == 3) {
+															if (tripModeIk == u)
+																personTripTable[tripOrigOB-1][tripStopOB-1]++;
+															if (tripModeKj == u)
+																personTripTable[tripStopOB-1][tripDestOB-1]++;
+														}
+														else if (v == 4) {
+															if (tripModeIk == u)
+																personTripTable[tripOrigOB-1][tripStopOB-1]++;
+														}
+													}
+													else {
+														if (m == modeAlt && (v == 3 || v == 4)) {
+															if (tourSubmodeOB == u)
+																personTripTable[tripOrigOB-1][tripDestOB-1]++;
+														}
+													}
+												}
+												else {
+													if (tripStopOB > 0) {
+														personTripTable[tripOrigOB-1][tripStopOB-1]++;
+														personTripTable[tripStopOB-1][tripDestOB-1]++;
+														if ( modeAlt == 1 ) {
+															vehicleTripTable[tripOrigOB-1][tripStopOB-1] += 1;
+															vehicleTripTable[tripStopOB-1][tripDestOB-1] += 1;
+														}
+														else if ( modeAlt == 2 ) {
+															vehicleTripTable[tripOrigOB-1][tripStopOB-1] += 1.0/vocRatioOB;
+															vehicleTripTable[tripStopOB-1][tripDestOB-1] += 1.0/vocRatioOB;
+														}
+													}
+													else {
+														personTripTable[tripOrigOB-1][tripDestOB-1]++;
+														if ( modeAlt == 1 )
+															vehicleTripTable[tripOrigOB-1][tripDestOB-1] += 1;
+														else if ( modeAlt == 2 )
+															vehicleTripTable[tripOrigOB-1][tripDestOB-1] += 1.0/vocRatioOB;
+													}
+												}
+											}
+											
+											if ( periodIn == p ) {
+												if (u <= 5) {
+													if (tripStopIB > 0) {
+														if (v == 3 && modeAlt == 4) {
+															if (tripModeJk == u)
+																personTripTable[tripOrigIB-1][tripStopIB-1]++;
+														}
+														else if (v == 3) {
+															if (tripModeJk == u)
+																personTripTable[tripOrigIB-1][tripStopIB-1]++;
+															if (tripModeKi == u)
+																personTripTable[tripStopIB-1][tripDestIB-1]++;
+														}
+														else if (v == 5) {
+															if (tripModeKi == u)
+																personTripTable[tripStopIB-1][tripDestIB-1]++;
+														}
+													}
+													else {
+														if (m == modeAlt && (v==3 || v==5)) {
+															if (tourSubmodeIB == u)
+																personTripTable[tripOrigIB-1][tripDestIB-1]++;
+														}
+													}
+												}
+												else {
+													if (tripStopIB > 0) {
+														personTripTable[tripOrigIB-1][tripStopIB-1]++;
+														personTripTable[tripStopIB-1][tripDestIB-1]++;
+														if ( modeAlt == 1 ) {
+															vehicleTripTable[tripOrigIB-1][tripStopIB-1] += 1;
+															vehicleTripTable[tripStopIB-1][tripDestIB-1] += 1;
+														}
+														else if ( modeAlt == 2 ) {
+															vehicleTripTable[tripOrigIB-1][tripStopIB-1] += 1.0/vocRatioIB;
+															vehicleTripTable[tripStopIB-1][tripDestIB-1] += 1.0/vocRatioIB;
+														}
+													}
+													else {
+														personTripTable[tripOrigIB-1][tripDestIB-1]++;
+														if ( modeAlt == 1 )
+															vehicleTripTable[tripOrigIB-1][tripDestIB-1] += 1;
+														else if ( modeAlt == 2 )
+															vehicleTripTable[tripOrigIB-1][tripDestIB-1] += 1.0/vocRatioIB;
+													}
+												}
+		
+											}
+										}
+				
+									}
+			
+								}
+				
+			
+								
+								// write trips for atwork subtours
+								it = hh[i].getMandatoryTours();
+								if (it != null) {
+			
+									for (int t=0; t < it.length; t++) {
+										
+										if (it[t].getTourType() == TourType.WORK) {
+			
+											st = it[t].getSubTours();
+											if (st != null) {
+			
+												for (int s=0; s < st.length; s++) {
+			
+													tod = st[s].getTimeOfDayAlt();
+													if (tod < 1)
+														continue;
+										    
+													periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
+													periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
+
+													modeAlt = st[s].getMode();
+													tourType = TourType.ATWORK;
+													tripPark = st[s].getChosenPark();
+													tripOrigOB = st[s].getOrigTaz();
+													tripDestIB = st[s].getOrigTaz();
+													if (tripPark > 0) {
+														tripDestOB = tripPark;
+														tripOrigIB = tripPark;
+													}
+													else {
+														tripDestOB = st[s].getDestTaz();
+														tripOrigIB = st[s].getDestTaz();
+													}
+													if (tripOrigOB < 1 || tripOrigIB < 1 || tripDestOB < 1 || tripDestIB < 1)
+														continue;
+
+													tripStopOB = st[s].getStopLocOB();
+													tripStopIB = st[s].getStopLocIB();
+													if (tripStopOB < 0 || tripStopIB < 0)
+														continue;
+
+													tripModeIk = st[s].getTripIkMode();
+													tripModeKj = st[s].getTripKjMode();
+													tripModeJk = st[s].getTripJkMode();
+													tripModeKi = st[s].getTripKiMode();
+													tourSubmodeOB = st[s].getSubmodeOB();
+													tourSubmodeIB = st[s].getSubmodeIB();
+			
+													vocRatioOB = vocRatios[tourType][periodOut];
+													vocRatioIB = vocRatios[tourType][periodIn];
+
+													
+													
+													if ( modeAlt == m || (v == 3 && modeAlt == 4) ) {
+														if ( periodOut == p ) {
+															if (u <= 5) {
+																if (tripStopOB > 0) {
+																	if (v == 3 && modeAlt == 4) {
+																		if (tripModeKj == u)
+																			personTripTable[tripStopOB-1][tripDestOB-1]++;
+																	}
+																	else if (v == 3) {
+																		if (tripModeIk == u)
+																			personTripTable[tripOrigOB-1][tripStopOB-1]++;
+																		if (tripModeKj == u)
+																			personTripTable[tripStopOB-1][tripDestOB-1]++;
+																	}
+																	else if (v == 4) {
+																		if (tripModeIk == u)
+																			personTripTable[tripOrigOB-1][tripStopOB-1]++;
+																	}
+																}
+																else {
+																	if (m == modeAlt && (v == 3 || v == 4)) {
+																		if (tourSubmodeOB == u)
+																			personTripTable[tripOrigOB-1][tripDestOB-1]++;
+																	}
+																}
+															}
+															else {
+																if (tripStopOB > 0) {
+																	personTripTable[tripOrigOB-1][tripStopOB-1]++;
+																	personTripTable[tripStopOB-1][tripDestOB-1]++;
+																	if ( modeAlt == 1 ) {
+																		vehicleTripTable[tripOrigOB-1][tripStopOB-1] += 1;
+																		vehicleTripTable[tripStopOB-1][tripDestOB-1] += 1;
+																	}
+																	else if ( modeAlt == 2 ) {
+																		vehicleTripTable[tripOrigOB-1][tripStopOB-1] += 1.0/vocRatioOB;
+																		vehicleTripTable[tripStopOB-1][tripDestOB-1] += 1.0/vocRatioOB;
+																	}
+																}
+																else {
+																	personTripTable[tripOrigOB-1][tripDestOB-1]++;
+																	if ( modeAlt == 1 )
+																		vehicleTripTable[tripOrigOB-1][tripDestOB-1] += 1;
+																	else if ( modeAlt == 2 )
+																		vehicleTripTable[tripOrigOB-1][tripDestOB-1] += 1.0/vocRatioOB;
+																}
+															}
+														}
+											
+														if ( periodIn == p ) {
+															if (u <= 5) {
+																if (tripStopIB > 0) {
+																	if (v == 3 && modeAlt == 4) {
+																		if (tripModeJk == u)
+																			personTripTable[tripOrigIB-1][tripStopIB-1]++;
+																	}
+																	else if (v == 3) {
+																		if (tripModeJk == u)
+																			personTripTable[tripOrigIB-1][tripStopIB-1]++;
+																		if (tripModeKi == u)
+																			personTripTable[tripStopIB-1][tripDestIB-1]++;
+																	}
+																	else if (v == 5) {
+																		if (tripModeKi == u)
+																			personTripTable[tripStopIB-1][tripDestIB-1]++;
+																	}
+																}
+																else {
+																	if (m == modeAlt && (v==3 || v==5)) {
+																		if (tourSubmodeIB == u)
+																			personTripTable[tripOrigIB-1][tripDestIB-1]++;
+																	}
+																}
+															}
+															else {
+																if (tripStopIB > 0) {
+																	personTripTable[tripOrigIB-1][tripStopIB-1]++;
+																	personTripTable[tripStopIB-1][tripDestIB-1]++;
+																	if ( modeAlt == 1 ) {
+																		vehicleTripTable[tripOrigIB-1][tripStopIB-1] += 1;
+																		vehicleTripTable[tripStopIB-1][tripDestIB-1] += 1;
+																	}
+																	else if ( modeAlt == 2 ) {
+																		vehicleTripTable[tripOrigIB-1][tripStopIB-1] += 1.0/vocRatioIB;
+																		vehicleTripTable[tripStopIB-1][tripDestIB-1] += 1.0/vocRatioIB;
+																	}
+																}
+																else {
+																	personTripTable[tripOrigIB-1][tripDestIB-1]++;
+																	if ( modeAlt == 1 )
+																		vehicleTripTable[tripOrigIB-1][tripDestIB-1] += 1;
+																	else if ( modeAlt == 2 )
+																		vehicleTripTable[tripOrigIB-1][tripDestIB-1] += 1.0/vocRatioIB;
+																}
+															}
+		
+														}
+													}
+			
+												}
+			
+											}
+			
+										}
+				
+									}
+			
+								}
+			
+							}
+							
+						}
+			
+						writeBinMatrices( w, v, p, u, personTripTable, vehicleTripTable );
+			
+						// zero out trip table for writing next mode/time period
+						for (int i=0; i < numberOfZones; i++) {
+							for (int j=0; j < numberOfZones; j++) {
+								personTripTable[i][j] = 0;
+								vehicleTripTable[i][j] = 0;
+							}
+						}
+	
+					}	
+				}
+			}
+		}
+
+		
+		logger.info ("finished writing person and vehicle trip matrices.");
+
+	}
+	
+
+
+	private void writeBinMatrices ( int w, int v, int p, int u, float[][] personTable, float[][] vehicleTable ) {
+
+		String binFileName;
+		Matrix outputMatrix;
+		MatrixWriter binWriter;
+
+		String purposeName[] = { "", "man", "nonman" };        
+		String modeName[] = { "", "sov", "hov", "walktran", "drivtran", "trandriv", "nonmotor", "schoolbus" };        
+		String submodeName[] = { "", "lbs", "ebs", "brt", "lrt", "crl" };        
+		String periodName[] = { "", "am", "pm", "md", "nt" };        
+//		String tourTypeName[] = { "", "work", "univ", "school", "escort", "shop", "maint", "discr", "eat" };        
+
+
+		// get directoy name in which to writer binary files from properties file
+		String outputBinaryDirectory = (String)propertyMap.get( "TripsDirectory.binary");
+
+
+		// write the binary person trip tables
+		if (u <= 5)
+			binFileName = outputBinaryDirectory + "/" + purposeName[w] + "_" + modeName[v] + "_"  + submodeName[u] + "_" + periodName[p] + ".binary";
+		else
+			binFileName = outputBinaryDirectory + "/" + purposeName[w] + "_" + modeName[v] + "_" + periodName[p] + ".binary";
+		outputMatrix = new Matrix (personTable);
+		binWriter = MatrixWriter.createWriter (MatrixType.BINARY, new File( binFileName ) );
+		binWriter.writeMatrix("1", outputMatrix);
+
+
+
+		logger.info( "matrix total for table: " + binFileName + " = " + outputMatrix.getSum() );				
+
+
+		// write the binary vehicle trip tables (sov, hov only)
+		if (v == 1 || v == 2) {
+			binFileName = outputBinaryDirectory + "/" + purposeName[w] + "_" + modeName[v] + "_" + periodName[p] + "_veh.binary";
+			outputMatrix = new Matrix (vehicleTable);
+			binWriter = MatrixWriter.createWriter (MatrixType.BINARY, new File( binFileName ) );
+			binWriter.writeMatrix("1", outputMatrix);
+
+			logger.info( "matrix total for table: " + binFileName + " = " + outputMatrix.getSum() );				
+		}
+
+
+		// write out the am sov matrix rowsums to the logger
+//		if ( m==1 && p == 1 && u == 6 )
+//			writeTableRowSums (outputMatrix);
+	}
 
 
 
@@ -932,13 +822,11 @@ public class DTMOutput implements java.io.Serializable {
 
 
 
-	public void writeDTMOutput ( Household[] hh ) {
+	public void writeDTMOutput ( Household[] hh ) throws Exception {
 
 		String modeName[] = { "", "sov", "hov", "walktran", "drivtran", "nonmotor", "schoolbus" };        
 		String tlPurposeName[] = { "", "1 Work-low", "1 Work-med", "1 Work-high", "2 University", "3 School", "4 Escorting", "5 Shopping - ind", "5 Shopping - joint", "6 Maintenance - ind", "6 Maintenance - joint", "7 Discretionary - ind", "7 Discretionary - joint", "8 Eating out - ind", "8 Eating out - joint", "9 At work" };        
 
-        int hhCount=0;
-        
 		int k = 0;
 		int m = 0;
 		int t = 0;
@@ -996,14 +884,7 @@ public class DTMOutput implements java.io.Serializable {
 				outStream = new PrintWriter (new BufferedWriter( new FileWriter(outputFileDTM) ) );
 			}
 
-        }
-        catch (IOException e) {
-            logger.fatal( String.format( "could not open file %s." ), e );
-        }
 
-        
-        
-        try {
 
 			ChoiceModelApplication distc =  new ChoiceModelApplication("Model10.controlFile", "Model10.outputFile", propertyMap);
 			UtilityExpressionCalculator distUEC = distc.getUEC( 1,  0 );
@@ -1156,9 +1037,7 @@ public class DTMOutput implements java.io.Serializable {
 
 			
 			for (int i=0; i < hh.length; i++) {
-		
-                hhCount++;
-                
+			    
 				tempHH = hh[i];
 				
 				hh_id = hh[i].getID();
@@ -2082,24 +1961,20 @@ public class DTMOutput implements java.io.Serializable {
 			tableData = null;
 			
 		}
-		catch (RuntimeException e) {
+		catch (Exception e) {
 
-			logger.fatal ( String.format("runtime exception occurred in DTMOutput.writeDTMOutput() for hhCount=%d", hhCount)  );
+			logger.fatal ("runtime exception occurred in DTMOutput.writeDTMOutput() for household id=" + tempHH.getID(), e );
 			logger.fatal("");
 			logger.fatal("tourCategory=" + m);
 			logger.fatal("tour index=" + t);
-            if ( index != null) {
-    			logger.fatal("orig zone=" + index.getOriginZone());
-    			logger.fatal("dest zone=" + index.getDestZone());
-    			logger.fatal("stop zone=" + index.getStopZone());
-            }
-            
+			logger.fatal("orig zone=" + index.getOriginZone());
+			logger.fatal("dest zone=" + index.getDestZone());
+			logger.fatal("stop zone=" + index.getStopZone());
+			
 			for (int i=0; i < tableData.length; i++)
 				logger.fatal( "[" + i + "]:  " + tableHeadings.get(i) + "  =  " + tableData[i] );
 			logger.fatal("");
-            if ( tempHH != null) {
-                tempHH.writeContentToLogger(logger);
-            }
+			tempHH.writeContentToLogger(logger);
 			logger.fatal("");
 
 			throw e;
