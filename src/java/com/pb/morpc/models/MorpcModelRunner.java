@@ -158,7 +158,7 @@ public class MorpcModelRunner extends MorpcModelBase {
     	
         
         // write summary tables and .csv output files for DTM
-        DTMOutput2 dtmOut = new DTMOutput2(propertyMap,zdm);
+        DTMOutput dtmOut = new DTMOutput(propertyMap,zdm);
 		try {
 			dtmOut.writeDTMOutput( hhMgr.getHouseholds() );
 		} 
