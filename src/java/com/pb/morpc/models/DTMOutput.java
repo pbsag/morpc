@@ -1005,7 +1005,7 @@ public class DTMOutput implements java.io.Serializable {
         
         try {
 
-			ChoiceModelApplication distc =  new ChoiceModelApplication("Model10.controlFile", "Model10.outputFile", propertyMap);
+			ChoiceModelApplication distc =  new ChoiceModelApplication("Model10.controlFile", "Model10.outputFile", propertyMap, Household.class);
 			UtilityExpressionCalculator distUEC = distc.getUEC( 1,  0 );
 			int maxPartySize = 0;
 			for (int i=0; i < hh.length; i++) {

@@ -10,7 +10,6 @@ import com.pb.common.calculator.IndexValues;
 import com.pb.common.model.ConcreteAlternative;
 import com.pb.common.model.LogitModel;
 import com.pb.common.util.SeededRandom;
-import com.pb.morpc.structures.*;
 
 import java.io.File;
 import org.apache.log4j.Logger;
@@ -21,7 +20,7 @@ import java.util.HashMap;
 
 public class ChoiceModelApplication implements java.io.Serializable {
 
-	static Logger logger = Logger.getLogger("com.pb.morpc.models");
+	static Logger logger = Logger.getLogger(ChoiceModelApplication.class);
 
 
     HashMap propertyMap;
@@ -42,19 +41,22 @@ public class ChoiceModelApplication implements java.io.Serializable {
 	private double rootLogsum = 0.0;
 	private int availabilityCount = 0;
 		
+    private Class dmuObject=null;
+    
 	String controlFile;
 	String outputFile;
 
-	IndexValues index = new IndexValues();
 
 
-	public ChoiceModelApplication (String controlFile, String outputFile, HashMap propertyMap) {
+	public ChoiceModelApplication (String controlFile, String outputFile, HashMap propertyMap, Class dmuObject) {
 
 		//open properties files
 		this.controlFile = (String)propertyMap.get( controlFile );
 		this.outputFile = (String)propertyMap.get( outputFile );
 		
 		this.propertyMap = propertyMap;
+        
+        this.dmuObject = dmuObject;
 	}
 
 
@@ -65,7 +67,7 @@ public class ChoiceModelApplication implements java.io.Serializable {
 	public UtilityExpressionCalculator getUEC(int modelSheet, int dataSheet) {
 		
 		// create a UEC to get utilties for this choice model class
-		uec = new UtilityExpressionCalculator(new File(this.controlFile), modelSheet, dataSheet, propertyMap, Household.class);
+		uec = new UtilityExpressionCalculator(new File(this.controlFile), modelSheet, dataSheet, propertyMap, dmuObject);
 
 		// get the list of concrete alternatives from this uec
 		alts= new ConcreteAlternative[uec.getNumberOfAlternatives()];
@@ -197,15 +199,11 @@ public class ChoiceModelApplication implements java.io.Serializable {
 	/*
 	 * calculate utilities and update utilities and availabilities in the logit model passed in
 	 */
-	public LogitModel updateLogitModel (Household hh, boolean[] availability, int[] sample) {
+	public LogitModel updateLogitModel (Object hh, IndexValues index, boolean[] availability, int[] sample) {
 
 	    boolean debug = false;
 	    
 		// get utilities for each alternative for this household
-		index.setOriginZone( hh.getOrigTaz() );
-		index.setDestZone( hh.getChosenDest() );
-		index.setZoneIndex( hh.getTazID() );
-		index.setHHIndex( hh.getID() );
 		utilities = uec.solve( index, hh, sample );
 
 
@@ -228,13 +226,16 @@ public class ChoiceModelApplication implements java.io.Serializable {
 //			utilities = uec.solve( index, hh, sample );
 //		}
 		
+        
 		
 		if (debug) {
 		 
 			for(int a=0; a < alts.length; a++) {
 			    
-				if (sample[a+1] == 1 && availability[a+1] && utilities[a] > -99.0)
-				    logger.info ( "a=" + a + ", origTaz=" + hh.getOrigTaz() + ", ringOrig=" + ZonalDataManager.rings[3*hh.getOrigTaz()] + ", ringDestAlt=" + ZonalDataManager.rings[a] + ", suprdistOrig=" + ZonalDataManager.suprdist[3*hh.getOrigTaz()] + ", suprdistDestAlt=" + ZonalDataManager.suprdist[a] + ", utilities[a]=" + utilities[a] );
+				if (sample[a+1] == 1 && availability[a+1] && utilities[a] > -99.0) {
+                    int origTaz = index.getOriginZone();
+                    logger.info ( "a=" + a + ", origTaz=" + origTaz + ", ringOrig=" + ZonalDataManager.rings[3*origTaz] + ", ringDestAlt=" + ZonalDataManager.rings[a] + ", suprdistOrig=" + ZonalDataManager.suprdist[3*origTaz] + ", suprdistDestAlt=" + ZonalDataManager.suprdist[a] + ", utilities[a]=" + utilities[a] );
+                }
 
 			}
 			

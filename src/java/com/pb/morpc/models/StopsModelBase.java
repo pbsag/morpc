@@ -196,7 +196,7 @@ public class StopsModelBase implements java.io.Serializable {
 
 		defineUECModelSheets (tourTypeCategory);
 
-		sfc =  new ChoiceModelApplication("Model81.controlFile", "Model81.outputFile", propertyMap);
+		sfc =  new ChoiceModelApplication("Model81.controlFile", "Model81.outputFile", propertyMap, Household.class);
 		sfcUEC = sfc.getUEC(model81Sheet, m81DataSheet);
 		sfc.createLogitModel();
 		if (sfcUEC.getNumberOfAlternatives() > numSfcAlternatives)
@@ -209,7 +209,7 @@ public class StopsModelBase implements java.io.Serializable {
 				if (tourTypeCategory != TourType.AT_WORK_CATEGORY) {
 					for (int k=0; k < tourTypes.length; k++) {
 
-						slc[i][j][tourTypes[k]] =  new ChoiceModelApplication("Model82.controlFile", "Model82.outputFile", propertyMap);
+						slc[i][j][tourTypes[k]] =  new ChoiceModelApplication("Model82.controlFile", "Model82.outputFile", propertyMap, Household.class);
 						slcUEC[i][j][tourTypes[k]] = slc[i][j][tourTypes[k]].getUEC( model82Sheet[i][j][tourTypes[k]],  m82DataSheet);
 						slc[i][j][tourTypes[k]].createLogitModel();
 
@@ -221,7 +221,7 @@ public class StopsModelBase implements java.io.Serializable {
 				else {
 					for (int k=0; k < SubTourType.SUB_TOUR_TYPES.length; k++) {
 
-						slc[i][j][SubTourType.SUB_TOUR_TYPES[k]] =  new ChoiceModelApplication("Model82.controlFile", "Model82.outputFile", propertyMap);
+						slc[i][j][SubTourType.SUB_TOUR_TYPES[k]] =  new ChoiceModelApplication("Model82.controlFile", "Model82.outputFile", propertyMap, Household.class);
 						slcUEC[i][j][SubTourType.SUB_TOUR_TYPES[k]] = slc[i][j][SubTourType.SUB_TOUR_TYPES[k]].getUEC( model82Sheet[i][j][SubTourType.SUB_TOUR_TYPES[k]],  m82DataSheet);
 						slc[i][j][SubTourType.SUB_TOUR_TYPES[k]].createLogitModel();
 
@@ -311,22 +311,6 @@ public class StopsModelBase implements java.io.Serializable {
 		logger.info( "Stop frequency and stop location for category " + tourTypeCategory);
     }
 
-
-
-	protected float getSlcOBLogsums ( Household hh, int mode, int tourType ) {
-
-		slc[0][mode][tourType].updateLogitModel ( hh, slcOBAvailability, slcSample[0] );
-
-		return (float)slc[0][mode][tourType].getLogsum ();
-	}
-
-
-	protected float getSlcIBLogsums ( Household hh, int mode, int tourType ) {
-
-		slc[1][mode][tourType].updateLogitModel ( hh, slcIBAvailability, slcSample[1] );
-
-		return (float)slc[1][mode][tourType].getLogsum ();
-	}
 
 
 	private void defineUECModelSheets (int tourCategory) {

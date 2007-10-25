@@ -105,7 +105,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 	private void buildSampleOfAlternativesChoiceModel (String controlFile, String outputFile, int modelSheet, int dataSheet) {
 		
 		// create an object for use in building the choice model
-		cm =  new ChoiceModelApplication ( controlFile, outputFile, propertyMap);
+		cm =  new ChoiceModelApplication ( controlFile, outputFile, propertyMap, Household.class);
 
 		// get a UEC for this choice model		
 		uec = cm.getUEC(modelSheet, dataSheet);
@@ -129,9 +129,6 @@ public class SampleOfAlternatives implements java.io.Serializable {
 	 */
 	public void applySampleOfAlternativesChoiceModel ( Household hh, boolean[] soaAvailability ) {
 
-		LogitModel tempRoot = null;
-		
-		
 		int[] soaSample = new int[soaAvailability.length];
 
 		ArrayList altList = new ArrayList(sampleSize);
@@ -153,14 +150,20 @@ public class SampleOfAlternatives implements java.io.Serializable {
 
 		
 	
+        IndexValues index = new IndexValues();
+        index.setHHIndex(hh.getID());
+        index.setZoneIndex(hh.getTazID());
+        index.setOriginZone(hh.getOrigTaz());
+        index.setDestZone(hh.getChosenDest());
+
 		// LogitModel objects are cached by origin taz.  If the origin taz is not cached,
 		// recompute the LogitModel probabilities and cache the probabilities.
 		if ( modelTypeDc ) {
 			
 			if ( probabilitiesList[hh.getOrigTaz()] == null ) {
-	
+                
 				// calculate probabilities in the generic root LogitModel root, and get back tempRoot with utilities and availabilities updated.
-				cm.updateLogitModel (hh, soaAvailability, soaSample);
+				cm.updateLogitModel (hh, index, soaAvailability, soaSample);
 				probabilitiesList[hh.getOrigTaz()] = cm.getProbabilities();
 
 			}
@@ -169,7 +172,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 		else {
 		    
 			// calculate probabilities in the generic root LogitModel root, and get back tempRoot with utilities and availabilities updated.
-			cm.updateLogitModel (hh, soaAvailability, soaSample);
+			cm.updateLogitModel (hh, index, soaAvailability, soaSample);
 			probabilitiesList[hh.getOrigTaz()] = cm.getProbabilities();
 
 		}
@@ -225,9 +228,6 @@ public class SampleOfAlternatives implements java.io.Serializable {
 	 */
 	public void applySampleOfAlternativesChoiceModel ( Household hh ) {
 
-		LogitModel tempRoot = null;
-		
-		
 		boolean[] soaAvailability = new boolean[uec.getNumberOfAlternatives()+1];
 		int[] soaSample = new int[soaAvailability.length];
 
@@ -245,6 +245,12 @@ public class SampleOfAlternatives implements java.io.Serializable {
 
 		
 	
+        IndexValues index = new IndexValues();
+        index.setHHIndex(hh.getID());
+        index.setZoneIndex(hh.getTazID());
+        index.setOriginZone(hh.getOrigTaz());
+        index.setDestZone(hh.getChosenDest());
+
 		// LogitModel objects are cached by origin taz.  If the origin taz is not cached,
 		// recompute the LogitModel probabilities and cache the probabilities.
 		if ( modelTypeDc ) {
@@ -252,7 +258,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 			if ( probabilitiesList[hh.getOrigTaz()] == null ) {
 	
 				// calculate probabilities in the generic root LogitModel root, and get back tempRoot with utilities and availabilities updated.
-				cm.updateLogitModel (hh, soaAvailability, soaSample);
+				cm.updateLogitModel (hh, index, soaAvailability, soaSample);
 				probabilitiesList[hh.getOrigTaz()] = cm.getProbabilities();
 
 			}
@@ -261,7 +267,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 		else {
 		    
 			// calculate probabilities in the generic root LogitModel root, and get back tempRoot with utilities and availabilities updated.
-			cm.updateLogitModel (hh, soaAvailability, soaSample);
+			cm.updateLogitModel (hh, index, soaAvailability, soaSample);
 			probabilitiesList[hh.getOrigTaz()] = cm.getProbabilities();
 
 		}

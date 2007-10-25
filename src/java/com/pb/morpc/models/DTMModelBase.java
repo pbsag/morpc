@@ -10,6 +10,7 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.calculator.IndexValues;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
+
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 
@@ -21,7 +22,7 @@ import java.io.*;
 
 public class DTMModelBase implements java.io.Serializable {
 
-	protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
+	protected static Logger logger = Logger.getLogger(DTMModelBase.class);
 
 
 	protected int processorIndex = 0;
@@ -243,9 +244,9 @@ public class DTMModelBase implements java.io.Serializable {
 
 			defineUECModelSheets (tourTypes[i], tourTypeCategory);
 
-			dc[i] =  new ChoiceModelApplication("Model51.controlFile", "Model51.outputFile", propertyMap);
-			tc[i] =  new ChoiceModelApplication("Model6.controlFile", "Model6.outputFile", propertyMap);
-			mc[i] =  new ChoiceModelApplication("Model7.controlFile", "Model7.outputFile", propertyMap);
+			dc[i] =  new ChoiceModelApplication("Model51.controlFile", "Model51.outputFile", propertyMap, Household.class);
+			tc[i] =  new ChoiceModelApplication("Model6.controlFile", "Model6.outputFile", propertyMap, Household.class);
+			mc[i] =  new ChoiceModelApplication("Model7.controlFile", "Model7.outputFile", propertyMap, Household.class);
 
 			// create dest choice UEC
 			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Destination Choice UECs");
@@ -320,7 +321,7 @@ public class DTMModelBase implements java.io.Serializable {
 		// create UECs for each of the model 9 model sheets		
 		logger.info ("Creating Parking Location Choice UECs");
 		for (int i=0; i < 3; i++) {
-			pc[i] =  new ChoiceModelApplication( "Model9.controlFile", "Model9.outputFile", propertyMap );
+			pc[i] =  new ChoiceModelApplication( "Model9.controlFile", "Model9.outputFile", propertyMap, Household.class );
 			pcUEC[i] = pc[i].getUEC( i+1, 0 );
 			pc[i].createLogitModel();
 		}
@@ -397,13 +398,13 @@ public class DTMModelBase implements java.io.Serializable {
 
 
 
-	protected float getMcLogsums ( Household hh, int tourTypeIndex ) {
+	protected float getMcLogsums ( Household hh, IndexValues dmuIndex, int tourTypeIndex ) {
 
 		// first calculate the OD related mode choice utility
 		setMcODUtility ( hh, tourTypeIndex );
 
 		// calculate the final mode choice utilities, exponentiate them, and calcualte the logsum
-		mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
+		mc[tourTypeIndex].updateLogitModel ( hh, dmuIndex, mcAvailability, mcSample );
 
 		// return the mode choice logsum
 		return (float)mc[tourTypeIndex].getLogsum();

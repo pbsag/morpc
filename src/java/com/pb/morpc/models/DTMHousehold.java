@@ -82,7 +82,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 		int soaIndex = 0;
 		long markTime=0;
-		long startTime = System.currentTimeMillis();
 
 		
 		hh_id     = hh.getID();
@@ -106,7 +105,15 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		hh.setOrigTaz (hh_taz_id);
 		hh.setTourCategory( TourType.MANDATORY_CATEGORY );
 
-		
+        
+        // set index values used in UECs in ChoiceModelApplication objects
+        index.setOriginZone( hh_taz_id );
+        index.setZoneIndex( hh_taz_id );
+        index.setHHIndex( hh_id );
+        
+        
+        
+        
 		// loop over all puposes for the mandatory tour category in order
 		for (int m=0; m < tourTypes.length; m++) {
 
@@ -251,17 +258,17 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					// calculate mode choice logsum based on appropriate od skims for each mandatory purpose
 					if (TourType.MANDATORY_TYPES[tourTypeIndex] == TourType.WORK) {
 						hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmPm" );
-						ZonalDataManager.setLogsumDcAMPM ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
+						ZonalDataManager.setLogsumDcAMPM ( processorIndex, sample[i], getMcLogsums(hh, index, tourTypeIndex) );
 					}
 					else if (TourType.MANDATORY_TYPES[tourTypeIndex] == TourType.UNIVERSITY) {
 						hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmMd" );
-						ZonalDataManager.setLogsumDcAMMD ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
+						ZonalDataManager.setLogsumDcAMMD ( processorIndex, sample[i], getMcLogsums(hh, index, tourTypeIndex) );
 					}
 					else if (TourType.MANDATORY_TYPES[tourTypeIndex] == TourType.SCHOOL) {
 						hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmMd" );
-						ZonalDataManager.setLogsumDcAMMD ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
+						ZonalDataManager.setLogsumDcAMMD ( processorIndex, sample[i], getMcLogsums(hh, index, tourTypeIndex) );
 						hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdMd" );
-						ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, tourTypeIndex) );
+						ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, index, tourTypeIndex) );
 					}
 
 				}
@@ -271,7 +278,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				dc[tourTypeIndex].updateLogitModel ( hh, dcAvailability, dcSample );
+				dc[tourTypeIndex].updateLogitModel ( hh, index, dcAvailability, dcSample );
 				int chosen = dc[tourTypeIndex].getChoiceResult();
 				int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
 				int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
@@ -310,7 +317,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		//Wu added for Summit Aggregation
 		summitAggregationRecords=new Vector();
 
-		int soaIndex = 0;
 		long markTime=0;
 
 		hh_id     = hh.getID();
@@ -319,7 +325,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		count++;		
 
 
-		long startTime = System.currentTimeMillis();
 
 		// get the array of mandatory tours for this household.	
 		if ( hh.getMandatoryTours() == null )
@@ -331,11 +336,18 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 		hh_taz_id = hh.getTazID();
-		int income    = hh.getHHIncome();
 
 		hh.setOrigTaz ( hh_taz_id );
 		hh.setTourCategory( TourType.MANDATORY_CATEGORY );
-		
+
+        
+        
+        // set index values used in UECs in ChoiceModelApplication objects
+        index.setOriginZone( hh_taz_id );
+        index.setZoneIndex( hh_taz_id );
+        index.setHHIndex( hh_id );
+        
+        
 
 		// loop over all puposes for the mandatory tour category in order
 		for (int m=0; m < tourTypes.length; m++) {
@@ -346,13 +358,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				int tourTypeIndex = m;
 
 				int tourType = hh.mandatoryTours[t].getTourType();
-
-				// set the array of sample of alternatives objects index
-				if (tourTypes[m] == TourType.WORK)
-					soaIndex = income - 1;
-				else
-					soaIndex = 0;
-
 
 				
 				person = hh.mandatoryTours[t].getTourPerson();
@@ -366,14 +371,12 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					if ( tourTypes[m] == TourType.WORK && tourType == TourType.SCHOOL
 						&& persons[person].getPatternType() == PatternType.SCHOOL_WORK ) {
 							tourTypeIndex = 2;
-							soaIndex = 0;
 					}
 					// if we're processing work, and the tour is university, and the patterntype is univ_work,
 					// process the tour as a university tour, even though the tourType is work.
 					else if ( tourTypes[m] == TourType.WORK && tourType == TourType.UNIVERSITY
 						&& persons[person].getPatternType() == PatternType.UNIV_WORK ) {
 							tourTypeIndex = 1;
-							soaIndex = 0;
 					}
 					// if we're processing work, and the tour is univ, and the patterntype is univ_work,
 					// don't do anything, just keep processing the univ tour.
@@ -438,7 +441,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				LogitModel root = null;
 				int chosenModeAlt = -1;
 				try {
-					root=mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
+
+                    index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
+
+                    root=mc[tourTypeIndex].updateLogitModel ( hh, index, mcAvailability, mcSample );
 					chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 				}
 				catch (java.lang.Exception e) {
@@ -483,19 +489,14 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				if ( hh.getCbdDest() && chosenModeAlt < 3 ) {
 					
 					if ( hh.getFreeParking() == 1 ) {
-						pc[0].updateLogitModel ( hh ,pcAvailability, pcSample );
+						pc[0].updateLogitModel ( hh, index ,pcAvailability, pcSample );
                         chosenParkAlt = pc[0].getChoiceResult();
 					}
 					else {
-						pc[1].updateLogitModel ( hh, pcAvailability, pcSample );
+						pc[1].updateLogitModel ( hh, index, pcAvailability, pcSample );
                         chosenParkAlt = pc[1].getChoiceResult();
 					}
 
-                    int dummy=0;
-                    if (chosenParkAlt == 35) {
-                        dummy = 1;
-                    }
-                    
 					hh.mandatoryTours[t].setChosenPark ((int)cbdAltsTable.getValueAt(chosenParkAlt,2));
                     
 				}
@@ -625,7 +626,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		int[] jtPersons;
 		
 		long markTime=0;
-		long startTime = System.currentTimeMillis();
 
 		if (useMessageWindow) mw.setMessage1 ("Destination Choice for Joint Tours");
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
@@ -637,15 +637,17 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			return;
 			
 
-		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
-
-
 		hh_id     = hh.getID();
 		hh_taz_id = hh.getTazID();
 		hh.setOrigTaz (hh_taz_id);
 		hh.setTourCategory( TourType.JOINT_CATEGORY );
 
+        // set index values used in UECs in ChoiceModelApplication objects
+        index.setHHIndex( hh_id );
+        index.setZoneIndex( hh_taz_id );
+        index.setOriginZone( hh_taz_id );
+        
+        
 
 		// loop over all puposes for the mandatory tour category in order
 		for (int m=0; m < tourTypes.length; m++) {
@@ -744,9 +746,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 							
 					// calculate mode choice logsum based on appropriate od skims
 					hh.setTODDefaults ( TourType.JOINT_CATEGORY, "MdMd" );
-					ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
+					ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, index, m) );
 					hh.setTODDefaults ( TourType.JOINT_CATEGORY, "PmNt" );
-					ZonalDataManager.setLogsumDcPMNT ( processorIndex, sample[i], getMcLogsums(hh, m) );
+					ZonalDataManager.setLogsumDcPMNT ( processorIndex, sample[i], getMcLogsums(hh, index, m) );
 
 				}
 				dcLogsumTime += (System.currentTimeMillis()-markTime);
@@ -755,7 +757,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				dc[m].updateLogitModel ( hh, dcAvailability, dcSample );
+				dc[m].updateLogitModel ( hh, index, dcAvailability, dcSample );
 				int chosen = dc[m].getChoiceResult();
 				int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
 				int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
@@ -789,7 +791,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		int[] jtPersons;
 		
 		long markTime=0;
-		long startTime = System.currentTimeMillis();
 
 		if (useMessageWindow) mw.setMessage1 ("Time-of-day Choice for Joint Tours");
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
@@ -810,6 +811,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		hh.setOrigTaz (hh_taz_id);
 		hh.setTourCategory( TourType.JOINT_CATEGORY );
 
+        // set index values used in UECs in ChoiceModelApplication objects
+        index.setOriginZone( hh_taz_id );
+        index.setZoneIndex( hh_taz_id );
+        index.setHHIndex( hh_id );
+        
 
 		// loop over all puposes for the mandatory tour category in order
 		for (int m=0; m < tourTypes.length; m++) {
@@ -869,8 +875,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setChosenDest( hh.jointTours[t].getDestTaz() );
 				hh.setChosenWalkSegment( hh.jointTours[t].getDestShrtWlk() );
 
+                index.setDestZone( hh.jointTours[t].getDestTaz() );
+                
+                
 				// compute time-of-day choice proportions and choose alternative
-				tc[m].updateLogitModel ( hh, tcAvailability, tcSample );
+				tc[m].updateLogitModel ( hh, index, tcAvailability, tcSample );
 
 				int chosenTODAlt;
 				try {
@@ -913,7 +922,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		int[] jtPersons;
 		
 		long markTime=0;
-		long startTime = System.currentTimeMillis();
 
 		if (useMessageWindow) mw.setMessage1 ("Mode Choice for Joint Tours");
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
@@ -925,15 +933,16 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			return;
 			
 
-		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
-
-
 		hh_id     = hh.getID();
 		hh_taz_id = hh.getTazID();
 		hh.setOrigTaz (hh_taz_id);
 		hh.setTourCategory( TourType.JOINT_CATEGORY );
 
+        // set index values used in UECs in ChoiceModelApplication objects
+        index.setOriginZone( hh_taz_id );
+        index.setZoneIndex( hh_taz_id );
+        index.setHHIndex( hh_id );
+        
 
 		// loop over all puposes for the mandatory tour category in order
 		for (int m=0; m < tourTypes.length; m++) {
@@ -986,8 +995,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
-				//Wu added for Summit Aggregation
-				LogitModel root=mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
+                index.setDestZone( hh.jointTours[t].getDestTaz() );
+
+                //Wu added for Summit Aggregation
+				LogitModel root=mc[m].updateLogitModel ( hh, index, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
@@ -1113,7 +1124,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	public void indivNonMandatoryTourDc ( Household hh ) {
 
 		long markTime=0;
-		long startTime = System.currentTimeMillis();
 
 		if (useMessageWindow) mw.setMessage1 ("Destination Choice for Non-mandatory Tours");
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
@@ -1125,15 +1135,16 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			return;
 			
 
-		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
-
-
 		hh_id     = hh.getID();
 		hh_taz_id = hh.getTazID();
 		hh.setOrigTaz (hh_taz_id);
 		hh.setTourCategory( TourType.NON_MANDATORY_CATEGORY );
 
+        // set index values used in UECs in ChoiceModelApplication objects
+        index.setHHIndex( hh_id );
+        index.setZoneIndex( hh_taz_id );
+        index.setOriginZone( hh_taz_id );
+        
 
 		// loop over all puposes for the individual non-mandatory tour category in order
 		for (int m=0; m < tourTypes.length; m++) {
@@ -1229,13 +1240,13 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					// calculate mode choice logsum based on appropriate od skims for each individual non-mandatory purpose
 					if (TourType.NON_MANDATORY_TYPES[m] == TourType.ESCORTING) {
 						hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "MdMd" );
-						ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
+						ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, index, m) );
 					}
 					else {
 						hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "MdMd" );
-						ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
+						ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, index, m) );
 						hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "PmNt" );
-						ZonalDataManager.setLogsumDcPMNT ( processorIndex, sample[i], getMcLogsums(hh, m) );
+						ZonalDataManager.setLogsumDcPMNT ( processorIndex, sample[i], getMcLogsums(hh, index, m) );
 					}
 
 				}
@@ -1245,7 +1256,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				dc[m].updateLogitModel ( hh, dcAvailability, dcSample );
+				dc[m].updateLogitModel ( hh, index, dcAvailability, dcSample );
 				int chosen = dc[m].getChoiceResult();
 				int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
 				int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
@@ -1275,7 +1286,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	public void indivNonMandatoryTourTc ( Household hh ) {
 
 		long markTime=0;
-		long startTime = System.currentTimeMillis();
 
 		if (useMessageWindow) mw.setMessage1 ("Time-of-day Choice for Non-mandatory Tours");
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
@@ -1296,6 +1306,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		hh.setOrigTaz (hh_taz_id);
 		hh.setTourCategory( TourType.NON_MANDATORY_CATEGORY );
 
+        
+        index.setHHIndex( hh_id );
+        index.setZoneIndex( hh_taz_id );
+        index.setOriginZone( hh_taz_id );
+        
 
 		// loop over all puposes for the individual non-mandatory tour category in order
 		for (int m=0; m < tourTypes.length; m++) {
@@ -1315,6 +1330,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.indivTours[t].setOriginShrtWlk (hh.getOriginWalkSegment() );
 				
 
+                index.setDestZone( hh.indivTours[t].getDestTaz() );
+                
+                
 				if (logDebug)
 					logger.info("in DTM indi tc, setting orig short walk="+hh.getOriginWalkSegment());
 				
@@ -1352,49 +1370,49 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// calculate the mode choice logsums for TOD choice based on chosen dest and default time periods
 				markTime = System.currentTimeMillis();
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "EaEa" );
-				tcLogsumEaEa = getMcLogsums ( hh, m );
+				tcLogsumEaEa = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "EaAm" );
-				tcLogsumEaAm = getMcLogsums ( hh, m );
+				tcLogsumEaAm = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "EaMd" );
-				tcLogsumEaMd = getMcLogsums ( hh, m );
+				tcLogsumEaMd = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "EaPm" );
-				tcLogsumEaPm = getMcLogsums ( hh, m );
+				tcLogsumEaPm = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "EaNt" );
-				tcLogsumEaNt = getMcLogsums ( hh, m );
+				tcLogsumEaNt = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "AmAm" );
-				tcLogsumAmAm = getMcLogsums ( hh, m );
+				tcLogsumAmAm = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "AmMd" );
-				tcLogsumAmMd = getMcLogsums ( hh, m );
+				tcLogsumAmMd = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "AmPm" );
-				tcLogsumAmPm = getMcLogsums ( hh, m );
+				tcLogsumAmPm = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "AmNt" );
-				tcLogsumAmNt = getMcLogsums ( hh, m );
+				tcLogsumAmNt = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "MdMd" );
-				tcLogsumMdMd = getMcLogsums ( hh, m );
+				tcLogsumMdMd = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "MdPm" );
-				tcLogsumMdPm = getMcLogsums ( hh, m );
+				tcLogsumMdPm = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "MdNt" );
-				tcLogsumMdNt = getMcLogsums ( hh, m );
+				tcLogsumMdNt = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "PmPm" );
-				tcLogsumPmPm = getMcLogsums ( hh, m );
+				tcLogsumPmPm = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "PmNt" );
-				tcLogsumPmNt = getMcLogsums ( hh, m );
+				tcLogsumPmNt = getMcLogsums ( hh, index, m );
 
 				hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "NtNt" );
-				tcLogsumNtNt = getMcLogsums ( hh, m );
+				tcLogsumNtNt = getMcLogsums ( hh, index, m );
 
 
 
@@ -1595,10 +1613,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setChosenDest( hh.indivTours[t].getDestTaz() );
 				hh.setChosenWalkSegment( hh.indivTours[t].getDestShrtWlk() );
 
-				
+                index.setDestZone( hh.indivTours[t].getDestTaz() );
+                
 				// compute time-of-day choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				tc[m].updateLogitModel ( hh, tcAvailability, tcSample );
+				tc[m].updateLogitModel ( hh, index, tcAvailability, tcSample );
 
 				int chosenTODAlt;
 				try {
@@ -1635,7 +1654,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		summitAggregationRecords=new Vector();
 		
 		long markTime=0;
-		long startTime = System.currentTimeMillis();
 
 		if (useMessageWindow) mw.setMessage1 ("Mode Choice for Non-mandatory Tours");
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
@@ -1646,10 +1664,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		if (hh.getIndivTours() == null)
 			return;
 			
-
-		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
-
 
 		hh_id     = hh.getID();
 		hh_taz_id = hh.getTazID();
@@ -1698,12 +1712,16 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					mcSample[4] = 0;
 					mcAvailability[4] = false;
 				}
-				
+
+                index.setOriginZone( hh.indivTours[t].getOrigTaz() );
+                index.setDestZone( hh.indivTours[t].getDestTaz() );
+                
+                
 				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
-				LogitModel root=mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
+				LogitModel root=mc[m].updateLogitModel ( hh, index, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
@@ -1719,11 +1737,12 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				index.setOriginZone( hh.indivTours[t].getOrigTaz() );
 				index.setDestZone( hh.indivTours[t].getDestTaz() );
+                
 				int chosenParkAlt=0;
 				// determine parking location if chosenDestAlt is in the CBD and chosenModeAlt is sov or hov.
 				if ( hh.getCbdDest() && chosenModeAlt < 3 ) {
 					
-					pc[2].updateLogitModel ( hh, pcAvailability, pcSample );
+					pc[2].updateLogitModel ( hh, index, pcAvailability, pcSample );
 					chosenParkAlt = pc[2].getChoiceResult();
 
 					hh.indivTours[t].setChosenPark ((int)cbdAltsTable.getValueAt(chosenParkAlt,2));
@@ -1846,10 +1865,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 		long markTime=0;
 		int soaIndex = 0;
-		Tour[] st;
-		int todAlt;
-		int startP;
-		int endP;
 		
 		int hhOrigTaz = 0;
 		int hhOrigWalkSegment = 0;
@@ -1861,7 +1876,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		count++;		
 		
 		
-		long startTime = System.currentTimeMillis();
 
 		
 		// get the array of mandatory tours for this household.	
@@ -1869,13 +1883,13 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			return;
 		
 
-		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
-
-
 		hh_id     = hh.getID();
 		hh_taz_id = hh.getTazID();
 		hh.setTourCategory( TourType.AT_WORK_CATEGORY );
+
+
+        index.setHHIndex( hh_id );
+        index.setZoneIndex( hh_taz_id );
 
 
 		
@@ -1898,7 +1912,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			hh.setTourID ( t );
 
 				
-
 			// loop over subtours
 			for (int s=0; s < hh.mandatoryTours[t].subTours.length; s++) {
 
@@ -1918,6 +1931,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );
 
+                index.setOriginZone( hh.mandatoryTours[t].getDestTaz() );
         
 				if (hh.mandatoryTours[t].subTours[s].getSubTourType() == SubTourType.WORK)
 					soaIndex = 0;
@@ -1996,15 +2010,15 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 							
 					// calculate mode choice logsum based on appropriate od skims
 					hh.setTODDefaults ( TourType.AT_WORK_CATEGORY, "MdMd" );
-					ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, m) );
+					ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, index, m) );
 
 				}
 				dcLogsumTime += (System.currentTimeMillis()-markTime);
         
-				
+                
         		// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				dc[m].updateLogitModel ( hh, dcAvailability, dcSample );
+				dc[m].updateLogitModel ( hh, index, dcAvailability, dcSample );
 				int chosen = dc[m].getChoiceResult();
         		int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
         		int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
@@ -2040,8 +2054,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	public void atWorkTourTc ( Household hh ) {
 
 		long markTime=0;
-		int soaIndex = 0;
-		Tour[] st;
 		int todAlt;
 		int startP;
 		int endP;
@@ -2056,7 +2068,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		count++;		
 		
 		
-		long startTime = System.currentTimeMillis();
 
 		
 		// get the array of mandatory tours for this household.	
@@ -2073,6 +2084,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		hh.setTourCategory( TourType.AT_WORK_CATEGORY );
 
 
+        index.setHHIndex( hh_id );
+        index.setZoneIndex( hh_taz_id );
 		
 		// loop over individual tours of the tour purpose of interest for the hh
 		for (int t=0; t < hh.mandatoryTours.length; t++) {
@@ -2128,6 +2141,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );
 
+                index.setOriginZone( hh.mandatoryTours[t].getDestTaz() );
         
 				// determine the TOD alts for the begin and end hours to use in case no alternatives are available
 				int defaultStart = 0;
@@ -2169,10 +2183,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setChosenDest( hh.mandatoryTours[t].subTours[s].getDestTaz() );
 				hh.setChosenWalkSegment( hh.mandatoryTours[t].subTours[s].getDestShrtWlk() );
 
+                index.setDestZone( hh.mandatoryTours[t].subTours[s].getDestTaz() );
 
 				// compute time-of-day choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				tc[m].updateLogitModel ( hh, tcAvailability, tcSample );
+				tc[m].updateLogitModel ( hh, index, tcAvailability, tcSample );
 
 				int chosenTODAlt;
 				try {
@@ -2231,11 +2246,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		summitAggregationRecords=new Vector();
 
 		long markTime=0;
-		int soaIndex = 0;
-		Tour[] st;
-		int todAlt;
-		int startP;
-		int endP;
 		
 		int hhOrigTaz = 0;
 		int hhOrigWalkSegment = 0;
@@ -2247,7 +2257,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		count++;		
 		
 		
-		long startTime = System.currentTimeMillis();
 
 		
 		// get the array of mandatory tours for this household.	
@@ -2255,15 +2264,13 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 			return;
 		
 
-		// get person array for this household.
-		Person[] persons = hh.getPersonArray();
-
-
 		hh_id     = hh.getID();
 		hh_taz_id = hh.getTazID();
 		hh.setTourCategory( TourType.AT_WORK_CATEGORY );
 
 
+        index.setHHIndex( hh_id );
+        index.setZoneIndex( hh_taz_id );
 		
 		// loop over individual tours of the tour purpose of interest for the hh
 		for (int t=0; t < hh.mandatoryTours.length; t++) {
@@ -2295,6 +2302,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setOriginWalkSegment( hh.mandatoryTours[t].getDestShrtWlk() );
 				hh.setSubtourID ( s );
 
+                index.setOriginZone( hh.mandatoryTours[t].getDestTaz() );
         
 				// compute mode choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
@@ -2315,12 +2323,14 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					mcAvailability[4] = false;
 				}
 				
+                index.setDestZone( hh.mandatoryTours[t].subTours[s].getDestTaz() );
+                
 				//Jim's original
 				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
-				LogitModel root=mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
+				LogitModel root=mc[m].updateLogitModel ( hh, index, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
@@ -2594,7 +2604,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	
 public void mandatoryTourTc ( Household hh ) {
     
-    	int soaIndex = 0;
     	long markTime=0;
     
     	hh_id     = hh.getID();
@@ -2603,7 +2612,6 @@ public void mandatoryTourTc ( Household hh ) {
     	count++;		
     
     
-    	long startTime = System.currentTimeMillis();
     
     	// get the array of mandatory tours for this household.	
     	if ( hh.getMandatoryTours() == null )
@@ -2615,11 +2623,16 @@ public void mandatoryTourTc ( Household hh ) {
     
     
     	hh_taz_id = hh.getTazID();
-    	int income    = hh.getHHIncome();
     
     	hh.setOrigTaz ( hh_taz_id );
     	hh.setTourCategory( TourType.MANDATORY_CATEGORY );
-    
+
+        
+        // set index values used in UECs in ChoiceModelApplication objects
+        index.setHHIndex( hh_id );
+        index.setZoneIndex( hh_taz_id );
+        index.setOriginZone( hh_taz_id );
+        
     	
     	// loop over all puposes for the mandatory tour category in order
     	for (int m=0; m < tourTypes.length; m++) {
@@ -2631,14 +2644,6 @@ public void mandatoryTourTc ( Household hh ) {
     
     			int tourType = hh.mandatoryTours[t].getTourType();
     
-    			// set the array of sample of alternatives objects index
-    			if (tourTypes[m] == TourType.WORK)
-    				soaIndex = income - 1;
-    			else
-    				soaIndex = 0;
-    
-    
-    			
     			person = hh.mandatoryTours[t].getTourPerson();
     
     
@@ -2650,14 +2655,12 @@ public void mandatoryTourTc ( Household hh ) {
     				if ( tourTypes[m] == TourType.WORK && tourType == TourType.SCHOOL
     					&& persons[person].getPatternType() == PatternType.SCHOOL_WORK ) {
     						tourTypeIndex = 2;
-    						soaIndex = 0;
     				}
     				// if we're processing work, and the tour is university, and the patterntype is univ_work,
     				// process the tour as a university tour, even though the tourType is work.
     				else if ( tourTypes[m] == TourType.WORK && tourType == TourType.UNIVERSITY
     					&& persons[person].getPatternType() == PatternType.UNIV_WORK ) {
     						tourTypeIndex = 1;
-    						soaIndex = 0;
     				}
     				// if we're processing work, and the tour is univ, and the patterntype is univ_work,
     				// don't do anything, just keep processing the univ tour.
@@ -2695,7 +2698,8 @@ public void mandatoryTourTc ( Household hh ) {
     			hh.setChosenDest( hh.mandatoryTours[t].getDestTaz() );
     
     			
-    			
+    			index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
+                
     
     			// update the time of day choice availabilty based on available time windows
     			// tcSample and tcAvailability are 1 based
@@ -2727,49 +2731,49 @@ public void mandatoryTourTc ( Household hh ) {
     			if (TourType.MANDATORY_TYPES[tourTypeIndex] != TourType.SCHOOL) {
     				
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaEa" );
-    				tcLogsumEaEa = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumEaEa = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaAm" );
-    				tcLogsumEaAm = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumEaAm = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaMd" );
-    				tcLogsumEaMd = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumEaMd = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaPm" );
-    				tcLogsumEaPm = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumEaPm = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "EaNt" );
-    				tcLogsumEaNt = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumEaNt = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmAm" );
-    				tcLogsumAmAm = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumAmAm = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmMd" );
-    				tcLogsumAmMd = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumAmMd = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmPm" );
-    				tcLogsumAmPm = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumAmPm = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmNt" );
-    				tcLogsumAmNt = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumAmNt = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdMd" );
-    				tcLogsumMdMd = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumMdMd = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdPm" );
-    				tcLogsumMdPm = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumMdPm = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "MdNt" );
-    				tcLogsumMdNt = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumMdNt = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "PmPm" );
-    				tcLogsumPmPm = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumPmPm = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "PmNt" );
-    				tcLogsumPmNt = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumPmNt = getMcLogsums ( hh, index, tourTypeIndex );
     
     				hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "NtNt" );
-    				tcLogsumNtNt = getMcLogsums ( hh, tourTypeIndex );
+    				tcLogsumNtNt = getMcLogsums ( hh, index, tourTypeIndex );
     
     			}
     
@@ -2969,10 +2973,11 @@ public void mandatoryTourTc ( Household hh ) {
     			}
     			tcLogsumTime += (System.currentTimeMillis()-markTime);
     
-    
+    			index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
+                
     			// compute time-of-day choice proportions and choose alternative
     			markTime = System.currentTimeMillis();
-    			tc[tourTypeIndex].updateLogitModel ( hh, tcAvailability, tcSample );
+    			tc[tourTypeIndex].updateLogitModel ( hh, index, tcAvailability, tcSample );
     			
     			int chosenTODAlt;
     			try {
