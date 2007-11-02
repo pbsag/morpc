@@ -10,6 +10,7 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.calculator.IndexValues;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.model.ChoiceModelApplication;
 import com.pb.morpc.structures.TourType;
 import com.pb.morpc.structures.SubTourType;
 import com.pb.morpc.structures.MessageWindow;

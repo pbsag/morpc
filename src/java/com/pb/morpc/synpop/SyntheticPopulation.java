@@ -7,9 +7,9 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.NDimensionalMatrixBalancerDouble;
 import com.pb.common.matrix.NDimensionalMatrixDouble;
 import com.pb.common.matrix.RowVector;
+import com.pb.common.model.ChoiceModelApplication;
 
 import com.pb.morpc.matrix.MatrixUtil;
-import com.pb.morpc.models.ChoiceModelApplication;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.PersonType;
 import com.pb.morpc.synpop.pums2000.PUMSData;

@@ -10,6 +10,7 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.calculator.IndexValues;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.model.ChoiceModelApplication;
 
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
@@ -105,8 +106,6 @@ public class DTMModelBase implements java.io.Serializable {
 	public static float[][] dcCorrections;
 
 	
-	
-	protected IndexValues index = new IndexValues();
 
 
     // university tour mode choice alternatives:    Alt1    Alt2    Alt3    Alt4    Alt5
@@ -401,7 +400,7 @@ public class DTMModelBase implements java.io.Serializable {
 	protected float getMcLogsums ( Household hh, IndexValues dmuIndex, int tourTypeIndex ) {
 
 		// first calculate the OD related mode choice utility
-		setMcODUtility ( hh, tourTypeIndex );
+		setMcODUtility ( hh, dmuIndex, tourTypeIndex );
 
 		// calculate the final mode choice utilities, exponentiate them, and calcualte the logsum
 		mc[tourTypeIndex].updateLogitModel ( hh, dmuIndex, mcAvailability, mcSample );
@@ -411,7 +410,7 @@ public class DTMModelBase implements java.io.Serializable {
 	}
 
 
-	protected void setMcODUtility ( Household hh, int tourTypeIndex ) {
+	protected void setMcODUtility ( Household hh, IndexValues dmuIndex, int tourTypeIndex ) {
 
 		double[] ModalUtilities = null;
 
@@ -437,48 +436,45 @@ public class DTMModelBase implements java.io.Serializable {
 //		}
 //		else {
 //
-			index.setOriginZone( hh.getOrigTaz() );
-			index.setDestZone( hh.getChosenDest() );
-			index.setZoneIndex( hh.getTazID() );
-			index.setHHIndex( hh.getID() );
 
-			try {
-				ModalUtilities = mcODUEC[tourTypeIndex].solve(index, hh, mcLogsumAvailability);
-			}
-			catch (java.lang.Exception e) {
-				logger.fatal ("runtime exception occurred in DTMModelBase.setMcODUtility() for household id=" + hh.getID(), e );
-				logger.fatal("");
-				logger.fatal("tourTypeIndex=" + tourTypeIndex);
-				logger.fatal("processorIndex=" + processorIndex);
-				logger.fatal("UEC NumberOfAlternatives=" + mcODUEC[tourTypeIndex].getNumberOfAlternatives());
-				logger.fatal("UEC MethodInvoker Source Code=");
-				logger.fatal(mcODUEC[tourTypeIndex].getMethodInvokerSourceCode());
-				logger.fatal("UEC MethodInvoker Variable Table=");
-				logger.fatal(mcODUEC[tourTypeIndex].getVariableTable());
-				logger.fatal("UEC AlternativeNames=" + mcODUEC[tourTypeIndex].getAlternativeNames());
-				String[] altNames = mcODUEC[tourTypeIndex].getAlternativeNames();
-				for (int i=0; i < altNames.length; i++)
-					logger.fatal( "[" + i + "]:  " + altNames[i] );
-				logger.fatal("");
-				hh.writeContentToLogger(logger);
-				logger.fatal("");
-				e.printStackTrace();
-				System.exit(-1);
-			}
+        
+            try {
+    			ModalUtilities = mcODUEC[tourTypeIndex].solve(dmuIndex, hh, mcLogsumAvailability);
+    		}
+    		catch (java.lang.Exception e) {
+    			logger.fatal ("runtime exception occurred in DTMModelBase.setMcODUtility() for household id=" + hh.getID(), e );
+    			logger.fatal("");
+    			logger.fatal("tourTypeIndex=" + tourTypeIndex);
+    			logger.fatal("processorIndex=" + processorIndex);
+    			logger.fatal("UEC NumberOfAlternatives=" + mcODUEC[tourTypeIndex].getNumberOfAlternatives());
+    			logger.fatal("UEC MethodInvoker Source Code=");
+    			logger.fatal(mcODUEC[tourTypeIndex].getMethodInvokerSourceCode());
+    			logger.fatal("UEC MethodInvoker Variable Table=");
+    			logger.fatal(mcODUEC[tourTypeIndex].getVariableTable());
+    			logger.fatal("UEC AlternativeNames=" + mcODUEC[tourTypeIndex].getAlternativeNames());
+    			String[] altNames = mcODUEC[tourTypeIndex].getAlternativeNames();
+    			for (int i=0; i < altNames.length; i++)
+    				logger.fatal( "[" + i + "]:  " + altNames[i] );
+    			logger.fatal("");
+    			hh.writeContentToLogger(logger);
+    			logger.fatal("");
+    			throw new RuntimeException();
+    		}
 			
 //
 //			modalODUtilityMap[processorIndex].put ( mapKey, ModalUtilities );
 //
 //		}
 
-			ZonalDataManager.setOdUtilModeAlt (processorIndex, ModalUtilities);
-			
-			if ( processorIndex != hh.getProcessorIndex() ) {
-				logger.fatal ( "processorIndex in DTMModelBase.setMcODUtility() = " + processorIndex );
-				logger.fatal ( "processorIndex in hh object = " + hh.getProcessorIndex() );
-				logger.fatal ( "the processorIndex values are expected to be the same.");
-				throw new RuntimeException();
-			}
+
+        ZonalDataManager.setOdUtilModeAlt (processorIndex, ModalUtilities);
+		
+		if ( processorIndex != hh.getProcessorIndex() ) {
+			logger.fatal ( "processorIndex in DTMModelBase.setMcODUtility() = " + processorIndex );
+			logger.fatal ( "processorIndex in hh object = " + hh.getProcessorIndex() );
+			logger.fatal ( "the processorIndex values are expected to be the same.");
+			throw new RuntimeException();
+		}
 
 	}
 

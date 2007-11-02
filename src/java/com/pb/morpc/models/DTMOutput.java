@@ -7,6 +7,7 @@ import com.pb.morpc.synpop.SyntheticPopulation;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.MatrixType;
+import com.pb.common.model.ChoiceModelApplication;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.calculator.IndexValues;
 

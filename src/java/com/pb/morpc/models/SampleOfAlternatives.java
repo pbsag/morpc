@@ -3,6 +3,7 @@ package com.pb.morpc.models;
 import com.pb.common.calculator.IndexValues;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.math.MathUtil;
+import com.pb.common.model.ChoiceModelApplication;
 import com.pb.common.model.LogitModel;
 
 import com.pb.morpc.structures.*;

@@ -7,6 +7,7 @@ package com.pb.morpc.models;
  * individual tours
  */
 
+import com.pb.common.calculator.IndexValues;
 import com.pb.common.model.Alternative;
 import com.pb.common.model.ConcreteAlternative;
 import java.util.Set;
@@ -31,10 +32,12 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	long tcTime = 0;
 	long mcTime = 0;
 	
+    
 	int shadowPricingIteration = 0;
 	
 	boolean logDebug = false;
-	
+
+    
 	//Wu added for Summit Aggregation
 	protected Vector summitAggregationRecords=null;
 	
@@ -80,7 +83,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
         
 	public void mandatoryTourDc ( Household hh ) {
 
-		int soaIndex = 0;
+        IndexValues index = new IndexValues();
+
+        int soaIndex = 0;
 		long markTime=0;
 
 		
@@ -255,7 +260,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					hh.setChosenDest( d );
 					hh.setChosenWalkSegment( s );
 							
-					// calculate mode choice logsum based on appropriate od skims for each mandatory purpose
+                    index.setDestZone( d );
+
+                    // calculate mode choice logsum based on appropriate od skims for each mandatory purpose
 					if (TourType.MANDATORY_TYPES[tourTypeIndex] == TourType.WORK) {
 						hh.setTODDefaults ( TourType.MANDATORY_CATEGORY, "AmPm" );
 						ZonalDataManager.setLogsumDcAMPM ( processorIndex, sample[i], getMcLogsums(hh, index, tourTypeIndex) );
@@ -312,6 +319,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	public void mandatoryTourMc ( Household hh ) {
 		
         
+        IndexValues index = new IndexValues();
         
         
 		//Wu added for Summit Aggregation
@@ -423,7 +431,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				Arrays.fill (mcAvailability, true);
 				hh.setOrigTaz( hh.mandatoryTours[t].getOrigTaz() );
 				hh.setChosenDest( hh.mandatoryTours[t].getDestTaz() );
-				setMcODUtility ( hh, tourTypeIndex );
+                
+                index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
+				setMcODUtility ( hh, index, tourTypeIndex );
+                
 				// set transit modes to unavailable if a no walk access subzone was selected in DC.
 				int chosenShrtWlk = hh.mandatoryTours[t].getDestShrtWlk();
 				if ( chosenShrtWlk == 0 ) {
@@ -441,9 +452,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				LogitModel root = null;
 				int chosenModeAlt = -1;
 				try {
-
-                    index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
-
                     root=mc[tourTypeIndex].updateLogitModel ( hh, index, mcAvailability, mcSample );
 					chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 				}
@@ -482,8 +490,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// set chosen in alternative in tour objects
 				hh.mandatoryTours[t].setMode (chosenModeAlt);
 
-				index.setOriginZone( hh.mandatoryTours[t].getOrigTaz() );
-                index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
 				int chosenParkAlt=0;
 				// determine parking location if chosenDestAlt is in the CBD and chosenModeAlt is sov or hov.
 				if ( hh.getCbdDest() && chosenModeAlt < 3 ) {
@@ -508,10 +514,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 
-
-				// set submode for transit modes
-				index.setOriginZone( hh.mandatoryTours[t].getOrigTaz() );
-				index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
 
 				//wu added for FTA restart
 				int tod=hh.mandatoryTours[t].getTimeOfDayAlt();
@@ -623,7 +625,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	
 	public void jointTourDc ( Household hh ) {
 
-		int[] jtPersons;
+        IndexValues index = new IndexValues();
+
+        int[] jtPersons;
 		
 		long markTime=0;
 
@@ -744,6 +748,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					hh.setChosenDest( d );
 					hh.setChosenWalkSegment( s );
 							
+                    index.setDestZone( d );
+
+                    
 					// calculate mode choice logsum based on appropriate od skims
 					hh.setTODDefaults ( TourType.JOINT_CATEGORY, "MdMd" );
 					ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, index, m) );
@@ -788,6 +795,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 	public void jointTourTc ( Household hh ) {
 
+        IndexValues index = new IndexValues();
+        
 		int[] jtPersons;
 		
 		long markTime=0;
@@ -916,6 +925,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 	public void jointTourMc ( Household hh ) {
 		
+        IndexValues index = new IndexValues();
+        
 		//Wu added for Summit Aggregation
 		summitAggregationRecords=new Vector();
 
@@ -982,7 +993,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setChosenWalkSegment( hh.jointTours[t].getDestShrtWlk() );
 				hh.setChosenTodAlt( hh.jointTours[t].getTimeOfDayAlt() );
 				
-				setMcODUtility ( hh, m );
+                index.setDestZone( hh.jointTours[t].getDestTaz() );
+                setMcODUtility ( hh, index, m );
+
 				// set transit modes to unavailable if a no walk access subzone was selected in DC.
 				if ( hh.jointTours[t].getDestShrtWlk() == 0 ) {
 					mcSample[3] = 0;
@@ -995,7 +1008,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
-                index.setDestZone( hh.jointTours[t].getDestTaz() );
 
                 //Wu added for Summit Aggregation
 				LogitModel root=mc[m].updateLogitModel ( hh, index, mcAvailability, mcSample );
@@ -1016,10 +1028,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.jointTours[t].setChosenPark (0);
 
 
-				// set submode for transit modes
-				index.setOriginZone( hh.jointTours[t].getOrigTaz() );
-				index.setDestZone( hh.jointTours[t].getDestTaz() );
-				
 				//wu added for FTA restart
 				int tod=hh.jointTours[t].getTimeOfDayAlt();
 				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
@@ -1122,6 +1130,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	public void indivNonMandatoryTourDc ( Household hh ) {
+
+        IndexValues index = new IndexValues();
 
 		long markTime=0;
 
@@ -1237,6 +1247,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					hh.setChosenDest( d );
 					hh.setChosenWalkSegment( s );
 							
+                    index.setDestZone( d );
+
 					// calculate mode choice logsum based on appropriate od skims for each individual non-mandatory purpose
 					if (TourType.NON_MANDATORY_TYPES[m] == TourType.ESCORTING) {
 						hh.setTODDefaults ( TourType.NON_MANDATORY_CATEGORY, "MdMd" );
@@ -1284,6 +1296,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	public void indivNonMandatoryTourTc ( Household hh ) {
+
+        IndexValues index = new IndexValues();
 
 		long markTime=0;
 
@@ -1613,8 +1627,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setChosenDest( hh.indivTours[t].getDestTaz() );
 				hh.setChosenWalkSegment( hh.indivTours[t].getDestShrtWlk() );
 
-                index.setDestZone( hh.indivTours[t].getDestTaz() );
-                
 				// compute time-of-day choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
 				tc[m].updateLogitModel ( hh, index, tcAvailability, tcSample );
@@ -1649,7 +1661,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 	public void indivNonMandatoryTourMc ( Household hh ) {
-		
+
+        IndexValues index = new IndexValues();
+        
 		//Wu added for Summit Aggregation
 		summitAggregationRecords=new Vector();
 		
@@ -1670,6 +1684,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 		hh.setOrigTaz (hh_taz_id);
 		hh.setTourCategory( TourType.NON_MANDATORY_CATEGORY );
 
+        index.setHHIndex( hh_id );
+        index.setZoneIndex( hh_taz_id );
+        index.setOriginZone( hh_taz_id );
+        
 
 		// loop over all puposes for the individual non-mandatory tour category in order
 		for (int m=0; m < tourTypes.length; m++) {
@@ -1703,8 +1721,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setChosenWalkSegment( hh.indivTours[t].getDestShrtWlk() );
 				hh.setChosenTodAlt( hh.indivTours[t].getTimeOfDayAlt() );
 				
-				
-				setMcODUtility ( hh, m );
+				index.setDestZone( hh.indivTours[t].getDestTaz() );
+				setMcODUtility ( hh, index, m );
+                
 				// set transit modes to unavailable if a no walk access subzone was selected in DC.
 				if ( hh.indivTours[t].getDestShrtWlk() == 0 ) {
 					mcSample[3] = 0;
@@ -1713,10 +1732,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					mcAvailability[4] = false;
 				}
 
-                index.setOriginZone( hh.indivTours[t].getOrigTaz() );
-                index.setDestZone( hh.indivTours[t].getDestTaz() );
-                
-                
 				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
@@ -1735,8 +1750,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// set chosen in alternative in tour objects
 				hh.indivTours[t].setMode (chosenModeAlt);
 
-				index.setOriginZone( hh.indivTours[t].getOrigTaz() );
-				index.setDestZone( hh.indivTours[t].getDestTaz() );
                 
 				int chosenParkAlt=0;
 				// determine parking location if chosenDestAlt is in the CBD and chosenModeAlt is sov or hov.
@@ -1757,10 +1770,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 
-				// set submode for transit modes
-				index.setOriginZone( hh.indivTours[t].getOrigTaz() );
-				index.setDestZone( hh.indivTours[t].getDestTaz() );
-				
 				//wu added for FTA restart
 				int tod=hh.indivTours[t].getTimeOfDayAlt();
 				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
@@ -1863,6 +1872,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 	public void atWorkTourDc ( Household hh ) {
 
+        IndexValues index = new IndexValues();
+        
 		long markTime=0;
 		int soaIndex = 0;
 		
@@ -2008,6 +2019,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					hh.setChosenDest( d );
 					hh.setChosenWalkSegment( w );
 							
+                    index.setDestZone( d );
+                    
 					// calculate mode choice logsum based on appropriate od skims
 					hh.setTODDefaults ( TourType.AT_WORK_CATEGORY, "MdMd" );
 					ZonalDataManager.setLogsumDcMDMD ( processorIndex, sample[i], getMcLogsums(hh, index, m) );
@@ -2053,6 +2066,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	
 	public void atWorkTourTc ( Household hh ) {
 
+        IndexValues index = new IndexValues();
+        
 		long markTime=0;
 		int todAlt;
 		int startP;
@@ -2242,6 +2257,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	
 	public void atWorkTourMc ( Household hh ) {
 		
+        IndexValues index = new IndexValues();
+        
 		//Wu added for Summit Aggregation
 		summitAggregationRecords=new Vector();
 
@@ -2314,7 +2331,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.setChosenTodAlt( hh.mandatoryTours[t].subTours[s].getTimeOfDayAlt() );
 
 
-				setMcODUtility ( hh, m );
+                index.setDestZone( hh.mandatoryTours[t].subTours[s].getDestTaz() );
+                setMcODUtility ( hh, index, m );
+
 				// set transit modes to unavailable if a no walk access subzone was selected in DC.
 				if ( hh.mandatoryTours[t].subTours[s].getDestShrtWlk() == 0 ) {
 					mcSample[3] = 0;
@@ -2323,8 +2342,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					mcAvailability[4] = false;
 				}
 				
-                index.setDestZone( hh.mandatoryTours[t].subTours[s].getDestTaz() );
-                
 				//Jim's original
 				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				//int chosenModeAlt = mc[m].getChoiceResult();
@@ -2347,11 +2364,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// set park zone to zero, not used for at-work.
 				hh.mandatoryTours[t].subTours[s].setChosenPark (0);
 
-				// set submode for transit modes
-				index.setOriginZone( hh.mandatoryTours[t].subTours[s].getOrigTaz() );
-				index.setDestZone( hh.mandatoryTours[t].subTours[s].getDestTaz() );
 
-				//wu added for FTA restart
+                //wu added for FTA restart
 				int tod=hh.mandatoryTours[t].subTours[s].getTimeOfDayAlt();
 				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
 				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
@@ -2604,6 +2618,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	
 public void mandatoryTourTc ( Household hh ) {
     
+        IndexValues index = new IndexValues();
+        
     	long markTime=0;
     
     	hh_id     = hh.getID();
@@ -2973,8 +2989,7 @@ public void mandatoryTourTc ( Household hh ) {
     			}
     			tcLogsumTime += (System.currentTimeMillis()-markTime);
     
-    			index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
-                
+
     			// compute time-of-day choice proportions and choose alternative
     			markTime = System.currentTimeMillis();
     			tc[tourTypeIndex].updateLogitModel ( hh, index, tcAvailability, tcSample );
