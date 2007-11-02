@@ -1006,8 +1006,8 @@ public class DTMOutput implements java.io.Serializable {
         
         try {
 
-			ChoiceModelApplication distc =  new ChoiceModelApplication("Model10.controlFile", "Model10.outputFile", propertyMap, Household.class);
-			UtilityExpressionCalculator distUEC = distc.getUEC( 1,  0 );
+			ChoiceModelApplication distc =  new ChoiceModelApplication("Model10.controlFile", 1,  0, propertyMap, Household.class);
+			UtilityExpressionCalculator distUEC = distc.getUEC();
 			int maxPartySize = 0;
 			for (int i=0; i < hh.length; i++) {
 				if (hh[i].jointTours != null) {

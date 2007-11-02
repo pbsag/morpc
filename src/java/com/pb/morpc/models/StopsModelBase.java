@@ -6,7 +6,6 @@ package com.pb.morpc.models;
  * Model runner class for running destination, time of day, and mode choice for
  * individual tours
  */
-import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.calculator.IndexValues;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -84,8 +83,6 @@ public class StopsModelBase implements java.io.Serializable {
 	protected ChoiceModelApplication sfc;
 	protected ChoiceModelApplication slc[][][];
 	protected ChoiceModelApplication distc;
-	protected UtilityExpressionCalculator sfcUEC;
-	protected UtilityExpressionCalculator[][][] slcUEC;
 
 	
 	protected int[] sfcSample;
@@ -191,17 +188,15 @@ public class StopsModelBase implements java.io.Serializable {
 
 
 		// create choice model objects and UECs for stop frequency and stop location choices, inbound and outbound.
-		slcUEC   = new UtilityExpressionCalculator[2][2][TourType.TYPES+1];
 		slc   = new ChoiceModelApplication[2][2][TourType.TYPES+1];
 
 
 		defineUECModelSheets (tourTypeCategory);
 
-		sfc =  new ChoiceModelApplication("Model81.controlFile", "Model81.outputFile", propertyMap, Household.class);
-		sfcUEC = sfc.getUEC(model81Sheet, m81DataSheet);
+		sfc =  new ChoiceModelApplication("Model81.controlFile", model81Sheet, m81DataSheet, propertyMap, Household.class);
 		sfc.createLogitModel();
-		if (sfcUEC.getNumberOfAlternatives() > numSfcAlternatives)
-			numSfcAlternatives = sfcUEC.getNumberOfAlternatives();
+		if (sfc.getNumberOfAlternatives() > numSfcAlternatives)
+			numSfcAlternatives = sfc.getNumberOfAlternatives();
 
 
 		for (int i=0; i < 2; i++) {
@@ -210,24 +205,22 @@ public class StopsModelBase implements java.io.Serializable {
 				if (tourTypeCategory != TourType.AT_WORK_CATEGORY) {
 					for (int k=0; k < tourTypes.length; k++) {
 
-						slc[i][j][tourTypes[k]] =  new ChoiceModelApplication("Model82.controlFile", "Model82.outputFile", propertyMap, Household.class);
-						slcUEC[i][j][tourTypes[k]] = slc[i][j][tourTypes[k]].getUEC( model82Sheet[i][j][tourTypes[k]],  m82DataSheet);
+						slc[i][j][tourTypes[k]] =  new ChoiceModelApplication("Model82.controlFile", model82Sheet[i][j][tourTypes[k]],  m82DataSheet, propertyMap, Household.class);
 						slc[i][j][tourTypes[k]].createLogitModel();
 
-						if (slcUEC[i][j][tourTypes[k]].getNumberOfAlternatives() > numSlcAlternatives)
-							numSlcAlternatives = slcUEC[i][j][tourTypes[k]].getNumberOfAlternatives();
+						if (slc[i][j][tourTypes[k]].getNumberOfAlternatives() > numSlcAlternatives)
+							numSlcAlternatives = slc[i][j][tourTypes[k]].getNumberOfAlternatives();
 
 					}
 				}
 				else {
 					for (int k=0; k < SubTourType.SUB_TOUR_TYPES.length; k++) {
 
-						slc[i][j][SubTourType.SUB_TOUR_TYPES[k]] =  new ChoiceModelApplication("Model82.controlFile", "Model82.outputFile", propertyMap, Household.class);
-						slcUEC[i][j][SubTourType.SUB_TOUR_TYPES[k]] = slc[i][j][SubTourType.SUB_TOUR_TYPES[k]].getUEC( model82Sheet[i][j][SubTourType.SUB_TOUR_TYPES[k]],  m82DataSheet);
+						slc[i][j][SubTourType.SUB_TOUR_TYPES[k]] =  new ChoiceModelApplication("Model82.controlFile", model82Sheet[i][j][SubTourType.SUB_TOUR_TYPES[k]],  m82DataSheet, propertyMap, Household.class);
 						slc[i][j][SubTourType.SUB_TOUR_TYPES[k]].createLogitModel();
 
-						if (slcUEC[i][j][SubTourType.SUB_TOUR_TYPES[k]].getNumberOfAlternatives() > numSlcAlternatives)
-							numSlcAlternatives = slcUEC[i][j][SubTourType.SUB_TOUR_TYPES[k]].getNumberOfAlternatives();
+						if (slc[i][j][SubTourType.SUB_TOUR_TYPES[k]].getNumberOfAlternatives() > numSlcAlternatives)
+							numSlcAlternatives = slc[i][j][SubTourType.SUB_TOUR_TYPES[k]].getNumberOfAlternatives();
 
 					}
 				}
@@ -261,49 +254,49 @@ public class StopsModelBase implements java.io.Serializable {
 				slcSoa[i][0] = new SampleOfAlternatives[3];
 				slcSoa[i][1] = new SampleOfAlternatives[3];
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 1, 0, 0);
-				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 1, 1, 0);
-				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 2, 0, 0);
-				slcSoa[i][0][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 2, 1, 0);
-				slcSoa[i][1][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 3, 0, 0);
-				slcSoa[i][0][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 3, 1, 0);
-				slcSoa[i][1][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 			}
 			else if (tourTypes[i] == TourType.UNIVERSITY || tourTypes[i] == TourType.SCHOOL) {
 				slcSoa[i][0] = new SampleOfAlternatives[1];
 				slcSoa[i][1] = new SampleOfAlternatives[1];
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 0);
-				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 0);
-				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 			}
 			else if (tourTypes[i] == TourType.ATWORK) {
 				slcSoa[i][0] = new SampleOfAlternatives[3];
 				slcSoa[i][1] = new SampleOfAlternatives[3];
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 1);
-				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 1);
-				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 2);
-				slcSoa[i][0][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 2);
-				slcSoa[i][1][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 3);
-				slcSoa[i][0][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 3);
-				slcSoa[i][1][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 			}
 			else {
 				slcSoa[i][0] = new SampleOfAlternatives[1];
 				slcSoa[i][1] = new SampleOfAlternatives[1];
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 0);
-				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 0);
-				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", "SoaSlc.outputFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
 			}
 			
 		}

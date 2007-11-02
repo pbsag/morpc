@@ -45,10 +45,10 @@ public class SampleOfAlternatives implements java.io.Serializable {
 	boolean modelTypeDc = true;
 
 
-	public SampleOfAlternatives (HashMap propertyMap, String modelType, String controlFile, String outputFile, int modelSheet, int dataSheet) {
+	public SampleOfAlternatives (HashMap propertyMap, String modelType, String controlFile, int modelSheet, int dataSheet) {
 		this.propertyMap = propertyMap;
 
-		buildSampleOfAlternativesChoiceModel (controlFile, outputFile, modelSheet, dataSheet);
+		buildSampleOfAlternativesChoiceModel (controlFile, modelSheet, dataSheet);
 
 		alternativeNames = uec.getAlternativeNames();
 		altFreq = new int[uec.getNumberOfAlternatives()+1];
@@ -103,13 +103,13 @@ public class SampleOfAlternatives implements java.io.Serializable {
 
 	}
 
-	private void buildSampleOfAlternativesChoiceModel (String controlFile, String outputFile, int modelSheet, int dataSheet) {
+	private void buildSampleOfAlternativesChoiceModel (String controlFile, int modelSheet, int dataSheet) {
 		
 		// create an object for use in building the choice model
-		cm =  new ChoiceModelApplication ( controlFile, outputFile, propertyMap, Household.class);
+		cm =  new ChoiceModelApplication ( controlFile, modelSheet, dataSheet, propertyMap, Household.class);
 
 		// get a UEC for this choice model		
-		uec = cm.getUEC(modelSheet, dataSheet);
+		uec = cm.getUEC();
 
 		// get a LogitModel for this sample of alternatives choice model
 		cm.createLogitModel();

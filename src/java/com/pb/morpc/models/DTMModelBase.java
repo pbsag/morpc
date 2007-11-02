@@ -55,13 +55,10 @@ public class DTMModelBase implements java.io.Serializable {
 	protected ChoiceModelApplication[] tc;
 	protected ChoiceModelApplication[] mc;
 	protected ChoiceModelApplication[] pc;
-	protected UtilityExpressionCalculator[] dcUEC;
-	protected UtilityExpressionCalculator[] tcUEC;
-	protected UtilityExpressionCalculator[] mcODUEC;
-	protected UtilityExpressionCalculator[] mcUEC;
-	protected UtilityExpressionCalculator[] smcUEC;
-	protected UtilityExpressionCalculator[] pcUEC;
 
+    protected UtilityExpressionCalculator[] mcODUEC;
+    protected UtilityExpressionCalculator[] smcUEC;
+    
 	protected float tcLogsumEaEa = 0.0f;
 	protected float tcLogsumEaAm = 0.0f;
 	protected float tcLogsumEaMd = 0.0f;
@@ -194,25 +191,25 @@ public class DTMModelBase implements java.io.Serializable {
 			if (tourTypes[i] == TourType.WORK) {
 				soa[i] = new SampleOfAlternatives[3];
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 1, 0);
-				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", "SoaDc.outputFile", soaModelSheet, soaDataSheet);
+				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 2, 0);
-				soa[i][1] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", "SoaDc.outputFile", soaModelSheet, soaDataSheet);
+				soa[i][1] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 3, 0);
-				soa[i][2] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", "SoaDc.outputFile", soaModelSheet, soaDataSheet);
+				soa[i][2] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
 			}
 			else if (tourTypes[i] == TourType.ATWORK) {
 				soa[i] = new SampleOfAlternatives[3];
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 0, 1);
-				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", "SoaDc.outputFile", soaModelSheet, soaDataSheet);
+				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 0, 2);
-				soa[i][1] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", "SoaDc.outputFile", soaModelSheet, soaDataSheet);
+				soa[i][1] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 0, 3);
-				soa[i][2] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", "SoaDc.outputFile", soaModelSheet, soaDataSheet);
+				soa[i][2] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
 			}
 			else {
 				soa[i] = new SampleOfAlternatives[1];
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 0, 0);
-				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", "SoaDc.outputFile", soaModelSheet, soaDataSheet);
+				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
 			}
 			
 		}
@@ -225,13 +222,9 @@ public class DTMModelBase implements java.io.Serializable {
 		tc = new ChoiceModelApplication[tourTypes.length];
 		mc = new ChoiceModelApplication[tourTypes.length];
 		pc = new ChoiceModelApplication[3];
-		dcUEC   = new UtilityExpressionCalculator[tourTypes.length];
-		tcUEC   = new UtilityExpressionCalculator[tourTypes.length];
-		mcODUEC = new UtilityExpressionCalculator[tourTypes.length];
-		mcUEC   = new UtilityExpressionCalculator[tourTypes.length];
-		pcUEC   = new UtilityExpressionCalculator[3];
 
 
+        mcODUEC = new UtilityExpressionCalculator[tourTypes.length];
 
 
 		int numDcAlternatives = 0;
@@ -243,30 +236,15 @@ public class DTMModelBase implements java.io.Serializable {
 
 			defineUECModelSheets (tourTypes[i], tourTypeCategory);
 
-			dc[i] =  new ChoiceModelApplication("Model51.controlFile", "Model51.outputFile", propertyMap, Household.class);
-			tc[i] =  new ChoiceModelApplication("Model6.controlFile", "Model6.outputFile", propertyMap, Household.class);
-			mc[i] =  new ChoiceModelApplication("Model7.controlFile", "Model7.outputFile", propertyMap, Household.class);
-
-			// create dest choice UEC
-			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Destination Choice UECs");
-			if (useMessageWindow) mw.setMessage1 ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Destination Choice UECs");
-			dcUEC[i] = dc[i].getUEC(model5Sheet, m5DataSheet);
-	
-			// create time-of-day choice UEC
-			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Time-of-Day Choice UECs");
-			if (useMessageWindow) mw.setMessage1 ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Time-of-Day Choice UECs");
-			tcUEC[i] = tc[i].getUEC(model6Sheet,  m6DataSheet);
-	
-			// create UEC to calculate OD component of mode choice utilities
+			dc[i] =  new ChoiceModelApplication("Model51.controlFile", model5Sheet, m5DataSheet, propertyMap, Household.class);
+			tc[i] =  new ChoiceModelApplication("Model6.controlFile", model6Sheet,  m6DataSheet, propertyMap, Household.class);
+            
+			// create UEC to calculate OD component of mode choice utilities - used by derived class
 			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice OD UECs");
 			if (useMessageWindow) mw.setMessage1 ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice OD UECs");
-			mcODUEC[i] = mc[i].getUEC(model7ODSheet,  m7ODDataSheet);
+            mcODUEC[i] = new UtilityExpressionCalculator(new File( (String)propertyMap.get( "Model7.controlFile" ) ), model7ODSheet,  m7ODDataSheet, propertyMap, Household.class);
 	
-			// create UEC to calculate non-OD component of mode choice utilities
-			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice UECs");
-			if (useMessageWindow) mw.setMessage1 ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice UECs");
-			mcUEC[i] = mc[i].getUEC(model7Sheet,  m7DataSheet);
-
+            mc[i] =  new ChoiceModelApplication("Model7.controlFile", model7Sheet,  m7DataSheet, propertyMap, Household.class);
 			
 //			modalODUtilityMap = new HashMap[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES];
 //			for (int m=0; m < ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES; m++)
@@ -299,20 +277,21 @@ public class DTMModelBase implements java.io.Serializable {
 			}
 
 
-			if (dcUEC[i].getNumberOfAlternatives() > numDcAlternatives)
-				numDcAlternatives = dcUEC[i].getNumberOfAlternatives();
-			if (tcUEC[i].getNumberOfAlternatives() > numTcAlternatives)
-				numTcAlternatives = tcUEC[i].getNumberOfAlternatives();
-			if (mcUEC[i].getNumberOfAlternatives() > numMcAlternatives)
-				numMcAlternatives = mcUEC[i].getNumberOfAlternatives();
+			if (dc[i].getNumberOfAlternatives() > numDcAlternatives)
+				numDcAlternatives = dc[i].getNumberOfAlternatives();
+			if (tc[i].getNumberOfAlternatives() > numTcAlternatives)
+				numTcAlternatives = tc[i].getNumberOfAlternatives();
+			if (mc[i].getNumberOfAlternatives() > numMcAlternatives)
+				numMcAlternatives = mc[i].getNumberOfAlternatives();
 		}
 
 		smcSample[0] = 1;
 		smcSample[1] = 1;
 	
 		// create UECs for each time period/main transit mode
+        // used by derived classes to implement trip mode allocations for tours with WT or DT tour mode choice.
 		logger.info ("Creating Submode Choice UECs");
-		smcUEC = new UtilityExpressionCalculator[12];
+        smcUEC = new UtilityExpressionCalculator[12];
 		for (int i=0; i < 12; i++)
 			smcUEC[i] = new UtilityExpressionCalculator(new File( (String)propertyMap.get( "Model72.controlFile" ) ), i+1, 0, propertyMap, Household.class);
 
@@ -320,13 +299,12 @@ public class DTMModelBase implements java.io.Serializable {
 		// create UECs for each of the model 9 model sheets		
 		logger.info ("Creating Parking Location Choice UECs");
 		for (int i=0; i < 3; i++) {
-			pc[i] =  new ChoiceModelApplication( "Model9.controlFile", "Model9.outputFile", propertyMap, Household.class );
-			pcUEC[i] = pc[i].getUEC( i+1, 0 );
+			pc[i] =  new ChoiceModelApplication( "Model9.controlFile", i+1, 0, propertyMap, Household.class );
 			pc[i].createLogitModel();
 		}
 
-		if (pcUEC[0].getNumberOfAlternatives() > numPcAlternatives)
-			numPcAlternatives = pcUEC[0].getNumberOfAlternatives();
+		if (pc[0].getNumberOfAlternatives() > numPcAlternatives)
+			numPcAlternatives = pc[0].getNumberOfAlternatives();
 
 
         

@@ -867,7 +867,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// count the number of tours in which no time-of-day alternative was available
 				int noTOD = 0;
-				for (int p=1; p <= tcUEC[m].getNumberOfAlternatives(); p++) {
+				for (int p=1; p <= tc[m].getNumberOfAlternatives(); p++) {
 					if (tcAvailability[p]) {
 						noTOD++;
 						break;
@@ -877,8 +877,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					noTODAvailableIndiv[m]++;
 					tcAvailability[1] = true;
 					tcSample[1] = 1;
-					tcAvailability[tcUEC[m].getNumberOfAlternatives()] = true;
-					tcSample[tcUEC[m].getNumberOfAlternatives()] = 1;
+					tcAvailability[tc[m].getNumberOfAlternatives()] = true;
+					tcSample[tc[m].getNumberOfAlternatives()] = 1;
 				}
 
 				hh.setChosenDest( hh.jointTours[t].getDestTaz() );
@@ -1365,7 +1365,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 				// count the number of tours in which no time-of-day alternative was available
 				int noTOD = 0;
-				for (int p=1; p <= tcUEC[m].getNumberOfAlternatives(); p++) {
+				for (int p=1; p <= tc[m].getNumberOfAlternatives(); p++) {
 					if (tcAvailability[p]) {
 						noTOD++;
 						break;
@@ -1375,8 +1375,8 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					noTODAvailableIndiv[m]++;
 					tcAvailability[1] = true;
 					tcSample[1] = 1;
-					tcAvailability[tcUEC[m].getNumberOfAlternatives()] = true;
-					tcSample[tcUEC[m].getNumberOfAlternatives()] = 1;
+					tcAvailability[tc[m].getNumberOfAlternatives()] = true;
+					tcSample[tc[m].getNumberOfAlternatives()] = 1;
 				}
 
 
@@ -2177,7 +2177,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					
 				// count the number of tours in which no time-of-day alternative was available
 				int noTOD = 0;
-				for (int p=1; p <= tcUEC[m].getNumberOfAlternatives(); p++) {
+				for (int p=1; p <= tc[m].getNumberOfAlternatives(); p++) {
 					if (tcAvailability[p]) {
 						noTOD++;
 						break;
@@ -2727,7 +2727,7 @@ public void mandatoryTourTc ( Household hh ) {
     
     			// count the number of tours in which no time-of-day alternative was available
     			int noTOD = 0;
-    			for (int p=1; p <= tcUEC[tourTypeIndex].getNumberOfAlternatives(); p++) {
+    			for (int p=1; p <= tc[tourTypeIndex].getNumberOfAlternatives(); p++) {
     				if (tcAvailability[p]) {
     					noTOD++;
     					break;
@@ -2737,8 +2737,8 @@ public void mandatoryTourTc ( Household hh ) {
     				noTODAvailableIndiv[tourTypeIndex]++;
     				tcAvailability[1] = true;
     				tcSample[1] = 1;
-    				tcAvailability[tcUEC[tourTypeIndex].getNumberOfAlternatives()] = true;
-    				tcSample[tcUEC[tourTypeIndex].getNumberOfAlternatives()] = 1;
+    				tcAvailability[tc[tourTypeIndex].getNumberOfAlternatives()] = true;
+    				tcSample[tc[tourTypeIndex].getNumberOfAlternatives()] = 1;
     			}
     
     
