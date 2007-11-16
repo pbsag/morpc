@@ -122,7 +122,7 @@ public class ZonalDataManager implements java.io.Serializable {
             zoneTable = setZoneTable(tables);
         } catch (IOException e) {
             e.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException();
         }
 
         try {
@@ -139,7 +139,7 @@ public class ZonalDataManager implements java.io.Serializable {
                                 zoneTable = new TableDataSet(new File(zonalCombined));
                         }catch(Exception e){
                                 e.printStackTrace();
-                                System.exit(1);
+                                throw new RuntimeException();
                         }
         */
         getZoneRelatedData(zoneTable);
@@ -232,35 +232,36 @@ public class ZonalDataManager implements java.io.Serializable {
 		odUtilModeAlt = new double[MAX_DISTRIBUTED_PROCESSORES][];
     }
 
+    
     private void getZoneRelatedData(TableDataSet zoneTable) {
+
         int k;
 
-        int parkRateFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PARKRATE);
+        int cbdatypeFieldPosition = getColumnPosition(ZoneTableFields.CBDATYPE, zoneTable);
+        int urbtypeFieldPosition = getColumnPosition(ZoneTableFields.URBTYPE, zoneTable );
+        int parkRateFieldPosition = getColumnPosition(ZoneTableFields.PARKRATE, zoneTable );
+        int parktotFieldPosition = getColumnPosition(ZoneTableFields.PARKTOT, zoneTable);
+        int parklngFieldPosition = getColumnPosition(ZoneTableFields.PARKLNG, zoneTable);
+        int propfreeFieldPosition = getColumnPosition(ZoneTableFields.PROPFREE, zoneTable);
+        int parkrateFieldPosition = getColumnPosition(ZoneTableFields.PARKRATE, zoneTable);
+        int areatypeFieldPosition = getColumnPosition(ZoneTableFields.AREATYPE, zoneTable);
+        int zonal_nonw_walk_FieldPosition = getColumnPosition(ZoneTableFields.NONWORKWALK, zoneTable);
+        int nonw_au_op_FieldPosition = getColumnPosition(ZoneTableFields.NONWORKAUOP, zoneTable);
+        int countyFieldPosition = getColumnPosition(ZoneTableFields.COUNTY, zoneTable);
+        int ringsPosition = getColumnPosition(ZoneTableFields.RINGS, zoneTable);
+        int suprdistPosition = getColumnPosition(ZoneTableFields.SUPRDIST, zoneTable);
+        int schdistFieldPosition = getColumnPosition(ZoneTableFields.SCHDIST, zoneTable);
 
-        if (parkRateFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.PARKRATE +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
-
+        
         parkRate = new float[zoneTable.getRowCount() + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++)
             parkRate[i] = zoneTable.getValueAt(i, parkRateFieldPosition);
 
-        int urbtypeFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.URBTYPE);
 
-        if (urbtypeFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.URBTYPE +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
 
         k = 1;
-
         float uType;
         urbType = new float[(3 * zoneTable.getRowCount()) + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             uType = zoneTable.getValueAt(i, urbtypeFieldPosition);
 
@@ -270,19 +271,11 @@ public class ZonalDataManager implements java.io.Serializable {
             }
         }
 
-        int cbdatypeFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.CBDATYPE);
-
-        if (cbdatypeFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.CBDATYPE +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
+        
 
         k = 1;
-
         float aType;
         cbdatype = new float[(3 * zoneTable.getRowCount()) + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             aType = zoneTable.getValueAt(i, cbdatypeFieldPosition);
 
@@ -292,19 +285,11 @@ public class ZonalDataManager implements java.io.Serializable {
             }
         }
 
-        int parktotFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PARKTOT);
 
-        if (parktotFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.PARKTOT +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
 
         k = 1;
-
         float ptot;
         parktot = new float[(3 * zoneTable.getRowCount()) + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             ptot = zoneTable.getValueAt(i, parktotFieldPosition);
 
@@ -314,19 +299,10 @@ public class ZonalDataManager implements java.io.Serializable {
             }
         }
 
-        int parklngFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PARKLNG);
-
-        if (parklngFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.PARKLNG +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
 
         k = 1;
-
         float plng;
         parklng = new float[(3 * zoneTable.getRowCount()) + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             plng = zoneTable.getValueAt(i, parklngFieldPosition);
 
@@ -336,19 +312,10 @@ public class ZonalDataManager implements java.io.Serializable {
             }
         }
 
-        int propfreeFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PROPFREE);
-
-        if (propfreeFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.PROPFREE +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
 
         k = 1;
-
         float pfree;
         propfree = new float[(3 * zoneTable.getRowCount()) + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             pfree = zoneTable.getValueAt(i, propfreeFieldPosition);
 
@@ -358,19 +325,10 @@ public class ZonalDataManager implements java.io.Serializable {
             }
         }
 
-        int parkrateFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.PARKRATE);
-
-        if (parkrateFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.PARKRATE +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
 
         k = 1;
-
         float prate;
         parkrate = new float[(3 * zoneTable.getRowCount()) + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             prate = zoneTable.getValueAt(i, parkrateFieldPosition);
 
@@ -380,63 +338,29 @@ public class ZonalDataManager implements java.io.Serializable {
             }
         }
 
-        int areatypeFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.AREATYPE);
-
-        if (areatypeFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.AREATYPE +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
 
         zonalAreaType = new float[zoneTable.getRowCount() + 1];
-
-        for (int i = 1; i <= zoneTable.getRowCount(); i++) {
+        for (int i = 1; i <= zoneTable.getRowCount(); i++)
             zonalAreaType[i] = zoneTable.getValueAt(i, areatypeFieldPosition);
-        }
 
-        int nonw_au_op_FieldPosition = zoneTable.getColumnPosition(ZoneTableFields.NONWORKAUOP);
-
-        if (nonw_au_op_FieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.NONWORKAUOP +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
-
+        
         zonal_nonw_au_op = new float[zoneTable.getRowCount() + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             zonal_nonw_au_op[i] = zoneTable.getValueAt(i,
                     nonw_au_op_FieldPosition);
         }
 
-        int zonal_nonw_walk_FieldPosition = zoneTable.getColumnPosition(ZoneTableFields.NONWORKWALK);
-
-        if (zonal_nonw_walk_FieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.NONWORKWALK +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
 
         zonal_nonw_walk = new float[zoneTable.getRowCount() + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             zonal_nonw_walk[i] = zoneTable.getValueAt(i,
                     zonal_nonw_walk_FieldPosition);
         }
 
-        int countyFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.COUNTY);
-
-        if (countyFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.COUNTY +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
 
         k = 1;
-
         float co;
         cnty = new float[(3 * zoneTable.getRowCount()) + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             co = zoneTable.getValueAt(i, countyFieldPosition);
 
@@ -446,19 +370,10 @@ public class ZonalDataManager implements java.io.Serializable {
             }
         }
 
-		int ringsPosition = zoneTable.getColumnPosition(ZoneTableFields.RINGS);
-
-		if (ringsPosition <= 0) {
-			logger.fatal(ZoneTableFields.RINGS +
-				" was not a field in the zoneData TableDataSet.");
-			System.exit(1);
-		}
 
 		k = 1;
-
 		float r;
 		rings = new float[(3 * zoneTable.getRowCount()) + 1];
-
 		for (int i = 1; i <= zoneTable.getRowCount(); i++) {
 			r = zoneTable.getValueAt(i, ringsPosition);
 
@@ -468,19 +383,10 @@ public class ZonalDataManager implements java.io.Serializable {
 			}
 		}
         
-		int suprdistPosition = zoneTable.getColumnPosition(ZoneTableFields.SUPRDIST);
-
-		if (suprdistPosition <= 0) {
-			logger.fatal(ZoneTableFields.SUPRDIST +
-				" was not a field in the zoneData TableDataSet.");
-			System.exit(1);
-		}
 
 		k = 1;
-
 		float sup;
 		suprdist = new float[(3 * zoneTable.getRowCount()) + 1];
-
 		for (int i = 1; i <= zoneTable.getRowCount(); i++) {
 			sup = zoneTable.getValueAt(i, suprdistPosition);
 
@@ -490,19 +396,10 @@ public class ZonalDataManager implements java.io.Serializable {
 			}
 		}
         
-		int schdistFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.SCHDIST);
-
-		if (schdistFieldPosition <= 0) {
-			logger.fatal(ZoneTableFields.SCHDIST +
-				" was not a field in the zoneData TableDataSet.");
-			System.exit(1);
-		}
 
         k = 1;
-
         float sd;
         schdist = new float[(3 * zoneTable.getRowCount()) + 1];
-
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             sd = zoneTable.getValueAt(i, schdistFieldPosition);
 
@@ -512,6 +409,9 @@ public class ZonalDataManager implements java.io.Serializable {
             }
         }
 
+        
+        
+        
         // get file names from properties file
         String walkAccessFile = (String) propertyMap.get("WalkAccess.file");
 
@@ -531,32 +431,9 @@ public class ZonalDataManager implements java.io.Serializable {
                 reader.setDelimSet( " " + reader.getDelimSet() );
                 TableDataSet wa = reader.readFile(new File(walkAccessFile));
 
-                int tazPosition = wa.getColumnPosition("TAZ");
-
-                if (tazPosition <= 0) {
-                    logger.fatal(
-                        "TAZ was not a field in the walk access TableDataSet built from " +
-                        walkAccessFile + ".");
-                    System.exit(1);
-                }
-
-                int shrtPosition = wa.getColumnPosition("SHRT");
-
-                if (shrtPosition <= 0) {
-                    logger.fatal(
-                        "SHRT was not a field in the walk access TableDataSet built from " +
-                        walkAccessFile + ".");
-                    System.exit(1);
-                }
-
-                int longPosition = wa.getColumnPosition("LONG");
-
-                if (longPosition <= 0) {
-                    logger.fatal(
-                        "LONG was not a field in the walk access TableDataSet built from " +
-                        walkAccessFile + ".");
-                    System.exit(1);
-                }
+                int tazPosition = getColumnPosition("TAZ", wa);
+                int shrtPosition = getColumnPosition("SHRT", wa);
+                int longPosition = getColumnPosition("LONG", wa);
 
                 for (int j = 1; j <= wa.getRowCount(); j++) {
                     taz = (int) wa.getValueAt(j, tazPosition);
@@ -567,16 +444,16 @@ public class ZonalDataManager implements java.io.Serializable {
                     walkPctArray[0][taz] = (float) (1.0 -
                         (shrtArray[taz] + longArray[taz]));
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(1);
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
             }
         } else {
-            logger.fatal(
-                "no walk access zonal data file was named in properties file.");
-            System.exit(1);
+            logger.fatal("no walk access zonal data file was named in properties file.");
+            throw new RuntimeException();
         }
 
+        
         // set 0/1 values for zone doesn't/does have short walk access for all dc alternatives
         k = 1;
         zonalShortAccess = new float[(3 * zoneTable.getRowCount()) + 1];
@@ -590,64 +467,28 @@ public class ZonalDataManager implements java.io.Serializable {
 
         // calculate attractions for use in size variable calculations
         calculateAttractions(zoneTable);
+    
     }
+    
+    
 
     public static float getWalkPct(int subzoneIndex, int taz) {
         return walkPctArray[subzoneIndex][taz];
     }
 
+    
+    
     private void calculateSize(int tourType) {
-        int cntyFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.COUNTY);
 
-        if (cntyFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.COUNTY +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
+        int cntyFieldPosition = getColumnPosition(ZoneTableFields.COUNTY, zoneTable);
+        int earningsFieldPosition = getColumnPosition(ZoneTableFields.WORKEARN, zoneTable);
+        int empoffFieldPosition = getColumnPosition(ZoneTableFields.EMPOFF, zoneTable);
+        int empotherFieldPosition = getColumnPosition(ZoneTableFields.EMPOTHER, zoneTable);
+        int empretgdsFieldPosition = getColumnPosition(ZoneTableFields.EMPRETGDS, zoneTable);
+        int empretsrvFieldPosition = getColumnPosition(ZoneTableFields.EMPRETSRV, zoneTable);
 
-        int earningsFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.WORKEARN);
-
-        if (earningsFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.WORKEARN +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
-
-        int empoffFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPOFF);
-
-        if (empoffFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.EMPOFF +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
-
-        int empotherFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPOTHER);
-
-        if (empotherFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.EMPOTHER +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
-
-        int empretgdsFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPRETGDS);
-
-        if (empretgdsFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.EMPRETGDS +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
-
-        int empretsrvFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPRETSRV);
-
-        if (empretsrvFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.EMPRETSRV +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
-        }
 
         int cnty;
-        float inc;
-        float emp;
         float regionalEmploymentEarnings = 0.0f;
         float regionalEmployment = 0.0f;
         float[][] size = new float[3][zoneTable.getRowCount() + 1];
@@ -659,47 +500,36 @@ public class ZonalDataManager implements java.io.Serializable {
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
             earnings[i] = zoneTable.getValueAt(i, earningsFieldPosition);
             totEmp[i] = zoneTable.getValueAt(i, empoffFieldPosition) +
-                zoneTable.getValueAt(i, empotherFieldPosition) +
-                zoneTable.getValueAt(i, empretgdsFieldPosition) +
-                zoneTable.getValueAt(i, empretsrvFieldPosition);
+                        zoneTable.getValueAt(i, empotherFieldPosition) +
+                        zoneTable.getValueAt(i, empretgdsFieldPosition) +
+                        zoneTable.getValueAt(i, empretsrvFieldPosition);
             regionalEmployment += totEmp[i];
             regionalEmploymentEarnings += (totEmp[i] * earnings[i]);
         }
 
+        
         float avgEarnings = regionalEmploymentEarnings / regionalEmployment;
 
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
-            earningsRatio[i] = (earnings[i] > 0)
-                ? (float) (Math.min(earnings[i] / avgEarnings, 2.5)) : 1.0f;
+            
+            earningsRatio[i] = (earnings[i] > 0) ? (float) (Math.min(earnings[i] / avgEarnings, 2.5)) : 1.0f;
 
-            earningsPct[0][i] = (earningsRatio[i] <= 1.7)
-                ? (float) (Math.min(1.0,
-                    1.038 - (1.157 * earningsRatio[i]) +
-                    (0.342 * Math.pow(earningsRatio[i], 2)))) : 0.059f;
-            earningsPct[1][i] = (float) (Math.max(0.0,
-                    (float) (Math.min(1.0,
-                        -0.065 + (0.253 * earningsRatio[i]) +
-                        (0.059 * Math.pow(earningsRatio[i], 2))))));
-            earningsPct[2][i] = (float) (1.0 -
-                (earningsPct[0][i] + earningsPct[1][i]));
+            earningsPct[0][i] = (earningsRatio[i] <= 1.7) ? (float)(Math.min(1.0, 1.038 - (1.157 * earningsRatio[i]) + (0.342 * Math.pow(earningsRatio[i], 2)))) : 0.059f;
+            earningsPct[1][i] = (float) (Math.max(0.0, (float) (Math.min(1.0, -0.065 + (0.253 * earningsRatio[i]) + (0.059 * Math.pow(earningsRatio[i], 2))))));
+            earningsPct[2][i] = (float) (1.0 - (earningsPct[0][i] + earningsPct[1][i]));
 
             cnty = (int) zoneTable.getValueAt(i, cntyFieldPosition);
 
             if (cnty == 1) {
-                size[0][i] = (float) ((earningsPct[0][i] * 0.543) +
-                    (earningsPct[1][i] * 0.228) + (earningsPct[2][i] * 0.000)) * this.attractions[tourType][i];
-                size[1][i] = (float) ((earningsPct[0][i] * 0.341) +
-                    (earningsPct[1][i] * 0.623) + (earningsPct[2][i] * 0.421)) * this.attractions[tourType][i];
-                size[2][i] = (float) ((earningsPct[0][i] * 0.116) +
-                    (earningsPct[1][i] * 0.149) + (earningsPct[2][i] * 0.579)) * this.attractions[tourType][i];
+                size[0][i] = (float) ((earningsPct[0][i] * 0.543) + (earningsPct[1][i] * 0.228) + (earningsPct[2][i] * 0.000)) * this.attractions[tourType][i];
+                size[1][i] = (float) ((earningsPct[0][i] * 0.341) + (earningsPct[1][i] * 0.623) + (earningsPct[2][i] * 0.421)) * this.attractions[tourType][i];
+                size[2][i] = (float) ((earningsPct[0][i] * 0.116) + (earningsPct[1][i] * 0.149) + (earningsPct[2][i] * 0.579)) * this.attractions[tourType][i];
             } else {
-                size[0][i] = (float) ((earningsPct[0][i] * 0.559) +
-                    (earningsPct[1][i] * 0.203) + (earningsPct[2][i] * 0.000)) * this.attractions[tourType][i];
-                size[1][i] = (float) ((earningsPct[0][i] * 0.345) +
-                    (earningsPct[1][i] * 0.639) + (earningsPct[2][i] * 0.448)) * this.attractions[tourType][i];
-                size[2][i] = (float) ((earningsPct[0][i] * 0.096) +
-                    (earningsPct[1][i] * 0.158) + (earningsPct[2][i] * 0.552)) * this.attractions[tourType][i];
+                size[0][i] = (float) ((earningsPct[0][i] * 0.559) + (earningsPct[1][i] * 0.203) + (earningsPct[2][i] * 0.000)) * this.attractions[tourType][i];
+                size[1][i] = (float) ((earningsPct[0][i] * 0.345) + (earningsPct[1][i] * 0.639) + (earningsPct[2][i] * 0.448)) * this.attractions[tourType][i];
+                size[2][i] = (float) ((earningsPct[0][i] * 0.096) + (earningsPct[1][i] * 0.158) + (earningsPct[2][i] * 0.552)) * this.attractions[tourType][i];
             }
+            
         }
 
 
@@ -869,8 +699,11 @@ public class ZonalDataManager implements java.io.Serializable {
                     totProds[0][mt[t].getTourType()][typeCategory] += walkPctArray[w][orig];
                 }
             }
+        
         }
 
+        
+        
         logger.info("");
         logger.info("total tour productions by mandatory type before adjustments, before scaling:");
         logger.info("work lo=" + totProds[0][TourType.WORK][0]);
@@ -1745,7 +1578,7 @@ public class ZonalDataManager implements java.io.Serializable {
             writer.writeFile(outputTable, new File(newFilename), new DecimalFormat("#.00000"));
         } catch (IOException e) {
             e.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException();
         }
 
         // set initial size variables used in DC model for reporting
@@ -1766,217 +1599,68 @@ public class ZonalDataManager implements java.io.Serializable {
         int ut;
         int at;
 
-        double[][][][] coeff = new double[10][4][8][8];
-
-        // get file name from properties file
-        String attractionModelsFile = (String) propertyMap.get(
-                "AttractionModels.file");
-
-        // read the attraction models file to get field coefficients
-        if (attractionModelsFile != null) {
-            try {
-                CSVFileReader reader = new CSVFileReader();
-                TableDataSet am = reader.readFile(new File(attractionModelsFile));
-
-                int purpFieldPosition = am.getColumnPosition("purpose");
-
-                if (purpFieldPosition <= 0) {
-                    logger.fatal(
-                        "purpose was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int utFieldPosition = am.getColumnPosition("urbtype");
-
-                if (utFieldPosition <= 0) {
-                    logger.fatal(
-                        "urbtype was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int atFieldPosition = am.getColumnPosition("areatype");
-
-                if (atFieldPosition <= 0) {
-                    logger.fatal(
-                        "areatype was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int totpopFieldPosition = am.getColumnPosition("totalpop");
-
-                if (totpopFieldPosition <= 0) {
-                    logger.fatal(
-                        "totalpop was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int totempFieldPosition = am.getColumnPosition("totemp");
-
-                if (totempFieldPosition <= 0) {
-                    logger.fatal(
-                        "totemp was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int empretgFieldPosition = am.getColumnPosition("retail_g");
-
-                if (empretgFieldPosition <= 0) {
-                    logger.fatal(
-                        "retail_g was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int empretsFieldPosition = am.getColumnPosition("retail_s");
-
-                if (empretsFieldPosition <= 0) {
-                    logger.fatal(
-                        "retail_s was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int empoffFieldPosition = am.getColumnPosition("office_e");
-
-                if (empoffFieldPosition <= 0) {
-                    logger.fatal(
-                        "office_e was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int schenrFieldPosition = am.getColumnPosition("sch_enrol");
-
-                if (schenrFieldPosition <= 0) {
-                    logger.fatal(
-                        "sch_enrol was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int unienrFieldPosition = am.getColumnPosition("uni_enrol");
-
-                if (unienrFieldPosition <= 0) {
-                    logger.fatal(
-                        "uni_enrol was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                int totpop50FieldPosition = am.getColumnPosition("totpop_50");
-
-                if (totpop50FieldPosition <= 0) {
-                    logger.fatal(
-                        "totpop_50 was not a field in the attraction model TableDataSet.");
-                    System.exit(1);
-                }
-
-                for (int i = 1; i <= am.getRowCount(); i++) {
-                    purp = (int) am.getValueAt(i, purpFieldPosition);
-                    ut = (int) am.getValueAt(i, utFieldPosition);
-                    at = (int) am.getValueAt(i, atFieldPosition);
-
-                    coeff[purp][ut][at][0] = am.getValueAt(i,
-                            totpopFieldPosition);
-                    coeff[purp][ut][at][1] = am.getValueAt(i,
-                            totempFieldPosition);
-                    coeff[purp][ut][at][2] = am.getValueAt(i,
-                            empretgFieldPosition);
-                    coeff[purp][ut][at][3] = am.getValueAt(i,
-                            empretsFieldPosition);
-                    coeff[purp][ut][at][4] = am.getValueAt(i,
-                            empoffFieldPosition);
-                    coeff[purp][ut][at][5] = am.getValueAt(i,
-                            schenrFieldPosition);
-                    coeff[purp][ut][at][6] = am.getValueAt(i,
-                            unienrFieldPosition);
-                    coeff[purp][ut][at][7] = am.getValueAt(i,
-                            totpop50FieldPosition);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-        } else {
-            logger.fatal(
-                "no attraction model specification file was named in properties file.");
-            System.exit(1);
-        }
+        double[][][][] coeff = getAttractionModelCoeffsFromFile();
+        
 
         // read the zoneTable TableDataSet to get zonal fields for the attraction models
         int utFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.URBTYPE);
-
         if (utFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.URBTYPE +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.URBTYPE + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         int atFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.AREATYPE);
-
         if (atFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.AREATYPE +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.AREATYPE + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         int hhpopFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.POP);
-
         if (hhpopFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.POP +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.POP + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         int empoffFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPOFF);
-
         if (empoffFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.EMPOFF +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.EMPOFF + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         int empotherFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPOTHER);
-
         if (empotherFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.EMPOTHER +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.EMPOTHER + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         int empretgFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPRETGDS);
-
         if (empretgFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.EMPRETGDS +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.EMPRETGDS + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         int empretsFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.EMPRETSRV);
-
         if (empretsFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.EMPRETSRV +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.EMPRETSRV + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         int elenrFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.ELENROLL);
-
         if (elenrFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.ELENROLL +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.ELENROLL + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         int hsenrFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.HSENROLL);
-
         if (hsenrFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.HSENROLL +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.HSENROLL + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         int unenrFieldPosition = zoneTable.getColumnPosition(ZoneTableFields.UNENROLL);
-
         if (unenrFieldPosition <= 0) {
-            logger.fatal(ZoneTableFields.UNENROLL +
-                " was not a field in the zoneData TableDataSet.");
-            System.exit(1);
+            logger.fatal(ZoneTableFields.UNENROLL + " was not a field in the zoneData TableDataSet.");
+            throw new RuntimeException();
         }
 
         float[] field = new float[8];
@@ -2015,6 +1699,142 @@ public class ZonalDataManager implements java.io.Serializable {
 
 
 
+    private double[][][][] getAttractionModelCoeffsFromFile() {
+        
+        int purp;
+        int ut;
+        int at;
+
+        double[][][][] coeff = new double[10][4][8][8];
+
+        // get file name from properties file
+        String attractionModelsFile = (String) propertyMap.get(
+                "AttractionModels.file");
+
+        // read the attraction models file to get field coefficients
+        if (attractionModelsFile != null) {
+            try {
+                CSVFileReader reader = new CSVFileReader();
+                TableDataSet am = reader.readFile(new File(attractionModelsFile));
+
+                int purpFieldPosition = am.getColumnPosition("purpose");
+                if (purpFieldPosition <= 0) {
+                    logger.fatal("purpose was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int utFieldPosition = am.getColumnPosition("urbtype");
+                if (utFieldPosition <= 0) {
+                    logger.fatal("urbtype was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int atFieldPosition = am.getColumnPosition("areatype");
+                if (atFieldPosition <= 0) {
+                    logger.fatal("areatype was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int totpopFieldPosition = am.getColumnPosition("totalpop");
+                if (totpopFieldPosition <= 0) {
+                    logger.fatal("totalpop was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int totempFieldPosition = am.getColumnPosition("totemp");
+                if (totempFieldPosition <= 0) {
+                    logger.fatal("totemp was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int empretgFieldPosition = am.getColumnPosition("retail_g");
+                if (empretgFieldPosition <= 0) {
+                    logger.fatal("retail_g was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int empretsFieldPosition = am.getColumnPosition("retail_s");
+                if (empretsFieldPosition <= 0) {
+                    logger.fatal("retail_s was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int empoffFieldPosition = am.getColumnPosition("office_e");
+                if (empoffFieldPosition <= 0) {
+                    logger.fatal("office_e was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int schenrFieldPosition = am.getColumnPosition("sch_enrol");
+                if (schenrFieldPosition <= 0) {
+                    logger.fatal("sch_enrol was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int unienrFieldPosition = am.getColumnPosition("uni_enrol");
+                if (unienrFieldPosition <= 0) {
+                    logger.fatal("uni_enrol was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                int totpop50FieldPosition = am.getColumnPosition("totpop_50");
+                if (totpop50FieldPosition <= 0) {
+                    logger.fatal("totpop_50 was not a field in the attraction model TableDataSet.");
+                    throw new RuntimeException();
+                }
+
+                for (int i = 1; i <= am.getRowCount(); i++) {
+                    purp = (int) am.getValueAt(i, purpFieldPosition);
+                    ut = (int) am.getValueAt(i, utFieldPosition);
+                    at = (int) am.getValueAt(i, atFieldPosition);
+
+                    coeff[purp][ut][at][0] = am.getValueAt(i,
+                            totpopFieldPosition);
+                    coeff[purp][ut][at][1] = am.getValueAt(i,
+                            totempFieldPosition);
+                    coeff[purp][ut][at][2] = am.getValueAt(i,
+                            empretgFieldPosition);
+                    coeff[purp][ut][at][3] = am.getValueAt(i,
+                            empretsFieldPosition);
+                    coeff[purp][ut][at][4] = am.getValueAt(i,
+                            empoffFieldPosition);
+                    coeff[purp][ut][at][5] = am.getValueAt(i,
+                            schenrFieldPosition);
+                    coeff[purp][ut][at][6] = am.getValueAt(i,
+                            unienrFieldPosition);
+                    coeff[purp][ut][at][7] = am.getValueAt(i,
+                            totpop50FieldPosition);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
+        } else {
+            logger.fatal(
+                "no attraction model specification file was named in properties file.");
+            throw new RuntimeException();
+        }
+
+        return coeff;
+        
+    }
+    
+    
+    
+    private int getColumnPosition(String columnName, TableDataSet td) {
+        
+        int position = td.getColumnPosition(columnName);
+
+        if (position <= 0) {
+            logger.fatal( String.format("%s was not a field in the %s TableDataSet.", columnName, td.getName()) );
+            throw new RuntimeException();
+        }
+        
+        return position;
+    }
+
+    
+    
 
     private TableDataSet setZoneTable(Vector tables) {
         //initialize result with table 1
@@ -2033,7 +1853,7 @@ public class ZonalDataManager implements java.io.Serializable {
 
             //all talbes must have same number of rows
             if (noRow[i] != noRow[0]) {
-                System.exit(1);
+                throw new RuntimeException();
             }
         }
 
