@@ -283,7 +283,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			markTime = System.currentTimeMillis();
 
 			// calculate stop location choice logsum for outbound halftours for the hh
-			slc[0][autoTransit][tourType].updateLogitModel ( hh, index, slcOBAvailability, slcSample[0] );
+			slc[0][autoTransit][tourType].computeUtilities ( hh, index, slcOBAvailability, slcSample[0] );
 			slcLogsum[processorIndex][0] = (float)(slc[0][autoTransit][tourType].getLogsum () - ( autoTransit == 0 ? MathUtil.log( slcSoa[tourTypeIndex][0][soaIndex].getSlcLogsumCorrectionFactor() ) : 0.0 ) );
 					
 			logsumTime += (System.currentTimeMillis()-markTime);
@@ -293,7 +293,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			// compute stop frequency choice proportions and choose alternative
 			markTime = System.currentTimeMillis();
 
-			sfc.updateLogitModel ( hh, index, sfcAvailability, sfcSample );
+			sfc.computeUtilities ( hh, index, sfcAvailability, sfcSample );
 			int chosenAlt = sfc.getChoiceResult();
 
 			// set the chosen value in tour objects
@@ -413,7 +413,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				case 2:
 
 					// compute destination choice proportions and choose alternative
-					slc[0][autoTransit][tourType].updateLogitModel ( hh, index, slcOBAvailability, slcSample[0] );
+					slc[0][autoTransit][tourType].computeUtilities ( hh, index, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -442,7 +442,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				case 3:
 
 					// compute destination choice proportions and choose alternative
-					slc[1][autoTransit][tourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+					slc[1][autoTransit][tourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -470,7 +470,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				case 4:
 
 					// compute destination choice proportions and choose alternative
-					slc[0][autoTransit][tourType].updateLogitModel ( hh, index, slcOBAvailability, slcSample[0] );
+					slc[0][autoTransit][tourType].computeUtilities ( hh, index, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -492,7 +492,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	
 
 					
-					slc[1][autoTransit][tourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+					slc[1][autoTransit][tourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -843,7 +843,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			markTime = System.currentTimeMillis();
 
 			// calculate stop location choice logsum for outbound halftours for the hh
-			slc[1][autoTransit][tourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+			slc[1][autoTransit][tourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 			slcLogsum[processorIndex][1] = (float)(slc[1][autoTransit][tourType].getLogsum () - ( autoTransit == 0 ? MathUtil.log( slcSoa[tourTypeIndex][1][soaIndex].getSlcLogsumCorrectionFactor() ) : 0.0 ) );
 					
 			logsumTime += (System.currentTimeMillis()-markTime);
@@ -852,7 +852,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 			// compute stop frequency choice proportions and choose alternative
 			markTime = System.currentTimeMillis();
-			sfc.updateLogitModel ( hh, index, sfcAvailability, sfcSample );
+			sfc.computeUtilities ( hh, index, sfcAvailability, sfcSample );
 			int chosenAlt = sfc.getChoiceResult();
 
 			// set the chosen value in hh tour objects
@@ -969,7 +969,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					// compute destination choice proportions and choose alternative
 					markTime = System.currentTimeMillis();
-					slc[0][autoTransit][tourType].updateLogitModel ( hh, index, slcOBAvailability, slcSample[0] );
+					slc[0][autoTransit][tourType].computeUtilities ( hh, index, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -999,7 +999,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					// compute destination choice proportions and choose alternative
 					markTime = System.currentTimeMillis();
-					slc[1][autoTransit][tourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+					slc[1][autoTransit][tourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -1029,7 +1029,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					// compute destination choice proportions and choose alternative
 					markTime = System.currentTimeMillis();
-					slc[0][autoTransit][tourType].updateLogitModel ( hh, index, slcOBAvailability, slcSample[0] );
+					slc[0][autoTransit][tourType].computeUtilities ( hh, index, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -1054,7 +1054,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 
 					markTime = System.currentTimeMillis();
-					slc[1][autoTransit][tourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+					slc[1][autoTransit][tourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -1408,7 +1408,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 			// compute stop location choice logsum for inbound halftours for the hh
 			// calculate inbound stop location choice logsum
-			slc[1][autoTransit][tourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+			slc[1][autoTransit][tourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 			slcLogsum[processorIndex][1] = (float)(slc[1][autoTransit][tourType].getLogsum () - ( autoTransit == 0 ? MathUtil.log( slcSoa[tourTypeIndex][1][soaIndex].getSlcLogsumCorrectionFactor() ) : 0.0 ) );
 
 			logsumTime += (System.currentTimeMillis()-markTime);
@@ -1418,7 +1418,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			// compute stop frequency choice proportions and choose alternative
 			markTime = System.currentTimeMillis();
 
-			sfc.updateLogitModel ( hh, index, sfcAvailability, sfcSample );
+			sfc.computeUtilities ( hh, index, sfcAvailability, sfcSample );
 			
 			int chosenAlt = sfc.getChoiceResult();
 
@@ -1536,7 +1536,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					// compute destination choice proportions and choose alternative
 					markTime = System.currentTimeMillis();
-					slc[0][autoTransit][tourType].updateLogitModel ( hh, index, slcOBAvailability, slcSample[0] );
+					slc[0][autoTransit][tourType].computeUtilities ( hh, index, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -1569,7 +1569,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					// compute destination choice proportions and choose alternative
 					markTime = System.currentTimeMillis();
-					slc[1][autoTransit][tourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+					slc[1][autoTransit][tourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -1598,7 +1598,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					// compute destination choice proportions and choose alternative
 					markTime = System.currentTimeMillis();
-					slc[0][autoTransit][tourType].updateLogitModel ( hh, index, slcOBAvailability, slcSample[0] );
+					slc[0][autoTransit][tourType].computeUtilities ( hh, index, slcOBAvailability, slcSample[0] );
 					if ( slc[0][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[0][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -1622,7 +1622,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 
 					markTime = System.currentTimeMillis();
-					slc[1][autoTransit][tourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+					slc[1][autoTransit][tourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 					if ( slc[1][autoTransit][tourType].getAvailabilityCount() > 0 ) {
 						chosen = slc[1][autoTransit][tourType].getChoiceResult();
 						chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -1922,7 +1922,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 				// compute stop frequency choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				sfc.updateLogitModel ( hh, index, sfcAvailability, sfcSample );
+				sfc.computeUtilities ( hh, index, sfcAvailability, sfcSample );
 				int chosenAlt = sfc.getChoiceResult();
 				freqTime += (System.currentTimeMillis()-markTime);
 
@@ -2126,7 +2126,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 						// compute destination choice proportions and choose alternative
 						markTime = System.currentTimeMillis();
-						slc[0][autoTransit][subtourType].updateLogitModel ( hh, index, slcOBAvailability, slcSample[0] );
+						slc[0][autoTransit][subtourType].computeUtilities ( hh, index, slcOBAvailability, slcSample[0] );
 						if ( slc[0][autoTransit][subtourType].getAvailabilityCount() > 0 ) {
 							chosen = slc[0][autoTransit][subtourType].getChoiceResult();
 							chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -2155,7 +2155,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 						// compute destination choice proportions and choose alternative
 						markTime = System.currentTimeMillis();
-						slc[1][autoTransit][subtourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+						slc[1][autoTransit][subtourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 						if ( slc[1][autoTransit][subtourType].getAvailabilityCount() > 0 ) {
 							chosen = slc[1][autoTransit][subtourType].getChoiceResult();
 							chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -2184,7 +2184,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 						// compute destination choice proportions and choose alternative
 						markTime = System.currentTimeMillis();
-						slc[0][autoTransit][subtourType].updateLogitModel ( hh, index, slcOBAvailability, slcSample[0] );
+						slc[0][autoTransit][subtourType].computeUtilities ( hh, index, slcOBAvailability, slcSample[0] );
 						if ( slc[0][autoTransit][subtourType].getAvailabilityCount() > 0 ) {
 							chosen = slc[0][autoTransit][subtourType].getChoiceResult();
 							chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
@@ -2208,7 +2208,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 
 						markTime = System.currentTimeMillis();
-						slc[1][autoTransit][subtourType].updateLogitModel ( hh, index, slcIBAvailability, slcSample[1] );
+						slc[1][autoTransit][subtourType].computeUtilities ( hh, index, slcIBAvailability, slcSample[1] );
 						if ( slc[1][autoTransit][subtourType].getAvailabilityCount() > 0 ) {
 							chosen = slc[1][autoTransit][subtourType].getChoiceResult();
 							chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;

@@ -285,7 +285,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				dc[tourTypeIndex].updateLogitModel ( hh, index, dcAvailability, dcSample );
+				dc[tourTypeIndex].computeUtilities ( hh, index, dcAvailability, dcSample );
 				int chosen = dc[tourTypeIndex].getChoiceResult();
 				int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
 				int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
@@ -452,7 +452,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				LogitModel root = null;
 				int chosenModeAlt = -1;
 				try {
-                    root=mc[tourTypeIndex].updateLogitModel ( hh, index, mcAvailability, mcSample );
+                    root=mc[tourTypeIndex].computeUtilities ( hh, index, mcAvailability, mcSample );
 					chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 				}
 				catch (java.lang.Exception e) {
@@ -495,11 +495,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				if ( hh.getCbdDest() && chosenModeAlt < 3 ) {
 					
 					if ( hh.getFreeParking() == 1 ) {
-						pc[0].updateLogitModel ( hh, index ,pcAvailability, pcSample );
+						pc[0].computeUtilities ( hh, index ,pcAvailability, pcSample );
                         chosenParkAlt = pc[0].getChoiceResult();
 					}
 					else {
-						pc[1].updateLogitModel ( hh, index, pcAvailability, pcSample );
+						pc[1].computeUtilities ( hh, index, pcAvailability, pcSample );
                         chosenParkAlt = pc[1].getChoiceResult();
 					}
 
@@ -764,7 +764,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				dc[m].updateLogitModel ( hh, index, dcAvailability, dcSample );
+				dc[m].computeUtilities ( hh, index, dcAvailability, dcSample );
 				int chosen = dc[m].getChoiceResult();
 				int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
 				int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
@@ -888,7 +888,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
                 
                 
 				// compute time-of-day choice proportions and choose alternative
-				tc[m].updateLogitModel ( hh, index, tcAvailability, tcSample );
+				tc[m].computeUtilities ( hh, index, tcAvailability, tcSample );
 
 				int chosenTODAlt;
 				try {
@@ -1010,7 +1010,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 
                 //Wu added for Summit Aggregation
-				LogitModel root=mc[m].updateLogitModel ( hh, index, mcAvailability, mcSample );
+				LogitModel root=mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
@@ -1268,7 +1268,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				dc[m].updateLogitModel ( hh, index, dcAvailability, dcSample );
+				dc[m].computeUtilities ( hh, index, dcAvailability, dcSample );
 				int chosen = dc[m].getChoiceResult();
 				int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
 				int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
@@ -1629,7 +1629,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// compute time-of-day choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				tc[m].updateLogitModel ( hh, index, tcAvailability, tcSample );
+				tc[m].computeUtilities ( hh, index, tcAvailability, tcSample );
 
 				int chosenTODAlt;
 				try {
@@ -1736,7 +1736,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
-				LogitModel root=mc[m].updateLogitModel ( hh, index, mcAvailability, mcSample );
+				LogitModel root=mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
@@ -1755,7 +1755,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// determine parking location if chosenDestAlt is in the CBD and chosenModeAlt is sov or hov.
 				if ( hh.getCbdDest() && chosenModeAlt < 3 ) {
 					
-					pc[2].updateLogitModel ( hh, index, pcAvailability, pcSample );
+					pc[2].computeUtilities ( hh, index, pcAvailability, pcSample );
 					chosenParkAlt = pc[2].getChoiceResult();
 
 					hh.indivTours[t].setChosenPark ((int)cbdAltsTable.getValueAt(chosenParkAlt,2));
@@ -2031,7 +2031,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
                 
         		// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				dc[m].updateLogitModel ( hh, index, dcAvailability, dcSample );
+				dc[m].computeUtilities ( hh, index, dcAvailability, dcSample );
 				int chosen = dc[m].getChoiceResult();
         		int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
         		int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
@@ -2202,7 +2202,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// compute time-of-day choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				tc[m].updateLogitModel ( hh, index, tcAvailability, tcSample );
+				tc[m].computeUtilities ( hh, index, tcAvailability, tcSample );
 
 				int chosenTODAlt;
 				try {
@@ -2347,7 +2347,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
-				LogitModel root=mc[m].updateLogitModel ( hh, index, mcAvailability, mcSample );
+				LogitModel root=mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
@@ -2992,7 +2992,7 @@ public void mandatoryTourTc ( Household hh ) {
 
     			// compute time-of-day choice proportions and choose alternative
     			markTime = System.currentTimeMillis();
-    			tc[tourTypeIndex].updateLogitModel ( hh, index, tcAvailability, tcSample );
+    			tc[tourTypeIndex].computeUtilities ( hh, index, tcAvailability, tcSample );
     			
     			int chosenTODAlt;
     			try {

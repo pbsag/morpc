@@ -381,7 +381,7 @@ public class DTMModelBase implements java.io.Serializable {
 		setMcODUtility ( hh, dmuIndex, tourTypeIndex );
 
 		// calculate the final mode choice utilities, exponentiate them, and calcualte the logsum
-		mc[tourTypeIndex].updateLogitModel ( hh, dmuIndex, mcAvailability, mcSample );
+		mc[tourTypeIndex].computeUtilities ( hh, dmuIndex, mcAvailability, mcSample );
 
 		// return the mode choice logsum
 		return (float)mc[tourTypeIndex].getLogsum();

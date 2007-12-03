@@ -164,7 +164,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 			if ( probabilitiesList[hh.getOrigTaz()] == null ) {
                 
 				// calculate probabilities in the generic root LogitModel root, and get back tempRoot with utilities and availabilities updated.
-				cm.updateLogitModel (hh, index, soaAvailability, soaSample);
+				cm.computeUtilities (hh, index, soaAvailability, soaSample);
 				probabilitiesList[hh.getOrigTaz()] = cm.getProbabilities();
 
 			}
@@ -173,7 +173,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 		else {
 		    
 			// calculate probabilities in the generic root LogitModel root, and get back tempRoot with utilities and availabilities updated.
-			cm.updateLogitModel (hh, index, soaAvailability, soaSample);
+			cm.computeUtilities (hh, index, soaAvailability, soaSample);
 			probabilitiesList[hh.getOrigTaz()] = cm.getProbabilities();
 
 		}
@@ -259,7 +259,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 			if ( probabilitiesList[hh.getOrigTaz()] == null ) {
 	
 				// calculate probabilities in the generic root LogitModel root, and get back tempRoot with utilities and availabilities updated.
-				cm.updateLogitModel (hh, index, soaAvailability, soaSample);
+				cm.computeUtilities (hh, index, soaAvailability, soaSample);
 				probabilitiesList[hh.getOrigTaz()] = cm.getProbabilities();
 
 			}
@@ -268,7 +268,7 @@ public class SampleOfAlternatives implements java.io.Serializable {
 		else {
 		    
 			// calculate probabilities in the generic root LogitModel root, and get back tempRoot with utilities and availabilities updated.
-			cm.updateLogitModel (hh, index, soaAvailability, soaSample);
+			cm.computeUtilities (hh, index, soaAvailability, soaSample);
 			probabilitiesList[hh.getOrigTaz()] = cm.getProbabilities();
 
 		}
