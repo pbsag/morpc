@@ -967,12 +967,6 @@ public class StopsModelBase implements java.io.Serializable {
 
 		for (i=1; i <= zoneTable.getRowCount(); i++) {
 		    
-			/*
-		    if ( i == 4 ) {
-		        int dummy = 1;
-		    }
-		    */
-			
 			totAttrsOB = stopAttractions[11][i] + stopAttractions[21][i] + stopAttractions[31][i] +
 						stopAttractions[4][i] + stopAttractions[5][i] + stopAttractions[6][i] + 
 						stopAttractions[7][i] + stopAttractions[8][i] + stopAttractions[9][i];

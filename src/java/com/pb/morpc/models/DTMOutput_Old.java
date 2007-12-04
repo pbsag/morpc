@@ -127,11 +127,6 @@ public class DTMOutput_Old implements java.io.Serializable {
 						
 						for (int i=0; i < hh.length; i++) {
 		
-                            int dummy=0;
-                            if ( i == 41 ) {
-                                dummy = 1;
-                            }
-                            
 							// write trips for individual mandatory tours
 							if ( w == 1 ) {
 								it = hh[i].getMandatoryTours();
