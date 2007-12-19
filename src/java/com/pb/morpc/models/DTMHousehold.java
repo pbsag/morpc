@@ -449,10 +449,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//int chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 								
 				//Wu added for Summit Aggregation
-				LogitModel root = null;
+				//LogitModel root = null;
 				int chosenModeAlt = -1;
 				try {
-                    root=mc[tourTypeIndex].computeUtilities ( hh, index, mcAvailability, mcSample );
+                    mc[tourTypeIndex].computeUtilities ( hh, index, mcAvailability, mcSample );
 					chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
 				}
 				catch (java.lang.Exception e) {
@@ -481,8 +481,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 											
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
-					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")) {
+                        LogitModel root = mc[tourTypeIndex].getRootLogitModel();
 						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.mandatoryTours[t], "mandatory",t,-1));
+                    }
 				}
 			
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -1010,13 +1012,15 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 
                 //Wu added for Summit Aggregation
-				LogitModel root=mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
+				mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
-					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")) {
+                        LogitModel root = mc[m].getRootLogitModel();
 						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.jointTours[t], "joint",t,-1));
+                    }
 				}
 								
 				mcTime += (System.currentTimeMillis() - markTime);
@@ -1736,13 +1740,15 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
-				LogitModel root=mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
+				mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
-					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.indivTours[t], "individual",t,-1));
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")) {
+                        LogitModel root = mc[m].getRootLogitModel();
+                        summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.indivTours[t], "individual",t,-1));
+                    }
 				}
 								
 				mcTime += (System.currentTimeMillis()-markTime);
@@ -2347,13 +2353,15 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
-				LogitModel root=mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
+				mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
 				int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
-					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true"))
-						summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.mandatoryTours[t].subTours[s], "atwork",t,s));
+					if(((String)propertyMap.get("writeSummitAggregationFields")).equalsIgnoreCase("true")) {
+                        LogitModel root = mc[m].getRootLogitModel();               
+                        summitAggregationRecords.add(makeSummitAggregationRecords(root, hh, hh.mandatoryTours[t].subTours[s], "atwork",t,s));
+                    }
 				}
 							
 				mcTime += (System.currentTimeMillis() - markTime);
