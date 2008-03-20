@@ -9,7 +9,9 @@ package com.pb.morpc.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
+import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.SeededRandom;
+import com.pb.morpc.matrix.MatrixIO32BitJvm;
 
 
 import java.util.HashMap;
@@ -22,7 +24,9 @@ public class RnWorker extends MessageProcessingTask implements java.io.Serializa
 	private static boolean LOGGING = true;
 	private static Logger logger = Logger.getLogger("com.pb.morpc.daf");
 	
-	private HashMap propertyMap = null; 
+    private static MatrixIO32BitJvm ioVm32Bit = null;
+
+    private HashMap propertyMap = null; 
 
 	private String modelServer = "RnServer";
 	
@@ -37,6 +41,21 @@ public class RnWorker extends MessageProcessingTask implements java.io.Serializa
 		if (LOGGING)
 		    logger.info( this.name +  " onStart().");
 
+        // Added by Jim Hicks - 14 Mar 2008
+        // The matrix i/o server and 32 bit JVM that are necessary for reading TPPLUS matrix data 
+        // are started in this class, which is the first task run on worker nodes, so that the matrix i/o
+		// classes needed will be ready when the UECs that read matrix data need them, on each node.
+		// Once these following lines are executed, tpplus matrix data can be read using RMI to a 32 bit JVM.
+        
+        // start the 32 bit JVM used specifically for running matrix io classes
+        ioVm32Bit = MatrixIO32BitJvm.getInstance();
+        ioVm32Bit.startJVM32();
+        
+        // establish that matrix reader and writer classes will use the RMI versions for TPPLUS format matrices
+        ioVm32Bit.startMatrixDataServer( MatrixType.TPPLUS );
+        
+        
+        
 		// ask the random number server for start info including the propertyMap
 		if (LOGGING)
 		    logger.info( this.name +  " asking for START_INFO from " + modelServer + "." );
