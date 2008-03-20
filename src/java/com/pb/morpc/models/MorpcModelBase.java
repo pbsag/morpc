@@ -51,7 +51,8 @@ public class MorpcModelBase {
 
 		
         // if new skims were generated as part of this model run or prior to it, run aggregation step for TPP submode skims
-        if ( ((String)propertyMap.get("AGGREGATE_TPPLUS_SKIM_MATRICES")).equalsIgnoreCase("TRUE") ) {
+        String property = (String)propertyMap.get("AGGREGATE_TPPLUS_SKIM_MATRICES");
+        if ( property.equalsIgnoreCase("true") ) {
             
             logger.info( "aggregating slc skim matrices" );                
             MorpcMatrixAggregaterTpp ma = new MorpcMatrixAggregaterTpp(propertyMap);

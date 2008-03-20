@@ -906,16 +906,18 @@ public class DTMOutput implements java.io.Serializable {
 
     private void writeTpplusMatrices ( String tppFileName, float[][][] trips, String[] names, String[] descriptions ) {
 
+        MatrixWriter tppWriter = MatrixWriter.createWriter (MatrixType.TPPLUS, new File( tppFileName ) );
+
         Matrix[] outputMatrices = new Matrix[trips.length];
        
         logger.info( String.format("matrix total for tables in %s:", tppFileName) );
         for (int i=0; i < trips.length; i++) {
             outputMatrices[i] = new Matrix( names[i], descriptions[i], trips[i] );
-            trips[i] = null;
+            tppWriter.writeMatrix(names[i], outputMatrices[i]);
             logger.info( String.format("    [%d] %-16s: %.0f", i, names[i], outputMatrices[i].getSum()) );
+
+            trips[i] = null;
         }
-        MatrixWriter tppWriter = MatrixWriter.createWriter (MatrixType.TPPLUS, new File( tppFileName ) );
-        tppWriter.writeMatrices(names, outputMatrices);
 
     }
 

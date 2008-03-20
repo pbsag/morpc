@@ -13,8 +13,10 @@ import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.DiskObjectArray;
+import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
+import com.pb.morpc.matrix.MatrixIO32BitJvm;
 import com.pb.morpc.matrix.MorpcMatrixAggregaterTpp;
 import com.pb.morpc.matrix.MorpcMatrixZipper;
 import com.pb.morpc.models.AccessibilityIndicesTpp;
@@ -79,9 +81,33 @@ public class MorpcModelServer extends MessageProcessingTask {
 
     public void onStart() {
 
+        MatrixIO32BitJvm ioVm32Bit = null;
+
         startTime = System.currentTimeMillis();
 
         propertyMap = ResourceUtil.getResourceBundleAsHashMap(iterationPropertyFiles[0]);
+        
+        
+        // Added by Jim Hicks - 14 mar 2008:
+        // A 32 bit JVM is started at the beginning of onStart() for MorpcModelServer and stopped at the
+        // end.  A class is run in this JVM that allows TPPLUS matrix data to be read/written in the 32 bit
+        // VM and communicated to the main model classes using RMI.
+        //
+        // A 32 bit VM is started on each of the worker nodes as well for similar purposes, by including
+        // similar startup code in the RnWorker.onStart() at it's beginning, and in the AtWorkStopsWorker.onMessage()
+        // when it's told to EXIT.  This ensures the JVM and matrix i/o classes are able to be used by main model
+        // UECs, and are unloaded from memory before the model ends.
+        
+        
+        // start the 32 bit JVM used specifically for running matrix io classes
+        ioVm32Bit = MatrixIO32BitJvm.getInstance();
+        ioVm32Bit.startJVM32();
+        
+        // establish that matrix reader and writer classes will use the RMI versions for TPPLUS format matrices
+        ioVm32Bit.startMatrixDataServer( MatrixType.TPPLUS );
+        
+        
+        
         
 		// send a message to the random number server so that the random number seed will be set on all nodes
 		PortManager pManager = PortManager.getInstance();
@@ -168,6 +194,15 @@ public class MorpcModelServer extends MessageProcessingTask {
             showMemory();
         }
 
+        
+        // establish that matrix reader and writer classes will not use the RMI versions any longer.
+        // local matrix i/o, as specified by setting types, is now the default again.
+        ioVm32Bit.stopMatrixDataServer();
+        
+        // close the JVM in which the RMI reader/writer classes were running
+        ioVm32Bit.stopJVM32();
+        
+
         if (LOGGING) {
             logger.info("end of MORPC Demand Models");
             logger.info("full MORPC model run finished in " + ((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
@@ -218,15 +253,15 @@ public class MorpcModelServer extends MessageProcessingTask {
             ma.aggregateSlcSkims();
             logger.info( "finished aggregating slc skim matrices" );                
 
-	        copyFileToWorkers("tpplus");
-	        logger.info("done copying Zip matrices to workers");
+	        //copyFileToWorkers("tpplus");
+	        //logger.info("done copying Zip matrices to workers");
 	
             AccessibilityIndicesTpp accInd = new AccessibilityIndicesTpp( iterationPropertyFiles[iteration] );
             accInd.writeIndices();
             accInd = null;
 
-	        copyFileToWorkers("socec");
-	        logger.info("done copy socec files to workers");
+	        //copyFileToWorkers("socec");
+	        //logger.info("done copy socec files to workers");
 
         }
 
@@ -330,8 +365,8 @@ public class MorpcModelServer extends MessageProcessingTask {
     			logger.info("done with computing accessibilities");
     
     	
-    			copyFileToWorkers("socec");
-    			logger.info("done copy socec files to workers");
+    			//copyFileToWorkers("socec");
+    			//logger.info("done copy socec files to workers");
     
                 accInd = null;
                 
@@ -1181,7 +1216,6 @@ public class MorpcModelServer extends MessageProcessingTask {
     /**
      * Copy files from server to workers
      * @param fileType represents file types, either "socec" or "zip"
-     */
     private void copyFileToWorkers(String fileType) {
         //get worker nodes
         NodeDef[] nodes = DAF.getRemoteNodeDefinitions();
@@ -1251,7 +1285,9 @@ public class MorpcModelServer extends MessageProcessingTask {
             logger.error("illegal file type encountered when copy files to workers");
         }
     }
+     */
 
+    
     private void executeAssignmentSkimming(int iteration){
 
         String scenario=(String)propertyMap.get("scenario");

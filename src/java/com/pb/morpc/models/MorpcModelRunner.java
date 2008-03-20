@@ -8,6 +8,8 @@ package com.pb.morpc.models;
  */
 
 
+import com.pb.common.matrix.MatrixType;
+import com.pb.morpc.matrix.MatrixIO32BitJvm;
 import com.pb.morpc.structures.TourType;
 //import com.pb.morpc.report.Report;
 
@@ -191,14 +193,57 @@ public class MorpcModelRunner extends MorpcModelBase {
         logger.info("end of models 3-9");
     }
      //end runModels
-
+    
+    
+    
+    
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
 
-        // create a model runner object and run models
-        MorpcModelRunner mr = new MorpcModelRunner();
-        mr.runModels();
+        MatrixIO32BitJvm ioVm32Bit = null;
 
+        try {
+            
+            logger.info ("starting matrix data server in a 32 bit process.");
+            // start the 32 bit JVM used specifically for running matrix io classes
+            ioVm32Bit = MatrixIO32BitJvm.getInstance();
+            ioVm32Bit.startJVM32();
+            
+            // establish that matrix reader and writer classes will use the RMI versions for TPPLUS format matrices
+            ioVm32Bit.startMatrixDataServer( MatrixType.TPPLUS );
+            
+            
+            
+            // create a model runner object and run models
+            MorpcModelRunner mr = new MorpcModelRunner();
+
+            // run tour based models
+            try {
+            
+                logger.info ("starting tour based model.");
+                mr.runModels();
+                
+            }
+            catch ( RuntimeException e ) {
+                logger.error ( "RuntimeException caught in com.pb.morpc.models.MorpcModelRunner.runModels() -- exiting.", e );
+            }
+
+            
+            
+            // establish that matrix reader and writer classes will not use the RMI versions any longer.
+            // local matrix i/o, as specified by setting types, is now the default again.
+            ioVm32Bit.stopMatrixDataServer();
+            
+            // close the JVM in which the RMI reader/writer classes were running
+            ioVm32Bit.stopJVM32();
+            logger.info ("matrix data server 32 bit process stopped.");
+            
+        }
+        catch (RuntimeException e) {
+            logger.error ( "RuntimeException caught in com.pb.arc.tourBased.TourBasedModel.main() -- exiting.", e );
+        }
+
+        
         logger.info("end of MORPC Demand Models");
         logger.info("full MORPC model run finished in " +
             ((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
