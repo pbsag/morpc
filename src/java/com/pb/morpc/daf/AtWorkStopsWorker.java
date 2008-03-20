@@ -10,6 +10,7 @@ package com.pb.morpc.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
+import com.pb.morpc.matrix.MatrixIO32BitJvm;
 import com.pb.morpc.models.StopsHousehold;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.models.TODDataManager;
@@ -158,6 +159,23 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 					logger.info (this.getName() + " releasing UEC matrix memory after getting " + msg.getId() + " from " + msg.getSender() );
 			    
 				com.pb.common.calculator.UtilityExpressionCalculator.clearData();
+                
+                // Added by Jim Hicks - 14 Mar 2008
+                // The matrix i/o server and 32 bit JVM that were started in the RnWorker task before starting
+                // the global iterations are stopped in this AtWorkStopsWorker task at the end of the last
+                // global iteration.  No more matrix data will be read after this point for this model run.
+                
+                MatrixIO32BitJvm ioVm32Bit = MatrixIO32BitJvm.getInstance();
+                
+                // establish that matrix reader and writer classes will not use the RMI versions any longer.
+                // local matrix i/o, as specified by setting types, is now the default again.
+                ioVm32Bit.stopMatrixDataServer();
+                
+                // close the JVM in which the RMI reader/writer classes were running
+                ioVm32Bit.stopJVM32();
+                
+                
+                
 			}
 
 		}
