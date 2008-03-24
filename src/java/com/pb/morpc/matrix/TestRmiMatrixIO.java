@@ -69,8 +69,8 @@ public class TestRmiMatrixIO {
 
     public static void main(String args[]) {
 
+        MatrixIO32BitJvm ioVm32Bit = null;
         try {
-            MatrixIO32BitJvm ioVm32Bit = null;
             
             if ( USE_RMI ) {
                 // start the 32 bit JVM used specifically for running matrix io classes
@@ -100,9 +100,15 @@ public class TestRmiMatrixIO {
             testObj.runTest( args );
 
         }
+        catch (UnsatisfiedLinkError e) {
+            logger.error("stopping due to UnsatisfiedLinkError");
+            if ( USE_RMI )
+                ioVm32Bit.stopJVM32();
+        }
         catch (Exception e) {
-            logger.error("error in main", e);
-            e.printStackTrace();
+            logger.error("stopping due to catching other Eception", e);
+            if ( USE_RMI )
+                ioVm32Bit.stopJVM32();
         }
 
         System.out.println("\ndone with test.");

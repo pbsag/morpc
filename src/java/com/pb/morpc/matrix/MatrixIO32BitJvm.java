@@ -20,6 +20,8 @@ public class MatrixIO32BitJvm {
     static String port = "1198";
     
     private static DosCommand dosCmd = null;
+    private static ConsoleWatcher consoleWatcher = null;
+    private static boolean watching = true;
     
     private MatrixIO32BitJvm() {
     }
@@ -55,6 +57,9 @@ public class MatrixIO32BitJvm {
         if ( dosCmd == null ) {
             
             dosCmd = new DosCommand();
+            watching = true;
+            consoleWatcher = new ConsoleWatcher();
+            consoleWatcher.start();
             
             // get the port number to be used by RMI from the DosCommand object that was set by -Dvar on the command line.
             // setting port number on command line allows multiple VMs to be created on a single host to use RMI to communicate with localhost through different ports.
@@ -83,11 +88,7 @@ public class MatrixIO32BitJvm {
                 System.out.println ( "caught the exception." );
                 throw e;
             }
-
-            String consoleOutput = dosCmd.getConsoleOutput();
-            if ( consoleOutput.length() > 0 )
-                System.out.println( consoleOutput );
-
+            
         }
 
     }
@@ -128,11 +129,33 @@ public class MatrixIO32BitJvm {
     
 
     public synchronized void stopJVM32() {
+        
         if ( dosCmd != null ) {
+            watching = false;
             dosCmd.destroy();
             dosCmd = null;
+            consoleWatcher = null;
         }
     }
     
+
+
+
+    class ConsoleWatcher extends Thread
+    {
+        ConsoleWatcher() {
+        }
+        
+        public void run() {
+            
+            while ( watching ) {
+                String consoleOutput = dosCmd.getConsoleOutput();
+                if ( consoleOutput.length() > 0 )
+                    System.out.println( consoleOutput );
+            }
+            
+        }
+    }
+
 }
 
