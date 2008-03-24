@@ -7,9 +7,13 @@ import com.pb.common.matrix.MatrixWriter;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
+
 
 public class TestRmiMatrixIO {
-    
+
+    static Logger logger = Logger.getLogger(TestRmiMatrixIO.class);
+
     static final String INPUT_MATRIX =  "/jim/projects/baylanta/data/outputs/sovffm05.skm";
     
     static final boolean USE_RMI = true;
@@ -61,16 +65,11 @@ public class TestRmiMatrixIO {
         System.out.println("revised m[ 1, 1]= " + matrix.getValueAt(1,1));
         System.out.println("revised m[ 5, 5]= " + matrix.getValueAt(5,5));
         System.out.println("revised m[50,50]= " + matrix.getValueAt(50,50));
-
     }
-    
-    
-    
+
     public static void main(String args[]) {
 
         try {
-  
-            
             MatrixIO32BitJvm ioVm32Bit = null;
             
             if ( USE_RMI ) {
@@ -82,10 +81,8 @@ public class TestRmiMatrixIO {
                 ioVm32Bit.startMatrixDataServer( MatrixType.TPPLUS );
             }
 
-            
             TestRmiMatrixIO testObj = new TestRmiMatrixIO();
             testObj.runTest( args );
-        
         
             if ( USE_RMI ) {
                 
@@ -103,12 +100,11 @@ public class TestRmiMatrixIO {
             testObj.runTest( args );
 
         }
-        catch ( RuntimeException e) {
+        catch (Exception e) {
+            logger.error("error in main", e);
             e.printStackTrace();
-            System.out.println ( "errors occurred." );
         }
 
-        
         System.out.println("\ndone with test.");
     }
 
