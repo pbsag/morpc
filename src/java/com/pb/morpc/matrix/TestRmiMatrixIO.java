@@ -33,6 +33,10 @@ public class TestRmiMatrixIO {
         
         MatrixReader mr = MatrixReader.createReader(MatrixType.TPPLUS, new File( inputMatrixFileName ));
         System.out.println ( "created an object of " + mr.getClass().getName() + " for reading matrix data." ); 
+        mr.testRemote("distance");
+
+        mr = MatrixReader.createReader(MatrixType.TPPLUS, new File( inputMatrixFileName ));
+        System.out.println ( "created an object of " + mr.getClass().getName() + " for reading matrix data." ); 
         Matrix matrix = mr.readMatrix("distance");
 
         // report initial matrix values
@@ -106,7 +110,7 @@ public class TestRmiMatrixIO {
                 ioVm32Bit.stopJVM32();
         }
         catch (Exception e) {
-            logger.error("stopping due to catching other Eception", e);
+            logger.error("stopping due to catching other Exception", e);
             if ( USE_RMI )
                 ioVm32Bit.stopJVM32();
         }
