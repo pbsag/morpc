@@ -913,12 +913,12 @@ public class DTMOutput implements java.io.Serializable {
         logger.info( String.format("matrix total for tables in %s:", tppFileName) );
         for (int i=0; i < trips.length; i++) {
             outputMatrices[i] = new Matrix( names[i], descriptions[i], trips[i] );
-            tppWriter.writeMatrix(names[i], outputMatrices[i]);
             logger.info( String.format("    [%d] %-16s: %.0f", i, names[i], outputMatrices[i].getSum()) );
 
             trips[i] = null;
         }
 
+        tppWriter.writeMatrices(names, outputMatrices);
     }
 
 
