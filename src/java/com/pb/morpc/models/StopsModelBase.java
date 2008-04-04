@@ -193,7 +193,7 @@ public class StopsModelBase implements java.io.Serializable {
 
 		defineUECModelSheets (tourTypeCategory);
 
-		sfc =  new ChoiceModelApplication("Model81.controlFile", model81Sheet, m81DataSheet, propertyMap, Household.class);
+		sfc =  new ChoiceModelApplication( (String)propertyMap.get ( "Model81.controlFile"), model81Sheet, m81DataSheet, propertyMap, Household.class);
 		sfc.createLogitModel();
 		if (sfc.getNumberOfAlternatives() > numSfcAlternatives)
 			numSfcAlternatives = sfc.getNumberOfAlternatives();
@@ -205,7 +205,7 @@ public class StopsModelBase implements java.io.Serializable {
 				if (tourTypeCategory != TourType.AT_WORK_CATEGORY) {
 					for (int k=0; k < tourTypes.length; k++) {
 
-						slc[i][j][tourTypes[k]] =  new ChoiceModelApplication("Model82.controlFile", model82Sheet[i][j][tourTypes[k]],  m82DataSheet, propertyMap, Household.class);
+						slc[i][j][tourTypes[k]] =  new ChoiceModelApplication( (String)propertyMap.get ( "Model82.controlFile"), model82Sheet[i][j][tourTypes[k]],  m82DataSheet, propertyMap, Household.class);
 						slc[i][j][tourTypes[k]].createLogitModel();
 
 						if (slc[i][j][tourTypes[k]].getNumberOfAlternatives() > numSlcAlternatives)
@@ -216,7 +216,7 @@ public class StopsModelBase implements java.io.Serializable {
 				else {
 					for (int k=0; k < SubTourType.SUB_TOUR_TYPES.length; k++) {
 
-						slc[i][j][SubTourType.SUB_TOUR_TYPES[k]] =  new ChoiceModelApplication("Model82.controlFile", model82Sheet[i][j][SubTourType.SUB_TOUR_TYPES[k]],  m82DataSheet, propertyMap, Household.class);
+						slc[i][j][SubTourType.SUB_TOUR_TYPES[k]] =  new ChoiceModelApplication( (String)propertyMap.get ( "Model82.controlFile"), model82Sheet[i][j][SubTourType.SUB_TOUR_TYPES[k]],  m82DataSheet, propertyMap, Household.class);
 						slc[i][j][SubTourType.SUB_TOUR_TYPES[k]].createLogitModel();
 
 						if (slc[i][j][SubTourType.SUB_TOUR_TYPES[k]].getNumberOfAlternatives() > numSlcAlternatives)
@@ -254,49 +254,49 @@ public class StopsModelBase implements java.io.Serializable {
 				slcSoa[i][0] = new SampleOfAlternatives[3];
 				slcSoa[i][1] = new SampleOfAlternatives[3];
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 1, 0, 0);
-				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 1, 1, 0);
-				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 2, 0, 0);
-				slcSoa[i][0][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][1] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 2, 1, 0);
-				slcSoa[i][1][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][1] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 3, 0, 0);
-				slcSoa[i][0][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][2] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 3, 1, 0);
-				slcSoa[i][1][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][2] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 			}
 			else if (tourTypes[i] == TourType.UNIVERSITY || tourTypes[i] == TourType.SCHOOL) {
 				slcSoa[i][0] = new SampleOfAlternatives[1];
 				slcSoa[i][1] = new SampleOfAlternatives[1];
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 0);
-				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 0);
-				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 			}
 			else if (tourTypes[i] == TourType.ATWORK) {
 				slcSoa[i][0] = new SampleOfAlternatives[3];
 				slcSoa[i][1] = new SampleOfAlternatives[3];
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 1);
-				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 1);
-				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 2);
-				slcSoa[i][0][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][1] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 2);
-				slcSoa[i][1][1] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][1] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 3);
-				slcSoa[i][0][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][2] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 3);
-				slcSoa[i][1][2] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][2] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 			}
 			else {
 				slcSoa[i][0] = new SampleOfAlternatives[1];
 				slcSoa[i][1] = new SampleOfAlternatives[1];
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 0, 0);
-				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][0][0] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 				defineSlcSoaSheets (tourTypes[i], tourTypeCategory, 0, 1, 0);
-				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", "SoaSlc.controlFile", slcSoaModelSheet, slcSoaDataSheet);
+				slcSoa[i][1][0] = new SampleOfAlternatives(propertyMap, "slc", (String)propertyMap.get ( "SoaDc.controlFile"), slcSoaModelSheet, slcSoaDataSheet);
 			}
 			
 		}

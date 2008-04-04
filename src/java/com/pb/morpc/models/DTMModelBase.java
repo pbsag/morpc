@@ -187,29 +187,29 @@ public class DTMModelBase implements java.io.Serializable {
 		logger.info ("Creating sample of alternative choice UECs");
 		soa = new SampleOfAlternatives[tourTypes.length+1][];
 		for (int i=0; i < tourTypes.length; i++) {
-					
+            
 			if (tourTypes[i] == TourType.WORK) {
 				soa[i] = new SampleOfAlternatives[3];
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 1, 0);
-				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
+				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", (String)propertyMap.get ( "SoaDc.controlFile"), soaModelSheet, soaDataSheet);
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 2, 0);
-				soa[i][1] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
+				soa[i][1] = new SampleOfAlternatives(propertyMap, "dc", (String)propertyMap.get ( "SoaDc.controlFile"), soaModelSheet, soaDataSheet);
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 3, 0);
-				soa[i][2] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
+				soa[i][2] = new SampleOfAlternatives(propertyMap, "dc", (String)propertyMap.get ( "SoaDc.controlFile"), soaModelSheet, soaDataSheet);
 			}
 			else if (tourTypes[i] == TourType.ATWORK) {
 				soa[i] = new SampleOfAlternatives[3];
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 0, 1);
-				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
+				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", (String)propertyMap.get ( "SoaDc.controlFile"), soaModelSheet, soaDataSheet);
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 0, 2);
-				soa[i][1] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
+				soa[i][1] = new SampleOfAlternatives(propertyMap, "dc", (String)propertyMap.get ( "SoaDc.controlFile"), soaModelSheet, soaDataSheet);
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 0, 3);
-				soa[i][2] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
+				soa[i][2] = new SampleOfAlternatives(propertyMap, "dc", (String)propertyMap.get ( "SoaDc.controlFile"), soaModelSheet, soaDataSheet);
 			}
 			else {
 				soa[i] = new SampleOfAlternatives[1];
 				defineSoaSheets (tourTypes[i], tourTypeCategory, 0, 0);
-				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", "SoaDc.controlFile", soaModelSheet, soaDataSheet);
+				soa[i][0] = new SampleOfAlternatives(propertyMap, "dc", (String)propertyMap.get ( "SoaDc.controlFile"), soaModelSheet, soaDataSheet);
 			}
 			
 		}
@@ -235,16 +235,17 @@ public class DTMModelBase implements java.io.Serializable {
 		for (int i=0; i < tourTypes.length; i++) {
 
 			defineUECModelSheets (tourTypes[i], tourTypeCategory);
+                 
 
-			dc[i] =  new ChoiceModelApplication("Model51.controlFile", model5Sheet, m5DataSheet, propertyMap, Household.class);
-			tc[i] =  new ChoiceModelApplication("Model6.controlFile", model6Sheet,  m6DataSheet, propertyMap, Household.class);
+			dc[i] =  new ChoiceModelApplication( (String)propertyMap.get ( "Model51.controlFile"), model5Sheet, m5DataSheet, propertyMap, Household.class);
+			tc[i] =  new ChoiceModelApplication( (String)propertyMap.get ( "Model6.controlFile"), model6Sheet,  m6DataSheet, propertyMap, Household.class);
             
 			// create UEC to calculate OD component of mode choice utilities - used by derived class
 			logger.info ("Processor index " + processorIndex + " creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice OD UECs");
 			if (useMessageWindow) mw.setMessage1 ("Creating " + TourType.TYPE_LABELS[tourTypeCategory][i] + " Mode Choice OD UECs");
             mcODUEC[i] = new UtilityExpressionCalculator(new File( (String)propertyMap.get( "Model7.controlFile" ) ), model7ODSheet,  m7ODDataSheet, propertyMap, Household.class);
 	
-            mc[i] =  new ChoiceModelApplication("Model7.controlFile", model7Sheet,  m7DataSheet, propertyMap, Household.class);
+            mc[i] =  new ChoiceModelApplication( (String)propertyMap.get ( "Model7.controlFile"), model7Sheet,  m7DataSheet, propertyMap, Household.class);
 			
 //			modalODUtilityMap = new HashMap[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES];
 //			for (int m=0; m < ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES; m++)
@@ -299,7 +300,7 @@ public class DTMModelBase implements java.io.Serializable {
 		// create UECs for each of the model 9 model sheets		
 		logger.info ("Creating Parking Location Choice UECs");
 		for (int i=0; i < 3; i++) {
-			pc[i] =  new ChoiceModelApplication( "Model9.controlFile", i+1, 0, propertyMap, Household.class );
+			pc[i] =  new ChoiceModelApplication( (String)propertyMap.get ( "Model9.controlFile"), i+1, 0, propertyMap, Household.class );
 			pc[i].createLogitModel();
 		}
 
