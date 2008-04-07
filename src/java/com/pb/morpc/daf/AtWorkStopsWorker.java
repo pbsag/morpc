@@ -10,7 +10,7 @@ package com.pb.morpc.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
-import com.pb.morpc.matrix.MatrixIO32BitJvm;
+import com.pb.common.matrix.MatrixIO32BitJvm;
 import com.pb.morpc.models.StopsHousehold;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.models.TODDataManager;

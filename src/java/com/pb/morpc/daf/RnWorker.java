@@ -9,9 +9,9 @@ package com.pb.morpc.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
+import com.pb.common.matrix.MatrixIO32BitJvm;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.SeededRandom;
-import com.pb.morpc.matrix.MatrixIO32BitJvm;
 
 
 import java.util.HashMap;

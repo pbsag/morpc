@@ -93,10 +93,10 @@ public class DTMOutput implements java.io.Serializable {
                 // construct filename
                 String tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + periodName[period] + ".tpp";
                 
-                String[] hNames = { "sov person", "sov vehicle", "hov person", "hov vehicle" };
+                String[] hNames = { "sov person", "hov person", "sov vehicle", "hov vehicle" };
                 String[] hDescriptions = { String.format("%s %s sov person trips", purposeName[type], periodName[period]),
-                        String.format("%s %s sov vehicle trips", purposeName[type], periodName[period]),
                         String.format("%s %s hov person trips", purposeName[type], periodName[period]),
+                        String.format("%s %s sov vehicle trips", purposeName[type], periodName[period]),
                         String.format("%s %s hov vehicle trips", purposeName[type], periodName[period]) };
                 trips = getHwyTripTables ( hh, vocRatios, period, type );
                 writeTpplusMatrices ( tppFileName, trips, hNames, hDescriptions );
