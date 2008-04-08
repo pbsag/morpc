@@ -398,7 +398,8 @@ public class DTMOutput implements java.io.Serializable {
                     tours = hh[i].getMandatoryTours();
                     if (tours != null) {
                         for (int t=0; t < tours.length; t++) {
-                            accumulateNmTripsForTour ( tours[t], period, result );
+                            if ( tours[t].getMode() == TourModeType.NONMOTORIZED )
+                                accumulateNmTripsForTour ( tours[t], period, result );
                         }
                     }
                     
@@ -409,7 +410,8 @@ public class DTMOutput implements java.io.Serializable {
                     tours = hh[i].getJointTours();
                     if (tours != null) {
                         for (int t=0; t < tours.length; t++) {
-                            accumulateNmTripsForTour ( tours[t], period, result );
+                            if ( tours[t].getMode() == TourModeType.NONMOTORIZED )
+                                accumulateNmTripsForTour ( tours[t], period, result );
                         }
                     }
 
@@ -417,7 +419,8 @@ public class DTMOutput implements java.io.Serializable {
                     tours = hh[i].getIndivTours();
                     if (tours != null) {
                         for (int t=0; t < tours.length; t++) {
-                            accumulateNmTripsForTour ( tours[t], period, result );
+                            if ( tours[t].getMode() == TourModeType.NONMOTORIZED )
+                                accumulateNmTripsForTour ( tours[t], period, result );
                         }
                     }
 
@@ -429,7 +432,8 @@ public class DTMOutput implements java.io.Serializable {
                                 Tour[] subTours = tours[t].getSubTours();
                                 if (subTours != null) {
                                     for (int s=0; s < subTours.length; s++) {
-                                        accumulateNmTripsForTour ( subTours[s], period, result );
+                                        if ( subTours[s].getMode() == TourModeType.NONMOTORIZED )
+                                            accumulateNmTripsForTour ( subTours[s], period, result );
                                     }
                                 }
                             }
