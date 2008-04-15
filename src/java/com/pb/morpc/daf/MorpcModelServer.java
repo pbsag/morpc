@@ -1314,9 +1314,16 @@ public class MorpcModelServer extends MessageProcessingTask {
 		String assignDir = (String) propertyMap.get("AssignDirectory.tpplus");
 		
         String skimDir = (String) propertyMap.get("SkimsDirectory.tpplus");
+        logger.info ("copying skim matrix files (*.skm) prior to assignments from " + skimDir + " to " + skimDir+"\\Iter"+(iteration+1));
         String command = "copy " + skimDir + "\\" + "*.skm " + skimDir+"\\Iter"+(iteration+1);
         command=command.replace('/', '\\');
-        runDOSCommand(command);	
+        runDOSCommand(command); 
+        
+        String tripsDir = (String) propertyMap.get("TripsDirectory.tpplus");
+        logger.info ("copying trip matrix files (*.tpp) prior to assignments from " + tripsDir + " to " + tripsDir+"\\Iter"+(iteration+1));
+        command = "copy " + tripsDir + "\\" + "*.tpp " + tripsDir+"\\Iter"+(iteration+1);
+        command=command.replace('/', '\\');
+        runDOSCommand(command); 
         
         
         //run external and commercial procedures in all global iterations
