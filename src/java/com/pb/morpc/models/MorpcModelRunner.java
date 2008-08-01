@@ -240,7 +240,16 @@ public class MorpcModelRunner extends MorpcModelBase {
             
         }
         catch (RuntimeException e) {
-            logger.error ( "RuntimeException caught in com.pb.arc.tourBased.TourBasedModel.main() -- exiting.", e );
+            logger.error ( "RuntimeException caught in com.pb.morpc.models.MorpcModelRunner.main() -- exiting.", e );
+
+            // establish that matrix reader and writer classes will not use the RMI versions any longer.
+            // local matrix i/o, as specified by setting types, is now the default again.
+            ioVm32Bit.stopMatrixDataServer();
+
+            // close the JVM in which the RMI reader/writer classes were running
+            ioVm32Bit.stopJVM32();
+            logger.info ("matrix data server 32 bit process stopped.");
+
         }
 
         
