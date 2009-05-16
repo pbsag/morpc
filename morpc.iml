@@ -12,7 +12,6 @@
     <orderEntry type="module" module-name="common-base" />
     <orderEntry type="module" module-name="common-daf-v1" />
     <orderEntry type="module" module-name="logging-log4j-1.2.9" />
-    <orderEntryProperties />
   </component>
 </module>
 
