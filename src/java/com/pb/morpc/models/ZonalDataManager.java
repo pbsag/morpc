@@ -31,7 +31,7 @@ public class ZonalDataManager implements java.io.Serializable {
     // The way to check this value is to check the daf application properties file
     // where tasks are assigned to processors, and make sure that no more tasks than
     // this number are assigned to a daf node. 
-	public static final int MAX_DISTRIBUTED_PROCESSORES = 4;
+	public static final int MAX_DISTRIBUTED_PROCESSORES = 8;
 
     public static final int WALK_SEGMENTS = 3;
     public static final int INCOME_CATEGORIES = 3;
@@ -516,8 +516,11 @@ public class ZonalDataManager implements java.io.Serializable {
 
             // calculate earningsPct[INCOME_CATEGORY][TAZ]
             earningsPct[0][i] = (earningsRatio[i] <= 1.7) ? (float)(Math.min(1.0, 1.038 - (1.157 * earningsRatio[i]) + (0.342 * Math.pow(earningsRatio[i], 2)))) : 0.059f;
-            earningsPct[1][i] = (float) (Math.max(0.0, (float) (Math.min(1.0, -0.065 + (0.253 * earningsRatio[i]) + (0.059 * Math.pow(earningsRatio[i], 2))))));
-            earningsPct[2][i] = (float) (1.0 - (earningsPct[0][i] + earningsPct[1][i]));
+            // The original order
+            //earningsPct[1][i] = (float) (Math.max(0.0, (float) (Math.min(1.0, -0.065 + (0.253 * earningsRatio[i]) + (0.059 * Math.pow(earningsRatio[i], 2))))));
+            //earningsPct[2][i] = (float) (1.0 - (earningsPct[0][i] + earningsPct[1][i]));
+            earningsPct[2][i] = (float) (Math.max(0.0, (float) (Math.min(1.0, -0.065 + (0.253 * earningsRatio[i]) + (0.059 * Math.pow(earningsRatio[i], 2))))));
+            earningsPct[1][i] = (float) (1.0 - (earningsPct[0][i] + earningsPct[2][i]));
 
             cnty = (int) zoneTable.getValueAt(i, cntyFieldPosition);
 
