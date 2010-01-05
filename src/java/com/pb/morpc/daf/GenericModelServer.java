@@ -276,7 +276,7 @@ public class GenericModelServer extends MessageProcessingTask {
 		
 		int i = sender.length() - 1;
 		
-		while ( i >= 0 && sender.substring(i).matches( "[0-9]") ) {
+		while ( i >= 0 && sender.substring(i,i+1).matches( "[0-9]") ) {
 			i--;
 		}
 			
