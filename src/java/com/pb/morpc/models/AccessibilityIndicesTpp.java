@@ -48,7 +48,7 @@ public class AccessibilityIndicesTpp {
     private Matrix wtBrtMd;
     private Matrix wtLrtMd;
     private Matrix wtCrlMd;
-    
+
     
     //parameter in formula
     double[] negGama = {
@@ -229,20 +229,21 @@ public class AccessibilityIndicesTpp {
     private void calcuC(int k) {
         for (int i = 0; i < NoOfZones; i++) {
             for (int j = 0; j < NoOfZones; j++) {
+                
                 if ((k == 0) || (k == 5)) {
-                    c[i][j] = (double) (sovTimeAm.getValueAt(i, j));
+                    c[i][j] = (double) (sovTimeAm.getValueAt(i+1, j+1));
                 }
 
                 if ((k == 1) || (k == 6)) {
-                    c[i][j] = (double) (sovTimeMd.getValueAt(i, j));
+                    c[i][j] = (double) (sovTimeMd.getValueAt(i+1, j+1));
                 }
 
                 if ((k == 2) || (k == 7)) {
-                    c[i][j] = (double) (wtLbsAm.getValueAt(i, j) +
-                        wtEbsAm.getValueAt(i, j) + wtBrtAm.getValueAt(i, j) +
-                        wtLrtAm.getValueAt(i, j) + wtCrlAm.getValueAt(i, j) +
-                        wtWait1Am.getValueAt(i, j) +
-                        wtWait2Am.getValueAt(i, j) + wtWalkAm.getValueAt(i, j));
+                    c[i][j] = (double) (wtLbsAm.getValueAt(i+1, j+1) +
+                        wtEbsAm.getValueAt(i+1, j+1) + wtBrtAm.getValueAt(i+1, j+1) +
+                        wtLrtAm.getValueAt(i+1, j+1) + wtCrlAm.getValueAt(i+1, j+1) +
+                        wtWait1Am.getValueAt(i+1, j+1) +
+                        wtWait2Am.getValueAt(i+1, j+1) + wtWalkAm.getValueAt(i+1, j+1));
 
                     if (c[i][j] == 0.0) {
                         c[i][j] = 999.0;
@@ -250,11 +251,11 @@ public class AccessibilityIndicesTpp {
                 }
 
                 if ((k == 3) || (k == 8)) {
-                    c[i][j] = (double) (wtLbsMd.getValueAt(i, j) +
-                        wtEbsMd.getValueAt(i, j) + wtBrtMd.getValueAt(i, j) +
-                        wtLrtMd.getValueAt(i, j) + wtCrlMd.getValueAt(i, j) +
-                        wtWait1Md.getValueAt(i, j) +
-                        wtWait2Md.getValueAt(i, j) + wtWalkMd.getValueAt(i, j));
+                    c[i][j] = (double) (wtLbsMd.getValueAt(i+1, j+1) +
+                        wtEbsMd.getValueAt(i+1, j+1) + wtBrtMd.getValueAt(i+1, j+1) +
+                        wtLrtMd.getValueAt(i+1, j+1) + wtCrlMd.getValueAt(i+1, j+1) +
+                        wtWait1Md.getValueAt(i+1, j+1) +
+                        wtWait2Md.getValueAt(i+1, j+1) + wtWalkMd.getValueAt(i+1, j+1));
 
                     if (c[i][j] == 0.0) {
                         c[i][j] = 999.0;
@@ -262,7 +263,7 @@ public class AccessibilityIndicesTpp {
                 }
 
                 if ((k == 4) || (k == 9)) {
-                    c[i][j] = (double) (sovDistAm.getValueAt(i, j));
+                    c[i][j] = (double) (sovDistAm.getValueAt(i+1, j+1));
 
                     if (c[i][j] > 3.0) {
                         c[i][j] = 999.0;
