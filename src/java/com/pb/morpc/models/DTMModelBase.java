@@ -339,7 +339,7 @@ public class DTMModelBase implements java.io.Serializable {
 		pcSample = new int[numPcAlternatives+1];
 		dcCorrections = new float[ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES][numDcAlternatives+1];
 
-		int[] mcLogsumAvailability = new int[numDcAlternatives+1];
+		mcLogsumAvailability = new int[numMcAlternatives+1];
 		Arrays.fill (mcLogsumAvailability, 1);
 		Arrays.fill (dcAvailability, true);
 		Arrays.fill (pcSample, 1);
@@ -382,7 +382,10 @@ public class DTMModelBase implements java.io.Serializable {
 		setMcODUtility ( hh, dmuIndex, tourTypeIndex );
 
 		// calculate the final mode choice utilities, exponentiate them, and calcualte the logsum
-		mc[tourTypeIndex].computeUtilities ( hh, dmuIndex, mcAvailability, mcSample );
+		// use  the computeUtilities method that uses default availabilty(all true) and sample(all 1) arrays
+        mc[tourTypeIndex].computeUtilities ( hh, dmuIndex );
+
+		//mc[tourTypeIndex].computeUtilities ( hh, dmuIndex, mcAvailability, mcLogsumAvailability );
 
 		// return the mode choice logsum
 		return (float)mc[tourTypeIndex].getLogsum();
