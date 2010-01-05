@@ -26,12 +26,11 @@ import org.apache.log4j.Logger;
  */
 public class ZonalDataManager implements java.io.Serializable {
 
-    // this value indicates that no more than 4 tasks will ever be run in a single VM.
-    // The current implementation uses at most 2.
+    // this value indicates that no more than 16 tasks will ever be run in a single VM.
     // The way to check this value is to check the daf application properties file
     // where tasks are assigned to processors, and make sure that no more tasks than
     // this number are assigned to a daf node. 
-	public static final int MAX_DISTRIBUTED_PROCESSORES = 8;
+	public static final int MAX_DISTRIBUTED_PROCESSORES = 16;
 
     public static final int WALK_SEGMENTS = 3;
     public static final int INCOME_CATEGORIES = 3;
@@ -516,11 +515,31 @@ public class ZonalDataManager implements java.io.Serializable {
 
             // calculate earningsPct[INCOME_CATEGORY][TAZ]
             earningsPct[0][i] = (earningsRatio[i] <= 1.7) ? (float)(Math.min(1.0, 1.038 - (1.157 * earningsRatio[i]) + (0.342 * Math.pow(earningsRatio[i], 2)))) : 0.059f;
+
             // The original order
             //earningsPct[1][i] = (float) (Math.max(0.0, (float) (Math.min(1.0, -0.065 + (0.253 * earningsRatio[i]) + (0.059 * Math.pow(earningsRatio[i], 2))))));
             //earningsPct[2][i] = (float) (1.0 - (earningsPct[0][i] + earningsPct[1][i]));
-            earningsPct[2][i] = (float) (Math.max(0.0, (float) (Math.min(1.0, -0.065 + (0.253 * earningsRatio[i]) + (0.059 * Math.pow(earningsRatio[i], 2))))));
-            earningsPct[1][i] = (float) (1.0 - (earningsPct[0][i] + earningsPct[2][i]));
+            
+            // The modified order
+            //earningsPct[2][i] = (float) (Math.max(0.0, (float) (Math.min(1.0, -0.065 + (0.253 * earningsRatio[i]) + (0.059 * Math.pow(earningsRatio[i], 2))))));
+            float sum = earningsPct[0][i] + earningsPct[2][i];
+            if ( sum <= 1.0 ){
+                earningsPct[1][i] = (float) ( 1.0 - sum );
+            }
+            else {
+                logger.error( "error in calculating earningPct[1][" + i + "]:");
+                logger.error( "     earningPct[0][" + i + "] = " + earningsPct[0][i]);
+                logger.error( "     earningPct[2][" + i + "] = " + earningsPct[2][i]);
+                logger.error( "     sum = " + sum);
+                logger.error( "     earningPct[1][" + i + "] = " + earningsPct[1][i]);
+                logger.error( "" );
+                logger.error( "     avgEarnings = " + avgEarnings);
+                logger.error( "     earnings[" + i + "] = " + earnings[i]);
+                logger.error( "     earningsRatio[" + i + "] = " + earningsRatio[i]);
+                
+                throw new RuntimeException();
+            }
+            
 
             cnty = (int) zoneTable.getValueAt(i, cntyFieldPosition);
 
