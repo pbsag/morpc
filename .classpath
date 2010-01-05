@@ -6,5 +6,8 @@
 	<classpathentry kind="src" path="/common-daf-v1"/>
 	<classpathentry kind="src" path="/logging-log4j-1.2.9"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/censusdata"/>
+	<classpathentry kind="lib" path="/jexcelapi/jxl.jar" sourcepath="/jexcelapi/src"/>
+	<classpathentry kind="lib" path="/common-base/lib/cajo.jar"/>
+	<classpathentry kind="lib" path="/logging-log4j-1.2.9/log4j-1.2.9.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -16,7 +16,8 @@
         <pathelement location="${build.classes.dir}"/>
         <pathelement location="${basedir}/config"/>
         <pathelement location="${common-base.dir}/config"/>
-        <pathelement location="${common-base.dir}/lib/jxl.jar"/>
+        <pathelement location="${common-base.dir}/../../third-party/jexcelapi/jxl.jar"/>
+    <!-- <pathelement location="${common-base.dir}/lib/jxl.jar"/> -->
         <pathelement location="${dafapps.dir}/morpcDaf"/>
         <pathelement location="${dafapps.dir}/morpcDaf/node0"/>
         
@@ -27,6 +28,7 @@
 
     <fileset dir="${thirdParty.dir}">
 	    <include name="**/logging-log4j-1.2.9/*.jar"/>
+        <include name="**/jexcelapi/*.jar"/>
    </fileset>
     </path>
 
