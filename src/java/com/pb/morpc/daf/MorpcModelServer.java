@@ -231,6 +231,12 @@ public class MorpcModelServer extends MessageProcessingTask {
         	zdm=zdmtdm.getZDM();
         	tdm=zdmtdm.getTDM();
         }
+        else{
+            // build the zonal data table
+            zdm = new ZonalDataManager(propertyMap);
+            // build the TOD Ddata table
+            tdm = new TODDataManager(propertyMap);
+        }
         
         zdm.updatePropertyMap(iteration+1);
 
