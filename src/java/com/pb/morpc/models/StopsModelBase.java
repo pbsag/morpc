@@ -47,7 +47,72 @@ public class StopsModelBase implements java.io.Serializable {
 	private float[][] stopAttractions;
 	private float[][] regionalSize;
 
+    private static final int MODEL82_WORK_OUT_HWY = 1;
+    private static final int MODEL82_WORK_OUT_TRAN = 7;
+    private static final int MODEL82_WORK_IN_HWY = 2;
+    private static final int MODEL82_WORK_IN_TRAN = 8;
+    private static final int MODEL82_UNIV_OUT_HWY = 1;
+    private static final int MODEL82_UNIV_OUT_TRAN = 7;
+    private static final int MODEL82_UNIV_IN_HWY = 2;
+    private static final int MODEL82_UNIV_IN_TRAN = 8;
+    private static final int MODEL82_SCHL_OUT_HWY = 1;
+    private static final int MODEL82_SCHL_OUT_TRAN = 7;
+    private static final int MODEL82_SCHL_IN_HWY = 2;
+    private static final int MODEL82_SCHL_IN_TRAN = 8;
+    
+    private static final int MODEL82_INDIV_ESCORT_OUT_HWY = 1;
+    private static final int MODEL82_INDIV_ESCORT_OUT_TRAN = 7;
+    private static final int MODEL82_INDIV_ESCORT_IN_HWY = 2;
+    private static final int MODEL82_INDIV_ESCORT_IN_TRAN = 8;
+    private static final int MODEL82_INDIV_SHOP_OUT_HWY = 1;
+    private static final int MODEL82_INDIV_SHOP_OUT_TRAN = 7;
+    private static final int MODEL82_INDIV_SHOP_IN_HWY = 2;
+    private static final int MODEL82_INDIV_SHOP_IN_TRAN = 8;
+    private static final int MODEL82_INDIV_MAINT_OUT_HWY = 1;
+    private static final int MODEL82_INDIV_MAINT_OUT_TRAN = 7;
+    private static final int MODEL82_INDIV_MAINT_IN_HWY = 2;
+    private static final int MODEL82_INDIV_MAINT_IN_TRAN = 8;
+    private static final int MODEL82_INDIV_DISCR_OUT_HWY = 1;
+    private static final int MODEL82_INDIV_DISCR_OUT_TRAN = 7;
+    private static final int MODEL82_INDIV_DISCR_IN_HWY = 2;
+    private static final int MODEL82_INDIV_DISCR_IN_TRAN = 8;
+    private static final int MODEL82_INDIV_EAT_OUT_HWY = 1;
+    private static final int MODEL82_INDIV_EAT_OUT_TRAN = 7;
+    private static final int MODEL82_INDIV_EAT_IN_HWY = 2;
+    private static final int MODEL82_INDIV_EAT_IN_TRAN = 8;
+    
+    private static final int MODEL82_JOINT_SHOP_OUT_HWY = 3;
+    private static final int MODEL82_JOINT_SHOP_OUT_TRAN = 9;
+    private static final int MODEL82_JOINT_SHOP_IN_HWY = 4;
+    private static final int MODEL82_JOINT_SHOP_IN_TRAN = 10;
+    private static final int MODEL82_JOINT_MAINT_OUT_HWY = 3;
+    private static final int MODEL82_JOINT_MAINT_OUT_TRAN = 9;
+    private static final int MODEL82_JOINT_MAINT_IN_HWY = 4;
+    private static final int MODEL82_JOINT_MAINT_IN_TRAN = 10;
+    private static final int MODEL82_JOINT_DISCR_OUT_HWY = 3;
+    private static final int MODEL82_JOINT_DISCR_OUT_TRAN = 9;
+    private static final int MODEL82_JOINT_DISCR_IN_HWY = 4;
+    private static final int MODEL82_JOINT_DISCR_IN_TRAN = 10;
+    private static final int MODEL82_JOINT_EAT_OUT_HWY = 3;
+    private static final int MODEL82_JOINT_EAT_OUT_TRAN = 9;
+    private static final int MODEL82_JOINT_EAT_IN_HWY = 4;
+    private static final int MODEL82_JOINT_EAT_IN_TRAN = 10;
+    
+    private static final int MODEL82_ATWORK_WORK_OUT_HWY = 5;
+    private static final int MODEL82_ATWORK_WORK_OUT_TRAN = 11;
+    private static final int MODEL82_ATWORK_WORK_IN_HWY = 6;
+    private static final int MODEL82_ATWORK_WORK_IN_TRAN = 12;
+    private static final int MODEL82_ATWORK_OTHER_OUT_HWY = 5;
+    private static final int MODEL82_ATWORK_OTHER_OUT_TRAN = 11;
+    private static final int MODEL82_ATWORK_OTHER_IN_HWY = 6;
+    private static final int MODEL82_ATWORK_OTHER_IN_TRAN = 12;
+    private static final int MODEL82_ATWORK_EAT_OUT_HWY = 5;
+    private static final int MODEL82_ATWORK_EAT_OUT_TRAN = 11;
+    private static final int MODEL82_ATWORK_EAT_IN_HWY = 6;
+    private static final int MODEL82_ATWORK_EAT_IN_TRAN = 12;
 
+    
+    
 	// These arrays are declared as public static, because they are referenced by the Household
 	// object, acting as a DMU to pass information to the UEC.  The UEC control files make
 	// references to these data via @ and @@ variables.
@@ -331,72 +396,72 @@ public class StopsModelBase implements java.io.Serializable {
 
 
 		if (tourCategory == TourType.MANDATORY_CATEGORY) {
-			model82Sheet[0][0][TourType.WORK] = 1;
-			model82Sheet[0][1][TourType.WORK] = 2;
-			model82Sheet[0][0][TourType.UNIVERSITY] = 3;
-			model82Sheet[0][1][TourType.UNIVERSITY] = 4;
-			model82Sheet[0][0][TourType.SCHOOL] = 5;
-			model82Sheet[0][1][TourType.SCHOOL] = 6;
-			model82Sheet[1][0][TourType.WORK] = 31;
-			model82Sheet[1][1][TourType.WORK] = 32;
-			model82Sheet[1][0][TourType.UNIVERSITY] = 33;
-			model82Sheet[1][1][TourType.UNIVERSITY] = 34;
-			model82Sheet[1][0][TourType.SCHOOL] = 35;
-			model82Sheet[1][1][TourType.SCHOOL] = 36;
+			model82Sheet[0][0][TourType.WORK] = MODEL82_WORK_OUT_HWY;
+			model82Sheet[0][1][TourType.WORK] = MODEL82_WORK_OUT_TRAN;
+			model82Sheet[0][0][TourType.UNIVERSITY] = MODEL82_UNIV_OUT_HWY;
+			model82Sheet[0][1][TourType.UNIVERSITY] = MODEL82_UNIV_OUT_TRAN;
+			model82Sheet[0][0][TourType.SCHOOL] = MODEL82_SCHL_OUT_HWY;
+			model82Sheet[0][1][TourType.SCHOOL] = MODEL82_SCHL_OUT_TRAN;
+			model82Sheet[1][0][TourType.WORK] = MODEL82_WORK_IN_HWY;
+			model82Sheet[1][1][TourType.WORK] = MODEL82_WORK_IN_TRAN;
+			model82Sheet[1][0][TourType.UNIVERSITY] = MODEL82_UNIV_IN_HWY;
+			model82Sheet[1][1][TourType.UNIVERSITY] = MODEL82_UNIV_IN_TRAN;
+			model82Sheet[1][0][TourType.SCHOOL] = MODEL82_SCHL_IN_HWY;
+			model82Sheet[1][1][TourType.SCHOOL] = MODEL82_SCHL_IN_TRAN;
 		}
 		else if (tourCategory == TourType.NON_MANDATORY_CATEGORY) {
-			model82Sheet[0][0][TourType.ESCORTING] = 7;
-			model82Sheet[0][1][TourType.ESCORTING] = 8;
-			model82Sheet[0][0][TourType.SHOP] = 9;
-			model82Sheet[0][1][TourType.SHOP] = 10;
-			model82Sheet[0][0][TourType.OTHER_MAINTENANCE] = 11;
-			model82Sheet[0][1][TourType.OTHER_MAINTENANCE] = 12;
-			model82Sheet[0][0][TourType.DISCRETIONARY] = 13;
-			model82Sheet[0][1][TourType.DISCRETIONARY] = 14;
-			model82Sheet[0][0][TourType.EAT] = 15;
-			model82Sheet[0][1][TourType.EAT] = 16;
-			model82Sheet[1][0][TourType.ESCORTING] = 37;
-			model82Sheet[1][1][TourType.ESCORTING] = 38;
-			model82Sheet[1][0][TourType.SHOP] = 39;
-			model82Sheet[1][1][TourType.SHOP] = 40;
-			model82Sheet[1][0][TourType.OTHER_MAINTENANCE] = 41;
-			model82Sheet[1][1][TourType.OTHER_MAINTENANCE] = 42;
-			model82Sheet[1][0][TourType.DISCRETIONARY] = 43;
-			model82Sheet[1][1][TourType.DISCRETIONARY] = 44;
-			model82Sheet[1][0][TourType.EAT] = 45;
-			model82Sheet[1][1][TourType.EAT] = 46;
+			model82Sheet[0][0][TourType.ESCORTING] = MODEL82_INDIV_ESCORT_OUT_HWY;
+			model82Sheet[0][1][TourType.ESCORTING] = MODEL82_INDIV_ESCORT_OUT_TRAN;
+			model82Sheet[0][0][TourType.SHOP] = MODEL82_INDIV_SHOP_OUT_HWY;
+			model82Sheet[0][1][TourType.SHOP] = MODEL82_INDIV_SHOP_OUT_TRAN;
+			model82Sheet[0][0][TourType.OTHER_MAINTENANCE] = MODEL82_INDIV_MAINT_OUT_HWY;
+			model82Sheet[0][1][TourType.OTHER_MAINTENANCE] = MODEL82_INDIV_MAINT_OUT_TRAN;
+			model82Sheet[0][0][TourType.DISCRETIONARY] = MODEL82_INDIV_DISCR_OUT_HWY;
+			model82Sheet[0][1][TourType.DISCRETIONARY] = MODEL82_INDIV_DISCR_OUT_TRAN;
+			model82Sheet[0][0][TourType.EAT] = MODEL82_INDIV_EAT_OUT_HWY;
+			model82Sheet[0][1][TourType.EAT] = MODEL82_INDIV_EAT_OUT_TRAN;
+			model82Sheet[1][0][TourType.ESCORTING] = MODEL82_INDIV_ESCORT_IN_HWY;
+			model82Sheet[1][1][TourType.ESCORTING] = MODEL82_INDIV_ESCORT_IN_TRAN;
+			model82Sheet[1][0][TourType.SHOP] = MODEL82_INDIV_SHOP_IN_HWY;
+			model82Sheet[1][1][TourType.SHOP] = MODEL82_INDIV_SHOP_IN_TRAN;
+			model82Sheet[1][0][TourType.OTHER_MAINTENANCE] = MODEL82_INDIV_MAINT_IN_HWY;
+			model82Sheet[1][1][TourType.OTHER_MAINTENANCE] = MODEL82_INDIV_MAINT_IN_TRAN;
+			model82Sheet[1][0][TourType.DISCRETIONARY] = MODEL82_INDIV_DISCR_IN_HWY;
+			model82Sheet[1][1][TourType.DISCRETIONARY] = MODEL82_INDIV_DISCR_IN_TRAN;
+			model82Sheet[1][0][TourType.EAT] = MODEL82_INDIV_EAT_IN_HWY;
+			model82Sheet[1][1][TourType.EAT] = MODEL82_INDIV_EAT_IN_TRAN;
 		}
 		else if (tourCategory == TourType.JOINT_CATEGORY) {
-			model82Sheet[0][0][TourType.SHOP] = 17;
-			model82Sheet[0][1][TourType.SHOP] = 18;
-			model82Sheet[0][0][TourType.OTHER_MAINTENANCE] = 19;
-			model82Sheet[0][1][TourType.OTHER_MAINTENANCE] = 20;
-			model82Sheet[0][0][TourType.DISCRETIONARY] = 21;
-			model82Sheet[0][1][TourType.DISCRETIONARY] = 22;
-			model82Sheet[0][0][TourType.EAT] = 23;
-			model82Sheet[0][1][TourType.EAT] = 24;
-			model82Sheet[1][0][TourType.SHOP] = 47;
-			model82Sheet[1][1][TourType.SHOP] = 48;
-			model82Sheet[1][0][TourType.OTHER_MAINTENANCE] = 49;
-			model82Sheet[1][1][TourType.OTHER_MAINTENANCE] = 50;
-			model82Sheet[1][0][TourType.DISCRETIONARY] = 51;
-			model82Sheet[1][1][TourType.DISCRETIONARY] = 52;
-			model82Sheet[1][0][TourType.EAT] = 53;
-			model82Sheet[1][1][TourType.EAT] = 54;
+			model82Sheet[0][0][TourType.SHOP] = MODEL82_JOINT_SHOP_OUT_HWY;
+			model82Sheet[0][1][TourType.SHOP] = MODEL82_JOINT_SHOP_OUT_TRAN;
+			model82Sheet[0][0][TourType.OTHER_MAINTENANCE] = MODEL82_JOINT_MAINT_OUT_HWY;
+			model82Sheet[0][1][TourType.OTHER_MAINTENANCE] = MODEL82_JOINT_MAINT_OUT_TRAN;
+			model82Sheet[0][0][TourType.DISCRETIONARY] = MODEL82_JOINT_DISCR_OUT_HWY;
+			model82Sheet[0][1][TourType.DISCRETIONARY] = MODEL82_JOINT_DISCR_OUT_TRAN;
+			model82Sheet[0][0][TourType.EAT] = MODEL82_JOINT_EAT_OUT_HWY;
+			model82Sheet[0][1][TourType.EAT] = MODEL82_JOINT_EAT_OUT_TRAN;
+			model82Sheet[1][0][TourType.SHOP] = MODEL82_JOINT_SHOP_IN_HWY;
+			model82Sheet[1][1][TourType.SHOP] = MODEL82_JOINT_SHOP_IN_TRAN;
+			model82Sheet[1][0][TourType.OTHER_MAINTENANCE] = MODEL82_JOINT_MAINT_IN_HWY;
+			model82Sheet[1][1][TourType.OTHER_MAINTENANCE] = MODEL82_JOINT_MAINT_IN_TRAN;
+			model82Sheet[1][0][TourType.DISCRETIONARY] = MODEL82_JOINT_DISCR_IN_HWY;
+			model82Sheet[1][1][TourType.DISCRETIONARY] = MODEL82_JOINT_DISCR_IN_TRAN;
+			model82Sheet[1][0][TourType.EAT] = MODEL82_JOINT_EAT_IN_HWY;
+			model82Sheet[1][1][TourType.EAT] = MODEL82_JOINT_EAT_IN_TRAN;
 		}
 		else if (tourCategory == TourType.AT_WORK_CATEGORY) {
-			model82Sheet[0][0][SubTourType.WORK] = 25;
-			model82Sheet[0][1][SubTourType.WORK] = 26;
-			model82Sheet[0][0][SubTourType.OTHER] = 27;
-			model82Sheet[0][1][SubTourType.OTHER] = 28;
-			model82Sheet[0][0][SubTourType.EAT] = 29;
-			model82Sheet[0][1][SubTourType.EAT] = 30;
-			model82Sheet[1][0][SubTourType.WORK] = 55;
-			model82Sheet[1][1][SubTourType.WORK] = 56;
-			model82Sheet[1][0][SubTourType.OTHER] = 57;
-			model82Sheet[1][1][SubTourType.OTHER] = 58;
-			model82Sheet[1][0][SubTourType.EAT] = 59;
-			model82Sheet[1][1][SubTourType.EAT] = 60;
+			model82Sheet[0][0][SubTourType.WORK] = MODEL82_ATWORK_WORK_OUT_HWY;
+			model82Sheet[0][1][SubTourType.WORK] = MODEL82_ATWORK_WORK_OUT_TRAN;
+			model82Sheet[0][0][SubTourType.OTHER] = MODEL82_ATWORK_OTHER_OUT_HWY;
+			model82Sheet[0][1][SubTourType.OTHER] = MODEL82_ATWORK_OTHER_OUT_TRAN;
+			model82Sheet[0][0][SubTourType.EAT] = MODEL82_ATWORK_EAT_OUT_HWY;
+			model82Sheet[0][1][SubTourType.EAT] = MODEL82_ATWORK_EAT_OUT_TRAN;
+			model82Sheet[1][0][SubTourType.WORK] = MODEL82_ATWORK_WORK_IN_HWY;
+			model82Sheet[1][1][SubTourType.WORK] =  MODEL82_ATWORK_WORK_IN_TRAN;
+			model82Sheet[1][0][SubTourType.OTHER] = MODEL82_ATWORK_OTHER_IN_HWY;
+			model82Sheet[1][1][SubTourType.OTHER] = MODEL82_ATWORK_OTHER_IN_TRAN;
+			model82Sheet[1][0][SubTourType.EAT] = MODEL82_ATWORK_EAT_IN_HWY;
+			model82Sheet[1][1][SubTourType.EAT] = MODEL82_ATWORK_EAT_IN_TRAN;
 		}
 		
 	}

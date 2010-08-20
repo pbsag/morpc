@@ -28,13 +28,57 @@ public class DTMOutput implements java.io.Serializable {
     static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
     static final String[] purposeName = { "", "man", "nonman" };
-    static final String[] accessMode = { "", "wt", "dt", "td" };
-    static final String[] primaryMode = { "", "hwy", "transit", "nonmotor" };
+    static final String[] localAccessMode = { "", "wLw", "pLw", "kLw", "wLp", "wLk" };
+    static final String[] premiumAccessMode = { "", "wPw", "pPw", "kPw", "wPp", "wPk" };
+    static final String[] subMode = { "", "lbs", "ebs", "brt", "lrt", "crl" };
+    static final String[] primaryMode = { "", "hwy", "localTransit", "premiumTransit", "nonmotor" };
     static final String[] periodName = { "", "am", "pm", "md", "nt" };        
 
-    static final int WT = 1; 
-    static final int DT = 2; 
-    static final int TD = 3; 
+    // submodes
+    static final int LBS = 1;
+    static final int EBS = 2;
+    static final int BRT = 3;
+    static final int LRT = 4;
+    static final int CRL = 5;
+    
+    // access modes - used for bothe LOCAL and PREMIUM
+    static final int WTW = 1;
+    static final int PTW = 2;
+    static final int KTW = 3;
+    static final int WTP = 4;
+    static final int WTK = 5;
+        
+    // primary modes
+    static final int HWY = 1;
+    static final int LOCAL = 2;
+    static final int PREM = 3;
+    static final int NM = 4;
+    
+
+
+    // dist and ivt skim matrix indices 
+    private static final int SOV_MODE = 1;
+    private static final int HOV_MODE = 2;
+    private static final int WL_MODE = 3;
+    private static final int PL_MODE = 4;
+    private static final int KL_MODE = 5;
+    private static final int WP_MODE = 6;
+    private static final int PP_MODE = 7;
+    private static final int KP_MODE = 8;
+
+    private static final int AM_SKIM_PERIOD = 1;
+    private static final int PM_SKIM_PERIOD = 2;
+    private static final int MD_SKIM_PERIOD = 3;
+    private static final int NT_SKIM_PERIOD = 4;
+    
+    private static final int IJ = 0;
+    private static final int JI = 1;
+    private static final int IK = 2;
+    private static final int JK = 3;
+    private static final int KJ = 4;
+    private static final int KI = 5;
+    
+    
 
 
     int numberOfZones;
@@ -85,92 +129,82 @@ public class DTMOutput implements java.io.Serializable {
             // loop over periods - am, pm, md, nt
             for ( int period=1; period <= 4; period++ ) {
 
-                float[][][] trips = null;
+                float[][][] hwyTrips = null;                
                 
                 // write the highway mode trip tables ...
-                int primaryModeIndex = 1;
 
                 // construct filename
-                String tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + periodName[period] + ".tpp";
+                String tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[HWY] + periodName[period] + ".tpp";
                 
                 String[] hNames = { "sov person", "hov person", "sov vehicle", "hov vehicle" };
                 String[] hDescriptions = { String.format("%s %s sov person trips", purposeName[type], periodName[period]),
                         String.format("%s %s hov person trips", purposeName[type], periodName[period]),
                         String.format("%s %s sov vehicle trips", purposeName[type], periodName[period]),
                         String.format("%s %s hov vehicle trips", purposeName[type], periodName[period]) };
-                trips = getHwyTripTables ( hh, vocRatios, period, type );
-                writeTpplusMatrices ( tppFileName, trips, hNames, hDescriptions );
-
-                
-                
-                // write the walk transit mode trip tables ...
-                int accessModeIndex = 1;
-                primaryModeIndex = 2;
-                String[] subModeNames = { "wt lbs", "wt ebs", "wt brt", "wt lrt", "wt crl", "dt lbs", "dt ebs", "dt brt", "dt lrt", "dt crl", "td lbs", "td ebs", "td brt", "td lrt", "td crl" };
-
-                
-                // construct filename
-                tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + "_" + accessMode[accessModeIndex] + "_" + periodName[period] + ".tpp";
-
-                String[] wtNames = { subModeNames[0], subModeNames[1], subModeNames[2], subModeNames[3], subModeNames[4] };
-
-                String[] wtDescriptions = { String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[0]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[1]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[2]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[3]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], wtNames[4]) };
-
-                trips = getTransitTripTables ( hh, period, type, accessModeIndex );
-                writeTpplusMatrices ( tppFileName, trips, wtNames, wtDescriptions );
+                hwyTrips = getHwyTripTables ( hh, vocRatios, period, type );
+                writeTpplusMatrices ( tppFileName, hwyTrips, hNames, hDescriptions );
 
                 
                 
                 
-                // write the drive transit mode trip tables ...
-                accessModeIndex = 2;
-
-                // construct filename
-                tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + "_" + accessMode[accessModeIndex] + "_" + periodName[period] + ".tpp";
+                float[][][][] transitTrips = null;                
                 
-                String[] dtNames = { subModeNames[5], subModeNames[6], subModeNames[7], subModeNames[8], subModeNames[9] };
+                // write the local transit mode trip tables ...
+                int[] localSubModeIndices = { -1, LBS };
+                int[] localTransitModes = { TourModeType.WL, TourModeType.PL, TourModeType.KL };
 
-                String[] dtDescriptions = { String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[0]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[1]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[2]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[3]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], dtNames[4]) };
+                // construct filenames
+                String[] tppFileNames = new String[localAccessMode.length];
+                String[][] tableNames = new String[localAccessMode.length][localSubModeIndices.length];
+                String[][] tableDescriptions = new String[localAccessMode.length][localSubModeIndices.length];
+                for (int i=1; i < tppFileNames.length; i++){
+                    tppFileNames[i] = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[LOCAL] + "_" + localAccessMode[i] + "_" + periodName[period] + ".tpp";
+                    for (int j=1; j < localSubModeIndices.length; j++){
+                        tableNames[i][j] = localAccessMode[i] + " " + subMode[localSubModeIndices[j]];
+                        tableDescriptions[i][j] = String.format("%s %s %s person trips", purposeName[type], periodName[period], tableNames[i][j]);
+                    }
+                }
 
-                trips = getTransitTripTables ( hh, period, type, accessModeIndex );
-                writeTpplusMatrices ( tppFileName, trips, dtNames, dtDescriptions );
-
+                transitTrips = getTransitTripTables ( hh, period, type, localSubModeIndices, localTransitModes );
+                for (int i=1; i < tppFileNames.length; i++){
+                    for (int j=1; j < localSubModeIndices.length; j++){
+                        writeTpplusMatrices ( tppFileNames[i], transitTrips[i], tableNames[i], tableDescriptions[i] );
+                    }
+                }
                 
                 
                 
-                // write the transit drive mode trip tables ...
-                accessModeIndex = 3;
-                             
-                // construct filename
-                tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + "_" + accessMode[accessModeIndex] + "_" + periodName[period] + ".tpp";
                 
-                String[] tdNames = { subModeNames[10], subModeNames[11], subModeNames[12], subModeNames[13], subModeNames[14] };
+                // write the premium transit mode trip tables ...
+                int[] premiumSubModeIndices = { -1, LBS, EBS, BRT, LRT, CRL };
+                int[] premiumTransitModes = { TourModeType.WP, TourModeType.PP, TourModeType.KP };
 
-                String[] tdDescriptions = { String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[0]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[1]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[2]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[3]),
-                        String.format("%s %s %s person trips", purposeName[type], periodName[period], tdNames[4]) };
+                // construct filenames
+                tppFileNames = new String[premiumAccessMode.length];
+                tableNames = new String[premiumAccessMode.length][premiumSubModeIndices.length];
+                tableDescriptions = new String[premiumAccessMode.length][premiumSubModeIndices.length];
+                for (int i=1; i < tppFileNames.length; i++){
+                    tppFileNames[i] = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[PREM] + "_" + premiumAccessMode[i] + "_" + periodName[period] + ".tpp";
+                    for (int j=1; j < premiumSubModeIndices.length; j++){
+                        tableNames[i][j] = premiumAccessMode[i] + " " + subMode[premiumSubModeIndices[j]];
+                        tableDescriptions[i][j] = String.format("%s %s %s person trips", purposeName[type], periodName[period], tableNames[i][j]);
+                    }
+                }
 
-                trips = getTransitTripTables ( hh, period, type, accessModeIndex );
-                writeTpplusMatrices ( tppFileName, trips, tdNames, tdDescriptions );
-
+                transitTrips = getTransitTripTables ( hh, period, type, premiumSubModeIndices, premiumTransitModes );
+                for (int i=1; i < tppFileNames.length; i++){
+                    for (int j=1; j < premiumSubModeIndices.length; j++){
+                        writeTpplusMatrices ( tppFileNames[i], transitTrips[i], tableNames[i], tableDescriptions[i] );
+                    }
+                }
+                
                 
                 
                 
                 // write the non-motorized mode trip tables ...
-                primaryModeIndex = 3;
 
                 // construct filename
-                tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[primaryModeIndex] + "_" + periodName[period] + ".tpp";
+                tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[NM] + "_" + periodName[period] + ".tpp";
                 
                 String[] nmNames = { "non-motorized" };
 
@@ -289,14 +323,13 @@ public class DTMOutput implements java.io.Serializable {
     
 
 
-    private float[][][] getTransitTripTables ( Household[] hh, int period, int type, int access ) {
+    private float[][][][] getTransitTripTables ( Household[] hh, int period, int type, int[] subModeIndices, int[] transitModes ) {
 
-        float[][][] transitPerson = new float[SubmodeType.TYPES][numberOfZones][numberOfZones];
+        float[][][][] transitPerson = new float[SubmodeType.TYPES+1][subModeIndices.length][numberOfZones][numberOfZones];
 
-        Tour[] tours = null;
+        Tour[] tours = null;        
         
-        
-        // loop through tours in Household objects and look for tours with transit tour modes - WT, DT.
+        // loop through tours in Household objects and look for tours with transit tour modes.
         for (int i=0; i < hh.length; i++) {
 
             // pass tour object and trip table arrays into method to accumulate transit person trips
@@ -312,8 +345,10 @@ public class DTMOutput implements java.io.Serializable {
                     if (tours != null) {
                         for (int t=0; t < tours.length; t++) {
                             int tourMode = tours[t].getMode();
-                            if ( tourMode == TourModeType.WALKTRANSIT || tourMode == TourModeType.DRIVETRANSIT )
-                                accumulateTransitTripsForTour ( tours[t], false, tourMode, period, access, transitPerson );
+                            for (int m=0; m < transitModes.length; m++){
+                                if ( tourMode == transitModes[m] )
+                                    accumulateTransitTripsForTour ( tours[t], false, tourMode, period, subModeIndices, transitPerson );
+                            }
                         }
                     }
                     
@@ -327,8 +362,10 @@ public class DTMOutput implements java.io.Serializable {
                             // if tour mode is wt or dt, pass tour object and trip table arrays into
                             // method to accumulate person transit trips, if any.
                             int tourMode = tours[t].getMode();
-                            if ( tourMode == TourModeType.WALKTRANSIT || tourMode == TourModeType.DRIVETRANSIT )
-                                accumulateTransitTripsForTour ( tours[t], true, tourMode, period, access, transitPerson );
+                            for (int m=0; m < transitModes.length; m++){
+                                if ( tourMode == transitModes[m] )
+                                    accumulateTransitTripsForTour ( tours[t], false, tourMode, period, subModeIndices, transitPerson );
+                            }
                         }
                     }
 
@@ -339,8 +376,10 @@ public class DTMOutput implements java.io.Serializable {
                             // if tour mode is sov or hov, pass tour object and trip table arrays into
                             // method to accumulate person and vehicle highway trips, if any.
                             int tourMode = tours[t].getMode();
-                            if ( tourMode == TourModeType.WALKTRANSIT || tourMode == TourModeType.DRIVETRANSIT )
-                                accumulateTransitTripsForTour ( tours[t], false, tourMode, period, access, transitPerson );
+                            for (int m=0; m < transitModes.length; m++){
+                                if ( tourMode == transitModes[m] )
+                                    accumulateTransitTripsForTour ( tours[t], false, tourMode, period, subModeIndices, transitPerson );
+                            }
                         }
                     }
 
@@ -356,8 +395,10 @@ public class DTMOutput implements java.io.Serializable {
                                         // if tour mode is sov or hov, pass tour object and trip table arrays into
                                         // method to accumulate person and vehicle highway trips, if any.
                                         int subTourMode = subTours[s].getMode();
-                                        if ( subTourMode == TourModeType.WALKTRANSIT || subTourMode == TourModeType.DRIVETRANSIT )
-                                            accumulateTransitTripsForTour ( subTours[s], false, subTourMode, period, access, transitPerson );
+                                        for (int m=0; m < transitModes.length; m++){
+                                            if ( subTourMode == transitModes[m] )
+                                                accumulateTransitTripsForTour ( tours[t], false, subTourMode, period, subModeIndices, transitPerson );
+                                        }
                                         
                                     }
                                 }
@@ -403,7 +444,7 @@ public class DTMOutput implements java.io.Serializable {
                     tours = hh[i].getMandatoryTours();
                     if (tours != null) {
                         for (int t=0; t < tours.length; t++) {
-                            if ( tours[t].getMode() == TourModeType.NONMOTORIZED )
+                            if ( tours[t].getMode() == TourModeType.NM )
                                 accumulateNmTripsForTour ( tours[t], false, period, result );
                         }
                     }
@@ -415,7 +456,7 @@ public class DTMOutput implements java.io.Serializable {
                     tours = hh[i].getJointTours();
                     if (tours != null) {
                         for (int t=0; t < tours.length; t++) {
-                            if ( tours[t].getMode() == TourModeType.NONMOTORIZED )
+                            if ( tours[t].getMode() == TourModeType.NM )
                                 accumulateNmTripsForTour ( tours[t], true, period, result );
                         }
                     }
@@ -424,7 +465,7 @@ public class DTMOutput implements java.io.Serializable {
                     tours = hh[i].getIndivTours();
                     if (tours != null) {
                         for (int t=0; t < tours.length; t++) {
-                            if ( tours[t].getMode() == TourModeType.NONMOTORIZED )
+                            if ( tours[t].getMode() == TourModeType.NM )
                                 accumulateNmTripsForTour ( tours[t], false, period, result );
                         }
                     }
@@ -437,7 +478,7 @@ public class DTMOutput implements java.io.Serializable {
                                 Tour[] subTours = tours[t].getSubTours();
                                 if (subTours != null) {
                                     for (int s=0; s < subTours.length; s++) {
-                                        if ( subTours[s].getMode() == TourModeType.NONMOTORIZED )
+                                        if ( subTours[s].getMode() == TourModeType.NM )
                                             accumulateNmTripsForTour ( subTours[s], false, period, result );
                                     }
                                 }
@@ -597,26 +638,37 @@ public class DTMOutput implements java.io.Serializable {
         }
     
     }
-    
 
     
-    private void accumulateTransitTripsForTour ( Tour tour, boolean isJointTour, int tourMode, int period, int access, float[][][] transitPerson ) {
+    private boolean tripModeIsValidMode( int modeIndex, int[] subModeIndices ){
+        for ( int m : subModeIndices ){
+            if ( m == modeIndex )
+                return true;
+        }
+        return false;
+    }
 
-        // transitPerson array is dimensioned as one of the following, depending on access type, with indices defined:
-        // WT:  0=WT_LBS, 1=WT_EBS, 2=WT_BRT, 3=WT_LRT, 4=WT_CRL
-        // DT:  0=DT_LBS, 1=DT_EBS, 2=DT_BRT, 3=DT_LRT, 4=DT_CRL
-        // TD:  0=TD_LBS, 1=TD_EBS, 2=TD_BRT, 3=TD_LRT, 4=TD_CRL
-        // [nTazs]:  origin TAZ: number of TAZS
-        // [nTazs]:  destination TAZ: number of TAZS
 
-        
+    private void invalidTripMode( int modeIndex, int[] subModeIndices, String identifier ){
+        logger.fatal( "invalid trip mode = " + modeIndex + " for half tour." );
+        logger.fatal( "tour identifier: " + identifier );
+        String validIndices = "[" + Integer.toString(subModeIndices[0]);
+        for (int i=1; i < subModeIndices.length; i++)
+            validIndices += ", " + subModeIndices[i];
+        validIndices += "]";
+        logger.fatal( "valid indices for this trip mode are: " + validIndices );
+        throw new RuntimeException();
+    }
+    
+    
+    private void accumulateTransitTripsForTour ( Tour tour, boolean isJointTour, int tourMode, int period, int[] subModeIndices, float[][][][] transitPerson ) {
+
         // check for valid tod alternative.
         int tod = tour.getTimeOfDayAlt();
         if (tod < 1)
             return;
             
         int periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
-        int periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
 
         int tripPark = tour.getChosenPark();
         int tripOrigOB = tour.getOrigTaz();
@@ -661,151 +713,241 @@ public class DTMOutput implements java.io.Serializable {
             tripUnit = tour.getNumPersons();
         }
     
-        int modeIndex = -1;
 
         if ( periodOut == period ) {
 
+            // there is an outbound stop for this tour
             if ( tripStopOB > 0 ) {
 
-                // if the trip mode for either segment of this outbound half tour is SubmodeType.TYPES+1, the trip mode is nonmotorized;
-                // if it's > SubmodeType.TYPES+1 or < 1, it's an error.
-                
-                if ( tripModeIk < 1 || tripModeIk > SubmodeType.TYPES+1 ) {
+                // if the trip mode for either segment of this outbound half tour is SubmodeType.NM, the trip mode is nonmotorized;
+                // if it's > SubmodeType.NM or < 1, it's an error.  In either case, don't accumulate it.
+
+                if ( tripModeIk < 1 || tripModeIk > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for first segment in outbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
                     throw (new RuntimeException());
                 }
-                if ( tripModeKj < 1 || tripModeKj > SubmodeType.TYPES+1 ) {
+                if ( tripModeKj < 1 || tripModeKj > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for second segment in outbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
                     throw (new RuntimeException());
                 }
 
                 
-                // for driveTransit half-tours in outbound direction, ik segment is driveTransit and kj segment is walkTransit.
-                if ( tourMode == TourModeType.DRIVETRANSIT ) {
-                    // accumulate trip, if it's transit, for first segment only in DT table
-                    if ( access == DT && tripModeIk <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeIk - 1;
-                        transitPerson[modeIndex][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                // for p&r half-tours in outbound direction, ik segment is p&r and kj segment is walkTransit.
+                if ( tourMode == TourModeType.PL ) {
+                    // accumulate trip, if it's transit, for first segment only in pTw table
+                    if ( tripModeIk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
+                            transitPerson[PTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
                     }
-                    // accumulate trip, if it's transit for second segment only in WT table
-                    if ( access == WT && tripModeKj <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeKj - 1;
-                        transitPerson[modeIndex][tripStopOB-1][tripDestOB-1] += tripUnit;
+                   
+                    // accumulate trip, if it's transit for second segment only in wTw table
+                    if ( tripModeKj != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKj, subModeIndices ) )
+                            transitPerson[WTW][tripModeKj][tripStopOB-1][tripDestOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
                     }
                 }
-                // for walkTransit half-tours in outbound direction, both ik and kj segments are walkTransit.  
-                else if ( tourMode == TourModeType.WALKTRANSIT ) {
-                    // accumulate trips, if they're transit, for both segments in WT table.
-                    if ( access == WT && tripModeIk <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeIk - 1;
-                        transitPerson[modeIndex][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                // for k&r half-tours in outbound direction, ik segment is k&r and kj segment is walkTransit.
+                if ( tourMode == TourModeType.KL ) {
+                    // accumulate trip, if it's transit, for first segment only in kTw table
+                    if ( tripModeIk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
+                            transitPerson[KTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
                     }
-                    if ( access == WT && tripModeKj <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeKj - 1;
-                        transitPerson[modeIndex][tripStopOB-1][tripDestOB-1] += tripUnit;
+                    
+                    // accumulate trip, if it's transit for second segment only in wTw table
+                    if ( tripModeKj != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKj, subModeIndices ) )
+                            transitPerson[WTW][tripModeKj][tripStopOB-1][tripDestOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                    }
+                }
+                // for walk local half-tours in outbound direction, ik segment and kj segment are walkTransit.
+                else if ( tourMode == TourModeType.WL ) {
+                    // accumulate trip, if it's transit, for first segment only in wTw table
+                    if ( tripModeIk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
+                            transitPerson[WTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                    }
+                    
+                    // accumulate trip, if it's transit for second segment only in wTw table
+                    if ( tripModeKj != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKj, subModeIndices ) )
+                            transitPerson[WTW][tripModeKj][tripStopOB-1][tripDestOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
                     }
                 }
                 
             }
-            else {
-             
-                if ( tourSubmodeOB < 1 || tourSubmodeOB > SubmodeType.TYPES+1 ) {
+            // no outbound stop for this tour
+            else {                
+                
+                if ( tourSubmodeOB < 1 || tourSubmodeOB > SubmodeType.NM ) {
                     logger.fatal( "invalid tourSubmodeOB for outbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
                     throw (new RuntimeException());
                 }
                 
-                if ( tourMode == TourModeType.WALKTRANSIT ) {
-                    // accumulate trip from half tour in WT table.
-                    if ( access == WT && tourSubmodeOB <= SubmodeType.TYPES ) {
-                        modeIndex = tourSubmodeOB - 1;
-                        transitPerson[modeIndex][tripOrigOB-1][tripDestOB-1] += tripUnit;
+                // for p&r half-tours in outbound direction, ik segment is p&r and kj segment is walkTransit.
+                if ( tourMode == TourModeType.PL ) {
+                    // accumulate trip, if it's transit, in pTw table
+                    if ( tourSubmodeOB != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tourSubmodeOB, subModeIndices ) )
+                            transitPerson[PTW][tourSubmodeOB][tripOrigOB-1][tripDestOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tourSubmodeOB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
                     }
                 }
-                else if ( tourMode == TourModeType.DRIVETRANSIT ) {
-                    // accumulate trip from half tour in DT table.
-                    if ( access == DT && tourSubmodeOB <= SubmodeType.TYPES ) {
-                        modeIndex = tourSubmodeOB - 1;
-                        transitPerson[modeIndex][tripOrigOB-1][tripDestOB-1] += tripUnit;
+                // for k&r half-tours in outbound direction, ik segment is k&r and kj segment is walkTransit.
+                if ( tourMode == TourModeType.KL ) {
+                    // accumulate trip, if it's transit, in kTw table
+                    if ( tourSubmodeOB != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tourSubmodeOB, subModeIndices ) )
+                            transitPerson[KTW][tourSubmodeOB][tripOrigOB-1][tripDestOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tourSubmodeOB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
                     }
                 }
-
+                // for walk local half-tours in outbound direction, ik segment and kj segment are walkTransit.
+                else if ( tourMode == TourModeType.WL ) {
+                    // accumulate trip, if it's transit, in wTw table
+                    if ( tourSubmodeOB != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tourSubmodeOB, subModeIndices ) )
+                            transitPerson[WTW][tourSubmodeOB][tripOrigOB-1][tripDestOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tourSubmodeOB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
+                    }
+                }
+                
             }
 
-        }
+            
+            
+            // there is an inbound stop for this tour
+            if ( tripStopIB > 0 ) {
 
-    
-        if ( periodIn == period ) {
+                // if the trip mode for either segment of this inbound half tour is SubmodeType.NM, the trip mode is nonmotorized;
+                // if it's > SubmodeType.NM or < 1, it's an error.  In either case, don't accumulate it.
 
-            if (tripStopIB > 0) {
-
-                // if the trip mode for either segment of this inbound half tour is SubmodeType.TYPES+1, the trip mode is nonmotorized;
-                // if it's > SubmodeType.TYPES+1 or < 1, it's an error.
-                
-                if ( tripModeJk < 1 || tripModeJk > SubmodeType.TYPES+1 ) {
+                if ( tripModeJk < 1 || tripModeJk > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for first segment in inbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
                     throw (new RuntimeException());
                 }
-                if ( tripModeKi < 1 || tripModeKi > SubmodeType.TYPES+1 ) {
+                if ( tripModeKi < 1 || tripModeKi > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for second segment in inbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
                     throw (new RuntimeException());
                 }
 
-
-                if ( tourMode == TourModeType.DRIVETRANSIT ) {
-                    // for driveTransit half-tours in inbound direction, jk segment is walkTransit and ki segment is driveTransit (TD - inbound direction).
-                    // accumulate trip, if it's transit, for first segment only in WT table
-                    if ( access == WT && tripModeJk <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeJk - 1;
-                        transitPerson[modeIndex][tripOrigIB-1][tripStopIB-1] += tripUnit;
+                
+                // for p&r half-tours in inbound direction, jk segment is walkTransit and ki segment is p&r.
+                if ( tourMode == TourModeType.PL ) {
+                    // accumulate trip, if it's transit, for first segment only in wTw table
+                    if ( tripModeJk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeJk, subModeIndices ) )
+                            transitPerson[WTW][tripModeJk][tripOrigIB-1][tripStopIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
                     }
-                    // accumulate trip, if it's transit, for second segment only in TD table
-                    if ( access == TD && tripModeKi <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeKi - 1;
-                        transitPerson[modeIndex][tripStopIB-1][tripDestIB-1] += tripUnit;
+                   
+                    // accumulate trip, if it's transit for second segment only in wTp table
+                    if ( tripModeKi != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
+                            transitPerson[WTP][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
                     }
                 }
-                else if ( tourMode == TourModeType.WALKTRANSIT ) {
-                    // for walkTransit half-tours in inbound direction, both ik and kj segments are walkTransit.  
-                    // accumulate trips for both segments, if they're transit, in WT table.
-                    if ( access == WT && tripModeJk <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeJk - 1;
-                        transitPerson[modeIndex][tripOrigIB-1][tripStopIB-1] += tripUnit;
+                // for k&r half-tours in inbound direction, ik segment is walkTransit and kj segment is k&r.
+                if ( tourMode == TourModeType.KL ) {
+                    // accumulate trip, if it's transit, for first segment only in wTw table
+                    if ( tripModeJk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeJk, subModeIndices ) )
+                            transitPerson[WTW][tripModeJk][tripOrigIB-1][tripStopIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
                     }
-                    if ( access == WT && tripModeKi <= SubmodeType.TYPES ) {
-                        modeIndex = tripModeKi - 1;
-                        transitPerson[modeIndex][tripStopIB-1][tripDestIB-1] += tripUnit;
+                    
+                    // accumulate trip, if it's transit for second segment only in wTk table
+                    if ( tripModeKi != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
+                            transitPerson[WTK][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                    }
+                }
+                // for walk local half-tours in inbound direction, jk segment and ki segment are walkTransit.
+                else if ( tourMode == TourModeType.WL ) {
+                    // accumulate trip, if it's transit, for first segment only in wTw table
+                    if ( tripModeJk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeJk, subModeIndices ) )
+                            transitPerson[WTP][tripModeJk][tripOrigIB-1][tripStopIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                    }
+                    
+                    // accumulate trip, if it's transit for second segment only in wTw table
+                    if ( tripModeKi != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
+                            transitPerson[WTW][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
                     }
                 }
                 
             }
-            else {
-             
-                if ( tourSubmodeIB < 1 || tourSubmodeIB > SubmodeType.TYPES+1 ) {
+            // no inbound stop for this tour
+            else {                
+                
+                if ( tourSubmodeIB < 1 || tourSubmodeIB > SubmodeType.NM ) {
                     logger.fatal( "invalid tourSubmodeIB for inbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
                     throw (new RuntimeException());
                 }
                 
-                if ( tourMode == TourModeType.WALKTRANSIT ) {
-                    // accumulate trip from the half tour in WT table.
-                    if ( access == WT && tourSubmodeIB <= SubmodeType.TYPES ) {
-                        modeIndex = tourSubmodeIB - 1;
-                        transitPerson[modeIndex][tripOrigIB-1][tripDestIB-1] += tripUnit;
+                // for p&r half-tours in inbound direction, half-tour is p&r.
+                if ( tourMode == TourModeType.PL ) {
+                    // accumulate trip, if it's transit, in wTp table
+                    if ( tourSubmodeIB != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tourSubmodeIB, subModeIndices ) )
+                            transitPerson[WTP][tourSubmodeIB][tripOrigIB-1][tripDestIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tourSubmodeIB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
                     }
                 }
-                else if ( tourMode == TourModeType.DRIVETRANSIT ) {
-                    // accumulate trip from the half tour in TD table.
-                    if ( access == TD && tourSubmodeIB <= SubmodeType.TYPES ) {
-                        modeIndex = tourSubmodeIB - 1;
-                        transitPerson[modeIndex][tripOrigIB-1][tripDestIB-1] += tripUnit;
+                // for k&r half-tours in inbound direction, half-tour is k&r.
+                if ( tourMode == TourModeType.KL ) {
+                    // accumulate trip, if it's transit, in wTk table
+                    if ( tourSubmodeIB != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tourSubmodeIB, subModeIndices ) )
+                            transitPerson[WTK][tourSubmodeIB][tripOrigIB-1][tripDestIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tourSubmodeIB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
                     }
                 }
-
+                // for walk local half-tours in inbound direction, half-tour walkTransit.
+                else if ( tourMode == TourModeType.WL ) {
+                    // accumulate trip, if it's transit, in wTw table
+                    if ( tourSubmodeIB != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tourSubmodeIB, subModeIndices ) )
+                            transitPerson[WTW][tourSubmodeIB][tripOrigIB-1][tripDestIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tourSubmodeIB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
+                    }
+                }
+                
             }
 
         }
@@ -874,36 +1016,36 @@ public class DTMOutput implements java.io.Serializable {
 
             if ( tripStopOB > 0 ) {
 
-                // if the trip mode for either segment of this outbound half tour is SubmodeType.TYPES+1, the trip mode is nonmotorized;
-                // if it's > SubmodeType.TYPES+1 or < 1, it's an error.
+                // if the trip mode for either segment of this outbound half tour is SubmodeType.NM, the trip mode is nonmotorized;
+                // if it's > SubmodeType.NM or < 1, it's an error.
                 
-                if ( tripModeIk < 1 || tripModeIk > SubmodeType.TYPES+1 ) {
+                if ( tripModeIk < 1 || tripModeIk > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for first segment in outbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
                     throw (new RuntimeException());
                 }
-                if ( tripModeKj < 1 || tripModeKj > SubmodeType.TYPES+1 ) {
+                if ( tripModeKj < 1 || tripModeKj > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for second segment in outbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
                     throw (new RuntimeException());
                 }
 
                 
-                if ( tripModeIk == SubmodeType.TYPES + 1 )
+                if ( tripModeIk == SubmodeType.NM )
                     nmPerson[tripOrigOB-1][tripStopOB-1] += tripUnit;
-                if ( tripModeKj == SubmodeType.TYPES + 1 )
+                if ( tripModeKj == SubmodeType.NM )
                     nmPerson[tripStopOB-1][tripDestOB-1] += tripUnit;
                 
             }
             else {
              
-                if ( tourSubmodeOB < 1 || tourSubmodeOB > SubmodeType.TYPES+1 ) {
+                if ( tourSubmodeOB < 1 || tourSubmodeOB > SubmodeType.NM ) {
                     logger.fatal( "invalid tourSubmodeOB for outbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
                     throw (new RuntimeException());
                 }
                 
-                if ( tourSubmodeOB == SubmodeType.TYPES + 1 )
+                if ( tourSubmodeOB == SubmodeType.NM )
                     nmPerson[tripOrigOB-1][tripDestOB-1] += tripUnit;
 
             }
@@ -915,36 +1057,36 @@ public class DTMOutput implements java.io.Serializable {
 
             if (tripStopIB > 0) {
 
-                // if the trip mode for either segment of this inbound half tour is SubmodeType.TYPES+1, the trip mode is nonmotorized;
-                // if it's > SubmodeType.TYPES+1 or < 1, it's an error.
+                // if the trip mode for either segment of this inbound half tour is SubmodeType.NM, the trip mode is nonmotorized;
+                // if it's > SubmodeType.NM or < 1, it's an error.
                 
-                if ( tripModeJk < 1 || tripModeJk > SubmodeType.TYPES+1 ) {
+                if ( tripModeJk < 1 || tripModeJk > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for first segment in inbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
                     throw (new RuntimeException());
                 }
-                if ( tripModeKi < 1 || tripModeKi > SubmodeType.TYPES+1 ) {
+                if ( tripModeKi < 1 || tripModeKi > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for second segment in inbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
                     throw (new RuntimeException());
                 }
 
 
-                if ( tripModeJk == SubmodeType.TYPES + 1 )
+                if ( tripModeJk == SubmodeType.NM )
                     nmPerson[tripOrigIB-1][tripStopIB-1] += tripUnit;
-                if ( tripModeKi == SubmodeType.TYPES + 1 )
+                if ( tripModeKi == SubmodeType.NM )
                     nmPerson[tripStopIB-1][tripDestIB-1] += tripUnit;
                 
             }
             else {
              
-                if ( tourSubmodeIB < 1 || tourSubmodeIB > SubmodeType.TYPES+1 ) {
+                if ( tourSubmodeIB < 1 || tourSubmodeIB > SubmodeType.NM ) {
                     logger.fatal( "invalid tourSubmodeIB for inbound half tour." );
                     logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
                     throw (new RuntimeException());
                 }
                 
-                if ( tourSubmodeIB == SubmodeType.TYPES + 1 )
+                if ( tourSubmodeIB == SubmodeType.NM )
                     nmPerson[tripOrigIB-1][tripDestIB-1] += tripUnit;
 
             }
@@ -988,7 +1130,7 @@ public class DTMOutput implements java.io.Serializable {
 
     public void writeDTMOutput ( Household[] hh ) {
 
-        String modeName[] = { "", "sov", "hov", "walktran", "drivtran", "nonmotor", "schoolbus" };        
+        String modeName[] = { "", "sov", "hov", "walkLocal", "pnrLocal", "knrLocal", "walkPremium", "pnrPremium", "knrPremium", "nonmotor", "schoolbus" };        
         String tlPurposeName[] = { "", "1 Work-low", "1 Work-med", "1 Work-high", "2 University", "3 School", "4 Escorting", "5 Shopping - ind", "5 Shopping - joint", "6 Maintenance - ind", "6 Maintenance - joint", "7 Discretionary - ind", "7 Discretionary - joint", "8 Eating out - ind", "8 Eating out - joint", "9 At work" };        
 
         int hhCount=0;
@@ -1003,16 +1145,9 @@ public class DTMOutput implements java.io.Serializable {
         int tlIndex;
         
         int[] totTours = new int[15 + 1];
-        int[][] modalTours = new int[15 + 1][7];
+        int[][] modalTours = new int[15 + 1][modeName.length];
         float[] totDist = new float[15 + 1];
         
-        int[] distSample = new int[33+1];
-        Arrays.fill ( distSample, 1 );
-        
-        double[] resultsOB = new double[33];
-        double[] resultsIB = new double[33];
-        double[] resultsPark = new double[33];
-                
         JointTour[] jt;
         Tour[] it;
         Tour[] st;
@@ -1023,7 +1158,7 @@ public class DTMOutput implements java.io.Serializable {
         String fieldFormat = null;
         
         
-        int[] tripsByMode = new int[7];
+        int[] tripsByMode = new int[modeName.length];
         
         Household tempHH = null;
         
@@ -1059,8 +1194,37 @@ public class DTMOutput implements java.io.Serializable {
         
         try {
 
-            ChoiceModelApplication distc =  new ChoiceModelApplication( (String)propertyMap.get ( "Model10.controlFile"), 1,  0, propertyMap, Household.class);
-            UtilityExpressionCalculator distUEC = distc.getUEC();
+            ChoiceModelApplication hDistOb =  new ChoiceModelApplication( (String)propertyMap.get ( "Model10.controlFile"), 1,  0, propertyMap, Household.class);
+            ChoiceModelApplication hDistIb =  new ChoiceModelApplication( (String)propertyMap.get ( "Model10.controlFile"), 2,  0, propertyMap, Household.class);
+            ChoiceModelApplication lDistOb =  new ChoiceModelApplication( (String)propertyMap.get ( "Model10.controlFile"), 3,  0, propertyMap, Household.class);
+            ChoiceModelApplication lDistIb =  new ChoiceModelApplication( (String)propertyMap.get ( "Model10.controlFile"), 4,  0, propertyMap, Household.class);
+            ChoiceModelApplication pDistOb =  new ChoiceModelApplication( (String)propertyMap.get ( "Model10.controlFile"), 5,  0, propertyMap, Household.class);
+            ChoiceModelApplication pDistIb =  new ChoiceModelApplication( (String)propertyMap.get ( "Model10.controlFile"), 6,  0, propertyMap, Household.class);
+            UtilityExpressionCalculator hDistUECob = hDistOb.getUEC();
+            UtilityExpressionCalculator hDistUECib = hDistIb.getUEC();
+            UtilityExpressionCalculator lDistUECob = lDistOb.getUEC();
+            UtilityExpressionCalculator lDistUECib = lDistIb.getUEC();
+            UtilityExpressionCalculator pDistUECob = pDistOb.getUEC();
+            UtilityExpressionCalculator pDistUECib = pDistIb.getUEC();
+
+            // same number of alternatives ob as there are ib, so can use sample array for both ob and ib.
+            int[] hDistSample = new int[hDistUECob.getNumberOfAlternatives()+1];
+            int[] lDistSample = new int[lDistUECob.getNumberOfAlternatives()+1];
+            int[] pDistSample = new int[pDistUECob.getNumberOfAlternatives()+1];
+            Arrays.fill ( hDistSample, 1 );
+            Arrays.fill ( lDistSample, 1 );
+            Arrays.fill ( pDistSample, 1 );
+            
+            double[] hResultsIJ = new double[hDistUECob.getNumberOfAlternatives()+1];
+            double[] hResultsJI = new double[hDistUECob.getNumberOfAlternatives()+1];
+            double[] hResultsIJPark = new double[hDistUECob.getNumberOfAlternatives()+1];
+            double[] lResultsIJ = new double[lDistUECob.getNumberOfAlternatives()+1];
+            double[] lResultsJI = new double[lDistUECob.getNumberOfAlternatives()+1];
+            double[] pResultsIJ = new double[pDistUECob.getNumberOfAlternatives()+1];
+            double[] pResultsJI = new double[pDistUECob.getNumberOfAlternatives()+1];
+                    
+            
+            
             int maxPartySize = 0;
             for (int i=0; i < hh.length; i++) {
                 if (hh[i].jointTours != null) {
@@ -1111,25 +1275,33 @@ public class DTMOutput implements java.io.Serializable {
             tableHeadings.add("M83_SMC_Kj");
             tableHeadings.add("M83_SMC_Jk");
             tableHeadings.add("M83_SMC_Ki");
-            tableHeadings.add("IJ_Dist");
-            tableHeadings.add("JI_Dist");
-            tableHeadings.add("IK_Dist");
-            tableHeadings.add("KJ_Dist");
-            tableHeadings.add("JK_Dist");
-            tableHeadings.add("KI_Dist");
+            tableHeadings.add("SOV_Dist_IJ");
+            tableHeadings.add("HOV_Dist_IJ");
+            tableHeadings.add("SOV_Dist_JI");
+            tableHeadings.add("HOV_Dist_JI");
+            tableHeadings.add("SOV_Dist_IK");
+            tableHeadings.add("HOV_Dist_IK");
+            tableHeadings.add("SOV_Dist_KJ");
+            tableHeadings.add("HOV_Dist_KJ");
+            tableHeadings.add("SOV_Dist_JK");
+            tableHeadings.add("HOV_Dist_JK");
+            tableHeadings.add("SOV_Dist_KI");
+            tableHeadings.add("HOV_Dist_KI");
             tableHeadings.add("M9_Parking_Zone");
-            tableHeadings.add("Dist_Orig_Park");
-            tableHeadings.add("Dist_Park_Dest");
-            tableHeadings.add("LBS_IVT_OB");
-            tableHeadings.add("LBS_IVT_IB");
-            tableHeadings.add("EBS_IVT_OB");
-            tableHeadings.add("EBS_IVT_IB");
-            tableHeadings.add("BRT_IVT_OB");
-            tableHeadings.add("BRT_IVT_IB");
-            tableHeadings.add("LRT_IVT_OB");
-            tableHeadings.add("LRT_IVT_IB");
-            tableHeadings.add("CRL_IVT_OB");
-            tableHeadings.add("CRL_IVT_IB");
+            tableHeadings.add("SOV_Dist_Orig_Park");
+            tableHeadings.add("HOV_Dist_Orig_Park");
+            tableHeadings.add("SOV_Dist_Park_Dest");
+            tableHeadings.add("HOV_Dist_Park_Dest");
+            tableHeadings.add("LBS_IVT_IJ");
+            tableHeadings.add("LBS_IVT_JI");
+            tableHeadings.add("EBS_IVT_IJ");
+            tableHeadings.add("EBS_IVT_JI");
+            tableHeadings.add("BRT_IVT_IJ");
+            tableHeadings.add("BRT_IVT_JI");
+            tableHeadings.add("LRT_IVT_IJ");
+            tableHeadings.add("LRT_IVT_JI");
+            tableHeadings.add("CRL_IVT_IJ");
+            tableHeadings.add("CRL_IVT_JI");
 
             
             tableFormats = new ArrayList<String>();
@@ -1170,25 +1342,33 @@ public class DTMOutput implements java.io.Serializable {
             tableFormats.add("%.0f");     //M83_SMC_Kj
             tableFormats.add("%.0f");     //M83_SMC_Jk
             tableFormats.add("%.0f");     //M83_SMC_Ki
-            tableFormats.add("%.2f");   //IJ_Dist
-            tableFormats.add("%.2f");   //JI_Dist
-            tableFormats.add("%.2f");   //IK_Dist
-            tableFormats.add("%.2f");   //KJ_Dist");
-            tableFormats.add("%.2f");   //JK_Dist");
-            tableFormats.add("%.2f");   //KI_Dist");
-            tableFormats.add("%.0f");     //M9_Parking_Zone
-            tableFormats.add("%.0f");     //Dist_Orig_Park
-            tableFormats.add("%.0f");     //Dist_Park_Dest
-            tableFormats.add("%.2f");   //LBS_IVT_OB
-            tableFormats.add("%.2f");   //LBS_IVT_IB
-            tableFormats.add("%.2f");   //EBS_IVT_OB
-            tableFormats.add("%.2f");   //EBS_IVT_IB
-            tableFormats.add("%.2f");   //BRT_IVT_OB
-            tableFormats.add("%.2f");   //BRT_IVT_IB
-            tableFormats.add("%.2f");   //LRT_IVT_OB
-            tableFormats.add("%.2f");   //LRT_IVT_IB
-            tableFormats.add("%.2f");   //CRL_IVT_OB
-            tableFormats.add("%.2f");   //CRL_IVT_IB
+            tableFormats.add("%.2f");     //SOV_Dist_IJ
+            tableFormats.add("%.2f");     //HOV_Dist_IJ
+            tableFormats.add("%.2f");     //SOV_Dist_JI
+            tableFormats.add("%.2f");     //HOV_Dist_JI
+            tableFormats.add("%.2f");     //SOV_Dist_IK
+            tableFormats.add("%.2f");     //HOV_Dist_IK
+            tableFormats.add("%.2f");     //SOV_Dist_KJ
+            tableFormats.add("%.2f");     //HOV_Dist_KJ
+            tableFormats.add("%.2f");     //SOV_Dist_JK
+            tableFormats.add("%.2f");     //HOV_Dist_JK
+            tableFormats.add("%.2f");     //SOV_Dist_KI
+            tableFormats.add("%.2f");     //HOV_Dist_KI
+            tableFormats.add("%.2f");     //M9_Parking_Zone
+            tableFormats.add("%.2f");     //SOV_Dist_Orig_Park
+            tableFormats.add("%.2f");     //HOV_Dist_Orig_Park
+            tableFormats.add("%.2f");     //SOV_Dist_Park_Dest
+            tableFormats.add("%.2f");     //HOV_Dist_Park_Dest
+            tableFormats.add("%.2f");     //LBS_IVT_OB
+            tableFormats.add("%.2f");     //LBS_IVT_IB
+            tableFormats.add("%.2f");     //EBS_IVT_OB
+            tableFormats.add("%.2f");     //EBS_IVT_IB
+            tableFormats.add("%.2f");     //BRT_IVT_OB
+            tableFormats.add("%.2f");     //BRT_IVT_IB
+            tableFormats.add("%.2f");     //LRT_IVT_OB
+            tableFormats.add("%.2f");     //LRT_IVT_IB
+            tableFormats.add("%.2f");     //CRL_IVT_OB
+            tableFormats.add("%.2f");     //CRL_IVT_IB
 
             // define an array for use in writing output file
             tableData = new float[tableHeadings.size()];
@@ -1266,21 +1446,20 @@ public class DTMOutput implements java.io.Serializable {
 
 
 
+                        // distance and IVT sheets are coded with od for outbound and do for inbound, so don't need to change index values
                         index.setOriginZone( it[t].getOrigTaz() );
                         index.setDestZone( it[t].getDestTaz() );
                         index.setStopZone( it[t].getStopLocOB() );
-                        resultsOB = distUEC.solve( index, new Object(), distSample );
-                        
-                        index.setOriginZone( it[t].getDestTaz() );
-                        index.setDestZone( it[t].getOrigTaz() );
+                        hResultsIJ = hDistUECob.solve( index, new Object(), hDistSample );
+                        lResultsIJ = lDistUECob.solve( index, new Object(), lDistSample );
+                        pResultsIJ = pDistUECob.solve( index, new Object(), pDistSample );
                         index.setStopZone( it[t].getStopLocIB() );
-                        resultsIB = distUEC.solve( index, new Object(), distSample );
-
-                        index.setOriginZone( it[t].getOrigTaz() );
-                        index.setDestZone( it[t].getDestTaz() );
+                        hResultsJI = hDistUECib.solve( index, new Object(), hDistSample );
+                        lResultsJI = lDistUECib.solve( index, new Object(), lDistSample );
+                        pResultsJI = pDistUECib.solve( index, new Object(), pDistSample );
                         index.setStopZone( it[t].getChosenPark() );
-                        resultsPark = distUEC.solve( index, new Object(), distSample );
-
+                        hResultsIJPark = hDistUECob.solve( index, new Object(), hDistSample );
+                        
                     
                         tableData[0] = hh_id;
                         tableData[1] = serialno;
@@ -1318,114 +1497,62 @@ public class DTMOutput implements java.io.Serializable {
                         tableData[k+20] = it[t].getTripKjMode();
                         tableData[k+21] = it[t].getTripJkMode();
                         tableData[k+22] = it[t].getTripKiMode();
-                        tableData[k+23] = (float)resultsOB[0];
-                        tableData[k+24] = (float)resultsIB[0];
-                        tableData[k+25] = (float)resultsOB[1];
-                        tableData[k+26] = (float)resultsOB[2];
-                        tableData[k+27] = (float)resultsIB[1];
-                        tableData[k+28] = (float)resultsIB[2];
-                        tableData[k+29] = it[t].getChosenPark();
-                        tableData[k+30] = (float)resultsPark[1];
-                        tableData[k+31] = (float)resultsPark[2];
-                        if (it[t].getMode() == 3) {
-                            if (tableData[k+9] == 1) {
-                                tableData[k+32] = (float)resultsOB[3];
-                                tableData[k+34] = (float)resultsOB[4];
-                                tableData[k+36] = (float)resultsOB[5];
-                                tableData[k+38] = (float)resultsOB[6];
-                                tableData[k+40] = (float)resultsOB[7];
-                            }
-                            else if (tableData[k+9] == 2) {
-                                tableData[k+32] = (float)resultsIB[3];
-                                tableData[k+34] = (float)resultsIB[4];
-                                tableData[k+36] = (float)resultsIB[5];
-                                tableData[k+38] = (float)resultsIB[6];
-                                tableData[k+40] = (float)resultsIB[7];
-                            }
-                            else {
-                                tableData[k+32] = (float)resultsOB[8];
-                                tableData[k+34] = (float)resultsOB[9];
-                                tableData[k+36] = (float)resultsOB[10];
-                                tableData[k+38] = (float)resultsOB[11];
-                                tableData[k+40] = (float)resultsOB[12];
-                            }
-                            if (tableData[k+10] == 1) {
-                                tableData[k+33] = (float)resultsIB[3];
-                                tableData[k+35] = (float)resultsIB[4];
-                                tableData[k+37] = (float)resultsIB[5];
-                                tableData[k+39] = (float)resultsIB[6];
-                                tableData[k+41] = (float)resultsIB[7];
-                            }
-                            else if (tableData[k+10] == 2) {
-                                tableData[k+33] = (float)resultsOB[3];
-                                tableData[k+35] = (float)resultsOB[4];
-                                tableData[k+37] = (float)resultsOB[5];
-                                tableData[k+39] = (float)resultsOB[6];
-                                tableData[k+41] = (float)resultsOB[7];
-                            }
-                            else {
-                                tableData[k+33] = (float)resultsIB[8];
-                                tableData[k+35] = (float)resultsIB[9];
-                                tableData[k+37] = (float)resultsIB[10];
-                                tableData[k+39] = (float)resultsIB[11];
-                                tableData[k+41] = (float)resultsIB[12];
-                            }
+                        tableData[k+23] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ ) ];
+                        tableData[k+24] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ ) ];
+                        tableData[k+25] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JI ) ];
+                        tableData[k+26] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JI ) ];
+                        tableData[k+27] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+28] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+29] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), KJ ) ];
+                        tableData[k+30] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), KJ ) ];
+                        tableData[k+31] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JK ) ];
+                        tableData[k+32] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JK ) ];
+                        tableData[k+33] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), KI ) ];
+                        tableData[k+34] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), KI ) ];
+                        tableData[k+35] = it[t].getChosenPark();
+                        tableData[k+36] = (float)hResultsIJPark[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+37] = (float)hResultsIJPark[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+38] = (float)hResultsIJPark[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), KJ ) ];
+                        tableData[k+39] = (float)hResultsIJPark[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), KJ ) ];
+                        if (it[t].getMode() >= 3 && it[t].getMode() <= 5) {
+                            int obIndex = getLocalIvtResultIndex( it[t].getMode(), com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ );
+                            int ibIndex = getLocalIvtResultIndex( it[t].getMode(), com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JI );
+                            tableData[k+40] = (float)lResultsIJ[obIndex];
+                            tableData[k+41] = (float)lResultsJI[ibIndex];
+                            tableData[k+42] = (float)lResultsIJ[obIndex+1];
+                            tableData[k+43] = (float)lResultsJI[ibIndex+1];
+                            tableData[k+44] = (float)lResultsIJ[obIndex+2];
+                            tableData[k+45] = (float)lResultsJI[ibIndex+2];
+                            tableData[k+46] = (float)lResultsIJ[obIndex+3];
+                            tableData[k+47] = (float)lResultsJI[ibIndex+3];
+                            tableData[k+48] = (float)lResultsIJ[obIndex+4];
+                            tableData[k+49] = (float)lResultsJI[ibIndex+4];
                         }
-                        else if (it[t].getMode() == 4) {
-                            if (tableData[k+9] == 1) {
-                                tableData[k+32] = (float)resultsOB[13];
-                                tableData[k+34] = (float)resultsOB[14];
-                                tableData[k+36] = (float)resultsOB[15];
-                                tableData[k+38] = (float)resultsOB[16];
-                                tableData[k+40] = (float)resultsOB[17];
-                            }
-                            else if (tableData[k+9] == 2) {
-                                tableData[k+32] = (float)resultsIB[13];
-                                tableData[k+34] = (float)resultsIB[14];
-                                tableData[k+36] = (float)resultsIB[15];
-                                tableData[k+38] = (float)resultsIB[16];
-                                tableData[k+40] = (float)resultsIB[17];
-                            }
-                            else {
-                                tableData[k+32] = (float)resultsOB[18];
-                                tableData[k+34] = (float)resultsOB[19];
-                                tableData[k+36] = (float)resultsOB[20];
-                                tableData[k+38] = (float)resultsOB[21];
-                                tableData[k+40] = (float)resultsOB[22];
-                            }
-                            if (tableData[k+10] == 1) {
-                                tableData[k+33] = (float)resultsIB[13];
-                                tableData[k+35] = (float)resultsIB[14];
-                                tableData[k+37] = (float)resultsIB[15];
-                                tableData[k+39] = (float)resultsIB[16];
-                                tableData[k+41] = (float)resultsIB[17];
-                            }
-                            else if (tableData[k+10] == 2) {
-                                tableData[k+33] = (float)resultsOB[13];
-                                tableData[k+35] = (float)resultsOB[14];
-                                tableData[k+37] = (float)resultsOB[15];
-                                tableData[k+39] = (float)resultsOB[16];
-                                tableData[k+41] = (float)resultsOB[17];
-                            }
-                            else {
-                                tableData[k+33] = (float)resultsIB[18];
-                                tableData[k+35] = (float)resultsIB[19];
-                                tableData[k+37] = (float)resultsIB[20];
-                                tableData[k+39] = (float)resultsIB[21];
-                                tableData[k+41] = (float)resultsIB[22];
-                            }
+                        else if (it[t].getMode() >= 6 && it[t].getMode() <= 8) {
+                            int obIndex = getPremiumIvtResultIndex( it[t].getMode(), com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ );
+                            int ibIndex = getPremiumIvtResultIndex( it[t].getMode(), com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JI );
+                            tableData[k+40] = (float)pResultsIJ[obIndex];
+                            tableData[k+41] = (float)pResultsJI[ibIndex];
+                            tableData[k+42] = (float)pResultsIJ[obIndex+1];
+                            tableData[k+43] = (float)pResultsJI[ibIndex+1];
+                            tableData[k+44] = (float)pResultsIJ[obIndex+2];
+                            tableData[k+45] = (float)pResultsJI[ibIndex+2];
+                            tableData[k+46] = (float)pResultsIJ[obIndex+3];
+                            tableData[k+47] = (float)pResultsJI[ibIndex+3];
+                            tableData[k+48] = (float)pResultsIJ[obIndex+4];
+                            tableData[k+49] = (float)pResultsJI[ibIndex+4];
                         }
                         else {
-                            tableData[k+32] = 0.0f;
-                            tableData[k+33] = 0.0f;
-                            tableData[k+34] = 0.0f;
-                            tableData[k+35] = 0.0f;
-                            tableData[k+36] = 0.0f;
-                            tableData[k+37] = 0.0f;
-                            tableData[k+38] = 0.0f;
-                            tableData[k+39] = 0.0f;
                             tableData[k+40] = 0.0f;
                             tableData[k+41] = 0.0f;
+                            tableData[k+42] = 0.0f;
+                            tableData[k+43] = 0.0f;
+                            tableData[k+44] = 0.0f;
+                            tableData[k+45] = 0.0f;
+                            tableData[k+46] = 0.0f;
+                            tableData[k+47] = 0.0f;
+                            tableData[k+48] = 0.0f;
+                            tableData[k+49] = 0.0f;
                         }
                         
                         if (outputFileDTM != null) {
@@ -1442,7 +1569,7 @@ public class DTMOutput implements java.io.Serializable {
                     
                     
                         totTours[tlIndex]++;
-                        totDist[tlIndex] += (float)(resultsOB[0]);
+                        totDist[tlIndex] += (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ ) ];
                         modalTours[tlIndex][it[t].getMode()] += 1;
                     }
                 }
@@ -1493,21 +1620,23 @@ public class DTMOutput implements java.io.Serializable {
                             tripsByMode[jt[t].getMode()]++;
                         }
                     
+
+
+                        
+                        // distance and IVT sheets are coded with od for outbound and do for inbound, so don't need to change index values
                         index.setOriginZone( jt[t].getOrigTaz() );
                         index.setDestZone( jt[t].getDestTaz() );
                         index.setStopZone( jt[t].getStopLocOB() );
-                        resultsOB = distUEC.solve( index, new Object(), distSample );
-                        
-                        index.setOriginZone( jt[t].getDestTaz() );
-                        index.setDestZone( jt[t].getOrigTaz() );
+                        hResultsIJ = hDistUECob.solve( index, new Object(), hDistSample );
+                        lResultsIJ = lDistUECob.solve( index, new Object(), lDistSample );
+                        pResultsIJ = pDistUECob.solve( index, new Object(), pDistSample );
                         index.setStopZone( jt[t].getStopLocIB() );
-                        resultsIB = distUEC.solve( index, new Object(), distSample );
-
-                        index.setOriginZone( jt[t].getOrigTaz() );
-                        index.setDestZone( jt[t].getDestTaz() );
+                        hResultsJI = hDistUECib.solve( index, new Object(), hDistSample );
+                        lResultsJI = lDistUECib.solve( index, new Object(), lDistSample );
+                        pResultsJI = pDistUECib.solve( index, new Object(), pDistSample );
                         index.setStopZone( jt[t].getChosenPark() );
-                        resultsPark = distUEC.solve( index, new Object(), distSample );
-
+                        hResultsIJPark = hDistUECob.solve( index, new Object(), hDistSample );
+                        
                     
                         tableData[0] = hh_id;
                         tableData[1] = serialno;
@@ -1549,115 +1678,62 @@ public class DTMOutput implements java.io.Serializable {
                         tableData[k+20] = jt[t].getTripKjMode();
                         tableData[k+21] = jt[t].getTripJkMode();
                         tableData[k+22] = jt[t].getTripKiMode();
-                        tableData[k+23] = (float)resultsOB[0];
-                        tableData[k+24] = (float)resultsOB[0];
-                        tableData[k+25] = (float)resultsOB[1];
-                        tableData[k+26] = (float)resultsOB[2];
-                        tableData[k+27] = (float)resultsIB[1];
-                        tableData[k+28] = (float)resultsIB[2];
-                        tableData[k+29] = jt[t].getChosenPark();
-                        tableData[k+30] = (float)resultsPark[1];
-                        tableData[k+31] = (float)resultsPark[2];
-                        if (jt[t].getMode() == 3) {
-                            if (tableData[k+9] == 1) {
-                                tableData[k+32] = (float)resultsOB[3];
-                                tableData[k+34] = (float)resultsOB[4];
-                                tableData[k+36] = (float)resultsOB[5];
-                                tableData[k+38] = (float)resultsOB[6];
-                                tableData[k+40] = (float)resultsOB[7];
-                            }
-                            else if (tableData[k+9] == 2) {
-                                tableData[k+32] = (float)resultsIB[3];
-                                tableData[k+34] = (float)resultsIB[4];
-                                tableData[k+36] = (float)resultsIB[5];
-                                tableData[k+38] = (float)resultsIB[6];
-                                tableData[k+40] = (float)resultsIB[7];
-                            }
-                            else {
-                                tableData[k+32] = (float)resultsOB[8];
-                                tableData[k+34] = (float)resultsOB[9];
-                                tableData[k+36] = (float)resultsOB[10];
-                                tableData[k+38] = (float)resultsOB[11];
-                                tableData[k+40] = (float)resultsOB[12];
-                            }
-                            if (tableData[k+10] == 1) {
-                                tableData[k+33] = (float)resultsIB[3];
-                                tableData[k+35] = (float)resultsIB[4];
-                                tableData[k+37] = (float)resultsIB[5];
-                                tableData[k+39] = (float)resultsIB[6];
-                                tableData[k+41] = (float)resultsIB[7];
-                            }
-                            else if (tableData[k+10] == 2) {
-                                tableData[k+33] = (float)resultsOB[3];
-                                tableData[k+35] = (float)resultsOB[4];
-                                tableData[k+37] = (float)resultsOB[5];
-                                tableData[k+39] = (float)resultsOB[6];
-                                tableData[k+41] = (float)resultsOB[7];
-                            }
-                            else {
-                                tableData[k+33] = (float)resultsIB[8];
-                                tableData[k+35] = (float)resultsIB[9];
-                                tableData[k+37] = (float)resultsIB[10];
-                                tableData[k+39] = (float)resultsIB[11];
-                                tableData[k+41] = (float)resultsIB[12];
-                            }
+                        tableData[k+23] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), IJ ) ];
+                        tableData[k+24] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), IJ ) ];
+                        tableData[k+25] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() ), JI ) ];
+                        tableData[k+26] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() ), JI ) ];
+                        tableData[k+27] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+28] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+29] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), KJ ) ];
+                        tableData[k+30] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), KJ ) ];
+                        tableData[k+31] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() ), JK ) ];
+                        tableData[k+32] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() ), JK ) ];
+                        tableData[k+33] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() ), KI ) ];
+                        tableData[k+34] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() ), KI ) ];
+                        tableData[k+35] = jt[t].getChosenPark();
+                        tableData[k+36] = (float)hResultsIJPark[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+37] = (float)hResultsIJPark[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+38] = (float)hResultsIJPark[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), KJ ) ];
+                        tableData[k+39] = (float)hResultsIJPark[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), KJ ) ];
+                        if (jt[t].getMode() >= 3 && jt[t].getMode() <= 5) {
+                            int obIndex = getLocalIvtResultIndex( jt[t].getMode(), com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), IJ );
+                            int ibIndex = getLocalIvtResultIndex( jt[t].getMode(), com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() ), JI );
+                            tableData[k+40] = (float)lResultsIJ[obIndex];
+                            tableData[k+41] = (float)lResultsJI[ibIndex];
+                            tableData[k+42] = (float)lResultsIJ[obIndex+1];
+                            tableData[k+43] = (float)lResultsJI[ibIndex+1];
+                            tableData[k+44] = (float)lResultsIJ[obIndex+2];
+                            tableData[k+45] = (float)lResultsJI[ibIndex+2];
+                            tableData[k+46] = (float)lResultsIJ[obIndex+3];
+                            tableData[k+47] = (float)lResultsJI[ibIndex+3];
+                            tableData[k+48] = (float)lResultsIJ[obIndex+4];
+                            tableData[k+49] = (float)lResultsJI[ibIndex+4];
                         }
-                        else if (jt[t].getMode() == 4) {
-                            if (tableData[k+9] == 1) {
-                                tableData[k+32] = (float)resultsOB[13];
-                                tableData[k+34] = (float)resultsOB[14];
-                                tableData[k+36] = (float)resultsOB[15];
-                                tableData[k+38] = (float)resultsOB[16];
-                                tableData[k+40] = (float)resultsOB[17];
-                            }
-                            else if (tableData[k+9] == 2) {
-                                tableData[k+32] = (float)resultsIB[13];
-                                tableData[k+34] = (float)resultsIB[14];
-                                tableData[k+36] = (float)resultsIB[15];
-                                tableData[k+38] = (float)resultsIB[16];
-                                tableData[k+40] = (float)resultsIB[17];
-                            }
-                            else {
-                                tableData[k+32] = (float)resultsOB[18];
-                                tableData[k+34] = (float)resultsOB[19];
-                                tableData[k+36] = (float)resultsOB[20];
-                                tableData[k+38] = (float)resultsOB[21];
-                                tableData[k+40] = (float)resultsOB[22];
-                            }
-                            if (tableData[k+10] == 1) {
-                                tableData[k+33] = (float)resultsIB[13];
-                                tableData[k+35] = (float)resultsIB[14];
-                                tableData[k+37] = (float)resultsIB[15];
-                                tableData[k+39] = (float)resultsIB[16];
-                                tableData[k+41] = (float)resultsIB[17];
-                            }
-                            else if (tableData[k+10] == 2) {
-                                tableData[k+33] = (float)resultsOB[13];
-                                tableData[k+35] = (float)resultsOB[14];
-                                tableData[k+37] = (float)resultsOB[15];
-                                tableData[k+39] = (float)resultsOB[16];
-                                tableData[k+41] = (float)resultsOB[17];
-                            }
-                            else {
-                                tableData[k+33] = (float)resultsIB[18];
-                                tableData[k+35] = (float)resultsIB[19];
-                                tableData[k+37] = (float)resultsIB[20];
-                                tableData[k+39] = (float)resultsIB[21];
-                                tableData[k+41] = (float)resultsIB[22];
-                            }
-
+                        else if (jt[t].getMode() >= 6 && jt[t].getMode() <= 8) {
+                            int obIndex = getPremiumIvtResultIndex( jt[t].getMode(), com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), IJ );
+                            int ibIndex = getPremiumIvtResultIndex( jt[t].getMode(), com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( jt[t].getTimeOfDayAlt() ), JI );
+                            tableData[k+40] = (float)pResultsIJ[obIndex];
+                            tableData[k+41] = (float)pResultsJI[ibIndex];
+                            tableData[k+42] = (float)pResultsIJ[obIndex+1];
+                            tableData[k+43] = (float)pResultsJI[ibIndex+1];
+                            tableData[k+44] = (float)pResultsIJ[obIndex+2];
+                            tableData[k+45] = (float)pResultsJI[ibIndex+2];
+                            tableData[k+46] = (float)pResultsIJ[obIndex+3];
+                            tableData[k+47] = (float)pResultsJI[ibIndex+3];
+                            tableData[k+48] = (float)pResultsIJ[obIndex+4];
+                            tableData[k+49] = (float)pResultsJI[ibIndex+4];
                         }
                         else {
-                            tableData[k+32] = 0.0f;
-                            tableData[k+33] = 0.0f;
-                            tableData[k+34] = 0.0f;
-                            tableData[k+35] = 0.0f;
-                            tableData[k+36] = 0.0f;
-                            tableData[k+37] = 0.0f;
-                            tableData[k+38] = 0.0f;
-                            tableData[k+39] = 0.0f;
                             tableData[k+40] = 0.0f;
                             tableData[k+41] = 0.0f;
+                            tableData[k+42] = 0.0f;
+                            tableData[k+43] = 0.0f;
+                            tableData[k+44] = 0.0f;
+                            tableData[k+45] = 0.0f;
+                            tableData[k+46] = 0.0f;
+                            tableData[k+47] = 0.0f;
+                            tableData[k+48] = 0.0f;
+                            tableData[k+49] = 0.0f;
                         }
                         
                         if (outputFileDTM != null) {
@@ -1673,7 +1749,7 @@ public class DTMOutput implements java.io.Serializable {
                         }                   
                     
                         totTours[tlIndex]++;
-                        totDist[tlIndex] += (float)(resultsOB[0]);
+                        totDist[tlIndex] += (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( jt[t].getTimeOfDayAlt() ), IJ ) ];
                         modalTours[tlIndex][jt[t].getMode()] += 1;
                     }
                 }
@@ -1724,22 +1800,24 @@ public class DTMOutput implements java.io.Serializable {
                             tripsByMode[it[t].getMode()]++;
                         }
                     
+
+
+                        
+                        // distance and IVT sheets are coded with od for outbound and do for inbound, so don't need to change index values
                         index.setOriginZone( it[t].getOrigTaz() );
                         index.setDestZone( it[t].getDestTaz() );
                         index.setStopZone( it[t].getStopLocOB() );
-                        resultsOB = distUEC.solve( index, new Object(), distSample );
-                        
-                        index.setOriginZone( it[t].getDestTaz() );
-                        index.setDestZone( it[t].getOrigTaz() );
+                        hResultsIJ = hDistUECob.solve( index, new Object(), hDistSample );
+                        lResultsIJ = lDistUECob.solve( index, new Object(), lDistSample );
+                        pResultsIJ = pDistUECob.solve( index, new Object(), pDistSample );
                         index.setStopZone( it[t].getStopLocIB() );
-                        resultsIB = distUEC.solve( index, new Object(), distSample );
-
-                        index.setOriginZone( it[t].getOrigTaz() );
-                        index.setDestZone( it[t].getDestTaz() );
+                        hResultsJI = hDistUECib.solve( index, new Object(), hDistSample );
+                        lResultsJI = lDistUECib.solve( index, new Object(), lDistSample );
+                        pResultsJI = pDistUECib.solve( index, new Object(), pDistSample );
                         index.setStopZone( it[t].getChosenPark() );
-                        resultsPark = distUEC.solve( index, new Object(), distSample );
-
-                    
+                        hResultsIJPark = hDistUECob.solve( index, new Object(), hDistSample );
+                        
+                        
                         tableData[0] = hh_id;
                         tableData[1] = serialno;
                         tableData[2] = hh_taz_id;
@@ -1775,115 +1853,62 @@ public class DTMOutput implements java.io.Serializable {
                         tableData[k+20] = it[t].getTripKjMode();
                         tableData[k+21] = it[t].getTripJkMode();
                         tableData[k+22] = it[t].getTripKiMode();
-                        tableData[k+23] = (float)resultsOB[0];
-                        tableData[k+24] = (float)resultsOB[0];
-                        tableData[k+25] = (float)resultsOB[1];
-                        tableData[k+26] = (float)resultsOB[2];
-                        tableData[k+27] = (float)resultsIB[1];
-                        tableData[k+28] = (float)resultsIB[2];
-                        tableData[k+29] = it[t].getChosenPark();
-                        tableData[k+30] = (float)resultsPark[1];
-                        tableData[k+31] = (float)resultsPark[2];
-                        if (it[t].getMode() == 3) {
-                            if (tableData[k+9] == 1) {
-                                tableData[k+32] = (float)resultsOB[3];
-                                tableData[k+34] = (float)resultsOB[4];
-                                tableData[k+36] = (float)resultsOB[5];
-                                tableData[k+38] = (float)resultsOB[6];
-                                tableData[k+40] = (float)resultsOB[7];
-                            }
-                            else if (tableData[k+9] == 2) {
-                                tableData[k+32] = (float)resultsIB[3];
-                                tableData[k+34] = (float)resultsIB[4];
-                                tableData[k+36] = (float)resultsIB[5];
-                                tableData[k+38] = (float)resultsIB[6];
-                                tableData[k+40] = (float)resultsIB[7];
-                            }
-                            else {
-                                tableData[k+32] = (float)resultsOB[8];
-                                tableData[k+34] = (float)resultsOB[9];
-                                tableData[k+36] = (float)resultsOB[10];
-                                tableData[k+38] = (float)resultsOB[11];
-                                tableData[k+40] = (float)resultsOB[12];
-                            }
-                            if (tableData[k+10] == 1) {
-                                tableData[k+33] = (float)resultsIB[3];
-                                tableData[k+35] = (float)resultsIB[4];
-                                tableData[k+37] = (float)resultsIB[5];
-                                tableData[k+39] = (float)resultsIB[6];
-                                tableData[k+41] = (float)resultsIB[7];
-                            }
-                            else if (tableData[k+10] == 2) {
-                                tableData[k+33] = (float)resultsOB[3];
-                                tableData[k+35] = (float)resultsOB[4];
-                                tableData[k+37] = (float)resultsOB[5];
-                                tableData[k+39] = (float)resultsOB[6];
-                                tableData[k+41] = (float)resultsOB[7];
-                            }
-                            else {
-                                tableData[k+33] = (float)resultsIB[8];
-                                tableData[k+35] = (float)resultsIB[9];
-                                tableData[k+37] = (float)resultsIB[10];
-                                tableData[k+39] = (float)resultsIB[11];
-                                tableData[k+41] = (float)resultsIB[12];
-                            }
+                        tableData[k+23] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ ) ];
+                        tableData[k+24] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ ) ];
+                        tableData[k+25] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JI ) ];
+                        tableData[k+26] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JI ) ];
+                        tableData[k+27] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+28] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+29] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), KJ ) ];
+                        tableData[k+30] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), KJ ) ];
+                        tableData[k+31] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JK ) ];
+                        tableData[k+32] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JK ) ];
+                        tableData[k+33] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), KI ) ];
+                        tableData[k+34] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), KI ) ];
+                        tableData[k+35] = it[t].getChosenPark();
+                        tableData[k+36] = (float)hResultsIJPark[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+37] = (float)hResultsIJPark[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IK ) ];
+                        tableData[k+38] = (float)hResultsIJPark[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), KJ ) ];
+                        tableData[k+39] = (float)hResultsIJPark[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), KJ ) ];
+                        if (it[t].getMode() >= 3 && it[t].getMode() <= 5) {
+                            int obIndex = getLocalIvtResultIndex( it[t].getMode(), com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ );
+                            int ibIndex = getLocalIvtResultIndex( it[t].getMode(), com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JI );
+                            tableData[k+40] = (float)lResultsIJ[obIndex];
+                            tableData[k+41] = (float)lResultsJI[ibIndex];
+                            tableData[k+42] = (float)lResultsIJ[obIndex+1];
+                            tableData[k+43] = (float)lResultsJI[ibIndex+1];
+                            tableData[k+44] = (float)lResultsIJ[obIndex+2];
+                            tableData[k+45] = (float)lResultsJI[ibIndex+2];
+                            tableData[k+46] = (float)lResultsIJ[obIndex+3];
+                            tableData[k+47] = (float)lResultsJI[ibIndex+3];
+                            tableData[k+48] = (float)lResultsIJ[obIndex+4];
+                            tableData[k+49] = (float)lResultsJI[ibIndex+4];
                         }
-                        else if (it[t].getMode() == 4) {
-                            if (tableData[k+9] == 1) {
-                                tableData[k+32] = (float)resultsOB[13];
-                                tableData[k+34] = (float)resultsOB[14];
-                                tableData[k+36] = (float)resultsOB[15];
-                                tableData[k+38] = (float)resultsOB[16];
-                                tableData[k+40] = (float)resultsOB[17];
-                            }
-                            else if (tableData[k+9] == 2) {
-                                tableData[k+32] = (float)resultsIB[13];
-                                tableData[k+34] = (float)resultsIB[14];
-                                tableData[k+36] = (float)resultsIB[15];
-                                tableData[k+38] = (float)resultsIB[16];
-                                tableData[k+40] = (float)resultsIB[17];
-                            }
-                            else {
-                                tableData[k+32] = (float)resultsOB[18];
-                                tableData[k+34] = (float)resultsOB[19];
-                                tableData[k+36] = (float)resultsOB[20];
-                                tableData[k+38] = (float)resultsOB[21];
-                                tableData[k+40] = (float)resultsOB[22];
-                            }
-                            if (tableData[k+10] == 1) {
-                                tableData[k+33] = (float)resultsIB[13];
-                                tableData[k+35] = (float)resultsIB[14];
-                                tableData[k+37] = (float)resultsIB[15];
-                                tableData[k+39] = (float)resultsIB[16];
-                                tableData[k+41] = (float)resultsIB[17];
-                            }
-                            else if (tableData[k+10] == 2) {
-                                tableData[k+33] = (float)resultsOB[13];
-                                tableData[k+35] = (float)resultsOB[14];
-                                tableData[k+37] = (float)resultsOB[15];
-                                tableData[k+39] = (float)resultsOB[16];
-                                tableData[k+41] = (float)resultsOB[17];
-                            }
-                            else {
-                                tableData[k+33] = (float)resultsIB[18];
-                                tableData[k+35] = (float)resultsIB[19];
-                                tableData[k+37] = (float)resultsIB[20];
-                                tableData[k+39] = (float)resultsIB[21];
-                                tableData[k+41] = (float)resultsIB[22];
-                            }
-
+                        else if (it[t].getMode() >= 6 && it[t].getMode() <= 8) {
+                            int obIndex = getPremiumIvtResultIndex( it[t].getMode(), com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ );
+                            int ibIndex = getPremiumIvtResultIndex( it[t].getMode(), com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( it[t].getTimeOfDayAlt() ), JI );
+                            tableData[k+40] = (float)pResultsIJ[obIndex];
+                            tableData[k+41] = (float)pResultsJI[ibIndex];
+                            tableData[k+42] = (float)pResultsIJ[obIndex+1];
+                            tableData[k+43] = (float)pResultsJI[ibIndex+1];
+                            tableData[k+44] = (float)pResultsIJ[obIndex+2];
+                            tableData[k+45] = (float)pResultsJI[ibIndex+2];
+                            tableData[k+46] = (float)pResultsIJ[obIndex+3];
+                            tableData[k+47] = (float)pResultsJI[ibIndex+3];
+                            tableData[k+48] = (float)pResultsIJ[obIndex+4];
+                            tableData[k+49] = (float)pResultsJI[ibIndex+4];
                         }
                         else {
-                            tableData[k+32] = 0.0f;
-                            tableData[k+33] = 0.0f;
-                            tableData[k+34] = 0.0f;
-                            tableData[k+35] = 0.0f;
-                            tableData[k+36] = 0.0f;
-                            tableData[k+37] = 0.0f;
-                            tableData[k+38] = 0.0f;
-                            tableData[k+39] = 0.0f;
                             tableData[k+40] = 0.0f;
                             tableData[k+41] = 0.0f;
+                            tableData[k+42] = 0.0f;
+                            tableData[k+43] = 0.0f;
+                            tableData[k+44] = 0.0f;
+                            tableData[k+45] = 0.0f;
+                            tableData[k+46] = 0.0f;
+                            tableData[k+47] = 0.0f;
+                            tableData[k+48] = 0.0f;
+                            tableData[k+49] = 0.0f;
                         }
                         
                         if (outputFileDTM != null) {
@@ -1899,7 +1924,7 @@ public class DTMOutput implements java.io.Serializable {
                         }                   
                     
                         totTours[tlIndex]++;
-                        totDist[tlIndex] += (float)(resultsOB[0]);
+                        totDist[tlIndex] += (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( it[t].getTimeOfDayAlt() ), IJ ) ];
                         modalTours[tlIndex][it[t].getMode()] += 1;
                     }
                 }
@@ -1939,22 +1964,23 @@ public class DTMOutput implements java.io.Serializable {
                                         tripsByMode[st[s].getMode()]++;
                                     }
                     
+
+
+                                    // distance and IVT sheets are coded with od for outbound and do for inbound, so don't need to change index values
                                     index.setOriginZone( st[s].getOrigTaz() );
                                     index.setDestZone( st[s].getDestTaz() );
                                     index.setStopZone( st[s].getStopLocOB() );
-                                    resultsOB = distUEC.solve( index, new Object(), distSample );
-                        
-                                    index.setOriginZone( st[s].getDestTaz() );
-                                    index.setDestZone( st[s].getOrigTaz() );
+                                    hResultsIJ = hDistUECob.solve( index, new Object(), hDistSample );
+                                    lResultsIJ = lDistUECob.solve( index, new Object(), lDistSample );
+                                    pResultsIJ = pDistUECob.solve( index, new Object(), pDistSample );
                                     index.setStopZone( st[s].getStopLocIB() );
-                                    resultsIB = distUEC.solve( index, new Object(), distSample );
-
-                                    index.setOriginZone( st[s].getOrigTaz() );
-                                    index.setDestZone( st[s].getDestTaz() );
+                                    hResultsJI = hDistUECib.solve( index, new Object(), hDistSample );
+                                    lResultsJI = lDistUECib.solve( index, new Object(), lDistSample );
+                                    pResultsJI = pDistUECib.solve( index, new Object(), pDistSample );
                                     index.setStopZone( st[s].getChosenPark() );
-                                    resultsPark = distUEC.solve( index, new Object(), distSample );
-
-                    
+                                    hResultsIJPark = hDistUECob.solve( index, new Object(), hDistSample );
+                                    
+                                    
                                     tableData[0] = hh_id;
                                     tableData[1] = serialno;
                                     tableData[2] = hh_taz_id;
@@ -1991,115 +2017,62 @@ public class DTMOutput implements java.io.Serializable {
                                     tableData[k+20] = st[s].getTripKjMode();
                                     tableData[k+21] = st[s].getTripJkMode();
                                     tableData[k+22] = st[s].getTripKiMode();
-                                    tableData[k+23] = (float)resultsOB[0];
-                                    tableData[k+24] = (float)resultsOB[0];
-                                    tableData[k+25] = (float)resultsOB[1];
-                                    tableData[k+26] = (float)resultsOB[2];
-                                    tableData[k+27] = (float)resultsIB[1];
-                                    tableData[k+28] = (float)resultsIB[2];
-                                    tableData[k+29] = st[s].getChosenPark();
-                                    tableData[k+30] = (float)resultsPark[1];
-                                    tableData[k+31] = (float)resultsPark[2];
-                                    if (st[s].getMode() == 3) {
-                                        if (tableData[k+9] == 1) {
-                                            tableData[k+32] = (float)resultsOB[3];
-                                            tableData[k+34] = (float)resultsOB[4];
-                                            tableData[k+36] = (float)resultsOB[5];
-                                            tableData[k+38] = (float)resultsOB[6];
-                                            tableData[k+40] = (float)resultsOB[7];
-                                        }
-                                        else if (tableData[k+9] == 2) {
-                                            tableData[k+32] = (float)resultsIB[3];
-                                            tableData[k+34] = (float)resultsIB[4];
-                                            tableData[k+36] = (float)resultsIB[5];
-                                            tableData[k+38] = (float)resultsIB[6];
-                                            tableData[k+40] = (float)resultsIB[7];
-                                        }
-                                        else {
-                                            tableData[k+32] = (float)resultsOB[8];
-                                            tableData[k+34] = (float)resultsOB[9];
-                                            tableData[k+36] = (float)resultsOB[10];
-                                            tableData[k+38] = (float)resultsOB[11];
-                                            tableData[k+40] = (float)resultsOB[12];
-                                        }
-                                        if (tableData[k+10] == 1) {
-                                            tableData[k+33] = (float)resultsIB[3];
-                                            tableData[k+35] = (float)resultsIB[4];
-                                            tableData[k+37] = (float)resultsIB[5];
-                                            tableData[k+39] = (float)resultsIB[6];
-                                            tableData[k+41] = (float)resultsIB[7];
-                                        }
-                                        else if (tableData[k+10] == 2) {
-                                            tableData[k+33] = (float)resultsOB[3];
-                                            tableData[k+35] = (float)resultsOB[4];
-                                            tableData[k+37] = (float)resultsOB[5];
-                                            tableData[k+39] = (float)resultsOB[6];
-                                            tableData[k+41] = (float)resultsOB[7];
-                                        }
-                                        else {
-                                            tableData[k+33] = (float)resultsIB[8];
-                                            tableData[k+35] = (float)resultsIB[9];
-                                            tableData[k+37] = (float)resultsIB[10];
-                                            tableData[k+39] = (float)resultsIB[11];
-                                            tableData[k+41] = (float)resultsIB[12];
-                                        }
+                                    tableData[k+23] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), IJ ) ];
+                                    tableData[k+24] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), IJ ) ];
+                                    tableData[k+25] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() ), JI ) ];
+                                    tableData[k+26] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() ), JI ) ];
+                                    tableData[k+27] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), IK ) ];
+                                    tableData[k+28] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), IK ) ];
+                                    tableData[k+29] = (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), KJ ) ];
+                                    tableData[k+30] = (float)hResultsIJ[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), KJ ) ];
+                                    tableData[k+31] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() ), JK ) ];
+                                    tableData[k+32] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() ), JK ) ];
+                                    tableData[k+33] = (float)hResultsJI[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() ), KI ) ];
+                                    tableData[k+34] = (float)hResultsJI[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() ), KI ) ];
+                                    tableData[k+35] = st[s].getChosenPark();
+                                    tableData[k+36] = (float)hResultsIJPark[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), IK ) ];
+                                    tableData[k+37] = (float)hResultsIJPark[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), IK ) ];
+                                    tableData[k+38] = (float)hResultsIJPark[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), KJ ) ];
+                                    tableData[k+39] = (float)hResultsIJPark[ getHwyDistResultIndex( HOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), KJ ) ];
+                                    if (st[s].getMode() >= 3 && st[s].getMode() <= 5) {
+                                        int obIndex = getLocalIvtResultIndex( st[s].getMode(), com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), IJ );
+                                        int ibIndex = getLocalIvtResultIndex( st[s].getMode(), com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() ), JI );
+                                        tableData[k+40] = (float)lResultsIJ[obIndex];
+                                        tableData[k+41] = (float)lResultsJI[ibIndex];
+                                        tableData[k+42] = (float)lResultsIJ[obIndex+1];
+                                        tableData[k+43] = (float)lResultsJI[ibIndex+1];
+                                        tableData[k+44] = (float)lResultsIJ[obIndex+2];
+                                        tableData[k+45] = (float)lResultsJI[ibIndex+2];
+                                        tableData[k+46] = (float)lResultsIJ[obIndex+3];
+                                        tableData[k+47] = (float)lResultsJI[ibIndex+3];
+                                        tableData[k+48] = (float)lResultsIJ[obIndex+4];
+                                        tableData[k+49] = (float)lResultsJI[ibIndex+4];
                                     }
-                                    else if (st[s].getMode() == 4) {
-                                        if (tableData[k+9] == 1) {
-                                            tableData[k+32] = (float)resultsOB[13];
-                                            tableData[k+34] = (float)resultsOB[14];
-                                            tableData[k+36] = (float)resultsOB[15];
-                                            tableData[k+38] = (float)resultsOB[16];
-                                            tableData[k+40] = (float)resultsOB[17];
-                                        }
-                                        else if (tableData[k+9] == 2) {
-                                            tableData[k+32] = (float)resultsIB[13];
-                                            tableData[k+34] = (float)resultsIB[14];
-                                            tableData[k+36] = (float)resultsIB[15];
-                                            tableData[k+38] = (float)resultsIB[16];
-                                            tableData[k+40] = (float)resultsIB[17];
-                                        }
-                                        else {
-                                            tableData[k+32] = (float)resultsOB[18];
-                                            tableData[k+34] = (float)resultsOB[19];
-                                            tableData[k+36] = (float)resultsOB[20];
-                                            tableData[k+38] = (float)resultsOB[21];
-                                            tableData[k+40] = (float)resultsOB[22];
-                                        }
-                                        if (tableData[k+10] == 1) {
-                                            tableData[k+33] = (float)resultsIB[13];
-                                            tableData[k+35] = (float)resultsIB[14];
-                                            tableData[k+37] = (float)resultsIB[15];
-                                            tableData[k+39] = (float)resultsIB[16];
-                                            tableData[k+41] = (float)resultsIB[17];
-                                        }
-                                        else if (tableData[k+10] == 2) {
-                                            tableData[k+33] = (float)resultsOB[13];
-                                            tableData[k+35] = (float)resultsOB[14];
-                                            tableData[k+37] = (float)resultsOB[15];
-                                            tableData[k+39] = (float)resultsOB[16];
-                                            tableData[k+41] = (float)resultsOB[17];
-                                        }
-                                        else {
-                                            tableData[k+33] = (float)resultsIB[18];
-                                            tableData[k+35] = (float)resultsIB[19];
-                                            tableData[k+37] = (float)resultsIB[20];
-                                            tableData[k+39] = (float)resultsIB[21];
-                                            tableData[k+41] = (float)resultsIB[22];
-                                        }
-
+                                    else if (st[s].getMode() >= 6 && st[s].getMode() <= 8) {
+                                        int obIndex = getPremiumIvtResultIndex( st[s].getMode(), com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), IJ );
+                                        int ibIndex = getPremiumIvtResultIndex( st[s].getMode(), com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod( st[s].getTimeOfDayAlt() ), JI );
+                                        tableData[k+40] = (float)pResultsIJ[obIndex];
+                                        tableData[k+41] = (float)pResultsJI[ibIndex];
+                                        tableData[k+42] = (float)pResultsIJ[obIndex+1];
+                                        tableData[k+43] = (float)pResultsJI[ibIndex+1];
+                                        tableData[k+44] = (float)pResultsIJ[obIndex+2];
+                                        tableData[k+45] = (float)pResultsJI[ibIndex+2];
+                                        tableData[k+46] = (float)pResultsIJ[obIndex+3];
+                                        tableData[k+47] = (float)pResultsJI[ibIndex+3];
+                                        tableData[k+48] = (float)pResultsIJ[obIndex+4];
+                                        tableData[k+49] = (float)pResultsJI[ibIndex+4];
                                     }
                                     else {
-                                        tableData[k+32] = 0.0f;
-                                        tableData[k+33] = 0.0f;
-                                        tableData[k+34] = 0.0f;
-                                        tableData[k+35] = 0.0f;
-                                        tableData[k+36] = 0.0f;
-                                        tableData[k+37] = 0.0f;
-                                        tableData[k+38] = 0.0f;
-                                        tableData[k+39] = 0.0f;
                                         tableData[k+40] = 0.0f;
                                         tableData[k+41] = 0.0f;
+                                        tableData[k+42] = 0.0f;
+                                        tableData[k+43] = 0.0f;
+                                        tableData[k+44] = 0.0f;
+                                        tableData[k+45] = 0.0f;
+                                        tableData[k+46] = 0.0f;
+                                        tableData[k+47] = 0.0f;
+                                        tableData[k+48] = 0.0f;
+                                        tableData[k+49] = 0.0f;
                                     }
 
                                     if (outputFileDTM != null) {
@@ -2116,7 +2089,7 @@ public class DTMOutput implements java.io.Serializable {
 
                     
                                     totTours[tlIndex]++;
-                                    totDist[tlIndex] += (float)(resultsOB[0]);
+                                    totDist[tlIndex] += (float)hResultsIJ[ getHwyDistResultIndex( SOV_MODE, com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod( st[s].getTimeOfDayAlt() ), IJ ) ];
                                     modalTours[tlIndex][st[s].getMode()] += 1;
                                 }
 
@@ -2180,7 +2153,7 @@ public class DTMOutput implements java.io.Serializable {
         logger.info ("Tour Mode Shares by Tour Purpose:");
         for (int i=1; i <= 15; i++) {
             logger.info (tlPurposeName[i] + " modal shares:");
-            for (int j=1; j <= 6; j++)
+            for (int j=1; j < modalTours[i].length; j++)
                 logger.info (modeName[j] + "=" + modalTours[i][j]);
         }
         logger.info ("");
@@ -2194,7 +2167,10 @@ public class DTMOutput implements java.io.Serializable {
     
         logger.info ("Tour Mode Share Data:");
         for (int i=1; i <= 15; i++) {
-            logger.info (modalTours[i][1] + ", " + modalTours[i][2] + ", " + modalTours[i][3] + ", " + modalTours[i][4] + ", " + modalTours[i][5] + ", " + modalTours[i][6]);
+            String logString = Integer.toString(modalTours[i][1]);
+            for (int j=2; j < modalTours[i].length; j++)
+                logString += ", " + modalTours[i][j];
+            logger.info (logString);
         }
         
         
@@ -2253,5 +2229,295 @@ public class DTMOutput implements java.io.Serializable {
     }
 
 
+    private int getHwyDistResultIndex( int mode, int skimPeriod, int segment ){
+        
+        int returnValue = -1;
+        
+        // get the UEC alternative number for the mode/skim period combination
+        if ( segment == IJ || segment == JI ){
+            if ( mode == SOV_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 1;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 2;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 3;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 4;
+            }
+            else if ( mode == HOV_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 5;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 6;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 7;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 8;
+            }
+        }
+        else if ( segment == IK || segment == JK ){
+            if ( mode == SOV_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 9;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 10;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 11;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 12;
+            }
+            else if ( mode == HOV_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 13;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 14;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 15;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 16;
+            }
+        }
+        else if ( segment == KJ || segment == KI ){
+            if ( mode == SOV_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 17;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 18;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 19;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 20;
+            }
+            else if ( mode == HOV_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 21;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 22;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 23;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 24;
+            }
+        }
+    
+        // return the alternative number - 1, sonce the result array from the UEC is 0-based.
+        return returnValue - 1;
+    }
+    
+    
+    private int getPremiumIvtResultIndex( int mode, int skimPeriod, int segment ){
+        
+        int returnValue = -1;
+        
+        // get the UEC alternative number for the mode/skim period combination
+        // The EBS, BRT, LRT, and CRL indices follow the LBS value.
+        if ( segment == IJ || segment == JI ){
+            if ( mode == WP_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 1;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 6;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 11;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 16;
+            }
+            else if ( mode == PP_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 21;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 26;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 31;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 36;
+            }
+            else if ( mode == KP_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 41;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 46;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 51;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 56;
+            }
+        }
+        else if ( segment == IK || segment == JK ){
+            if ( mode == WP_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 61;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 66;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 71;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 76;
+            }
+            else if ( mode == PP_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 81;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 86;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 91;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 96;
+            }
+            else if ( mode == KP_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 101;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 106;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 111;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 116;
+            }
+        }
+        else if ( segment == KJ || segment == KI ){
+            if ( mode == WP_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 121;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 126;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 131;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 136;
+            }
+            else if ( mode == PP_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 141;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 146;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 151;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 156;
+            }
+            else if ( mode == KP_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 161;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 166;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 171;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 176;
+            }
+        }
+    
+        // return the alternative number - 1, sonce the result array from the UEC is 0-based.
+        return returnValue - 1;
+    }
 
+    
+    private int getLocalIvtResultIndex( int mode, int skimPeriod, int segment ){
+        
+        int returnValue = -1;
+        
+        // get the UEC alternative number of the LBS skim for the mode/skim period combination.
+        if ( segment == IJ || segment == JI ){
+            if ( mode == WL_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 1;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 2;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 3;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 4;
+            }
+            else if ( mode == PL_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 5;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 6;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 7;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 8;
+            }
+            else if ( mode == KL_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 9;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 10;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 11;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 12;
+            }
+        }
+        else if ( segment == IK || segment == JK ){
+            if ( mode == WL_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 13;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 14;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 15;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 16;
+            }
+            else if ( mode == PL_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 17;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 18;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 19;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 20;
+            }
+            else if ( mode == KL_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 21;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 22;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 23;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 24;
+            }
+        }
+        else if ( segment == KJ || segment == KI ){
+            if ( mode == WL_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 25;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 26;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 27;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 28;
+            }
+            else if ( mode == PL_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 29;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 30;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 31;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 32;
+            }
+            else if ( mode == KL_MODE){
+                if ( skimPeriod == AM_SKIM_PERIOD )
+                    returnValue = 33;
+                else if ( skimPeriod == PM_SKIM_PERIOD )
+                    returnValue = 34;
+                else if ( skimPeriod == MD_SKIM_PERIOD )
+                    returnValue = 35;
+                else if ( skimPeriod == NT_SKIM_PERIOD )
+                    returnValue = 36;
+            }
+        }
+    
+        // return the alternative number - 1, sonce the result array from the UEC is 0-based.
+        return returnValue - 1;
+    }
+    
 }

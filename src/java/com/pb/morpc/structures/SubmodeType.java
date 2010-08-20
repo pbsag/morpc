@@ -14,5 +14,7 @@ public final class SubmodeType {
     public static final short LRT=4;
     public static final short CRL=5;
     
+    public static final short NM=6;
+
     public static final String[] LABELS = {" ", "LBS", "EBS", "BRT", "LRT", "CRL"};
 }

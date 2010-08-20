@@ -7,22 +7,19 @@ package com.pb.morpc.structures;
  */
 public final class TourModeType {
 
-    public static final short TYPES=6;
-    public static final short SOV=1;
-    public static final short HOV=2;
-    public static final short WALKTRANSIT=3;
-    public static final short DRIVETRANSIT=4;
-    public static final short NONMOTORIZED=5;
-    public static final short SCHOOLBUS=6;
-    
-    public static final short TRANSITMODES=2;
-    public static final short WALKMARKETS=3;
-    
+    public static final short SOV   =  1;
+    public static final short HOV   =  2;
+    public static final short WL    =  3;
+    public static final short PL    =  4;
+    public static final short KL    =  5;
+    public static final short WP    =  6;
+    public static final short PP    =  7;
+    public static final short KP    =  8;
+    public static final short NM    =  9;
+    public static final short SB    = 10;
+
     public static final short SHORTWALK=1;
     public static final short LONGWALK=2;
     public static final short CANTWALK=3;
-    
-    public static final String[] LABELS = {"sov","hov",
-    "walkTransit", "driveTransit","nonMotor",    "schoolBus"};
 
 }

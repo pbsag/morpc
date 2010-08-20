@@ -378,6 +378,10 @@ public class Household implements java.io.Externalizable {
 	}
 
 
+	public int getTourCategory() {
+	    return tourCategory;
+	}
+	
 
 	/**
 	 * return the tour mode of the tour for which the UEC.solve() has been called

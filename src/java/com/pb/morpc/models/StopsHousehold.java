@@ -23,6 +23,12 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	static final int AM_PERIOD = 2;
 	static final int PM_PERIOD = 5;
 
+    private static final int MODEL83_DATA_PAGE = 0;
+    private static final int MODEL83_IK_PAGE = 1;
+    private static final int MODEL83_KJ_PAGE = 2;
+    private static final int MODEL83_JK_PAGE = 3;
+    private static final int MODEL83_KI_PAGE = 4;
+
 
 	int count = 1;
 
@@ -36,17 +42,20 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	private int preSampleAlt = 0;
 	private int preSampleSize;		
 
-	private double[] submodeUtility;
 
-	private int[] smcSample = null;
+	// dimension this to 2, even though there is 1 alternative, due to 1s indexing in UEC.solve()
+	private int[] smcSample = new int[2];
 
-	UtilityExpressionCalculator[] smcUEC = null;
+    UtilityExpressionCalculator smcUECik = null;
+    UtilityExpressionCalculator smcUECkj = null;
+    UtilityExpressionCalculator smcUECjk = null;
+    UtilityExpressionCalculator smcUECki = null;
 
 
 
 
 
-	public StopsHousehold ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
+	public StopsHousehold ( HashMap<String,String> propertyMap, short tourTypeCategory, short[] tourTypes ) {
 
 		super ( propertyMap, tourTypeCategory, tourTypes );
 
@@ -63,21 +72,22 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 		}
 
 		
-		smcSample = new int[2];
-
-		smcSample[0] = 1;
-		smcSample[1] = 1;
+		// 0 element is irrelevant, only element 1 matters
+        smcSample[0] = -1;
+        smcSample[1] = 1;
 	
-		// create UECs for each time period/main transit mode
-		smcUEC = new UtilityExpressionCalculator[12];
-		for (int i=0; i < 12; i++)
-			smcUEC[i] = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), i+1, 0, this.propertyMap, Household.class);
+		
+		// create UECs for each segment to use for transit modes
+        smcUECik = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), MODEL83_IK_PAGE, MODEL83_DATA_PAGE, this.propertyMap, Household.class);
+        smcUECkj = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), MODEL83_KJ_PAGE, MODEL83_DATA_PAGE, this.propertyMap, Household.class);
+        smcUECjk = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), MODEL83_JK_PAGE, MODEL83_DATA_PAGE, this.propertyMap, Household.class);
+        smcUECki = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), MODEL83_KI_PAGE, MODEL83_DATA_PAGE, this.propertyMap, Household.class);
 		
 		this.count = 1;
 	}
     
-
-	public StopsHousehold ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
+	
+	public StopsHousehold ( int processorId, HashMap<String,String> propertyMap, short tourTypeCategory, short[] tourTypes ) {
 
 		super ( processorId, propertyMap, tourTypeCategory, tourTypes );
 
@@ -94,16 +104,14 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 		}
 
 		
-		smcSample = new int[2];
-
-		smcSample[0] = 1;
-		smcSample[1] = 1;
+        smcSample[0] = -1;
+        smcSample[1] = 1;
 	
-		// create UECs for each time period/main transit mode
-		smcUEC = new UtilityExpressionCalculator[12];
-		for (int i=0; i < 12; i++)
-			smcUEC[i] = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), i+1, 0, this.propertyMap, Household.class);
-
+        // create UECs for each segment to use for transit modes
+        smcUECik = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), MODEL83_IK_PAGE, MODEL83_DATA_PAGE, this.propertyMap, Household.class);
+        smcUECkj = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), MODEL83_KJ_PAGE, MODEL83_DATA_PAGE, this.propertyMap, Household.class);
+        smcUECjk = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), MODEL83_JK_PAGE, MODEL83_DATA_PAGE, this.propertyMap, Household.class);
+        smcUECki = new UtilityExpressionCalculator(new File( (String)propertyMap.get(  "Model83.controlFile") ), MODEL83_KI_PAGE, MODEL83_DATA_PAGE, this.propertyMap, Household.class);
 		
 		this.count = 1;
 	}
@@ -152,8 +160,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
 
 			// if the primary mode for this mandatory tour is non-motorized or school bus, skip stop freq choice 
-			if (hh.mandatoryTours[t].getMode() == TourModeType.NONMOTORIZED ||
-				hh.mandatoryTours[t].getMode() == TourModeType.SCHOOLBUS) {
+			if (hh.mandatoryTours[t].getMode() == TourModeType.NM ||
+				hh.mandatoryTours[t].getMode() == TourModeType.SB) {
 				
 				//Wu added for FTA restart
 				hh.mandatoryTours[t].setStopFreqAlt(0);
@@ -195,7 +203,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			int chosenMode = hh.mandatoryTours[t].getMode();
 //			int chosenDest = hh.mandatoryTours[t].getDestTaz();
 //			int chosenShrtWlkSeg = hh.mandatoryTours[t].getDestShrtWlk();
-			int autoTransit = hh.mandatoryTours[t].getMode() < 3 ? 0 : 1;
+			int autoTransit = hh.mandatoryTours[t].getModeIsAutoMode() == 1 ? 0 : 1;
 
 			
 
@@ -203,7 +211,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			markTime = System.currentTimeMillis();
 			
 			
-			if (chosenMode == 1 || chosenMode == 2) {
+			if ( autoTransit == 0 ) {
 
 				Arrays.fill ( slcOBAvailability, false );
 
@@ -267,7 +275,8 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				Arrays.fill(slcCorrections[processorIndex][0], 0.0f);
 
 				for (k=0; k < slcOBAvailability.length; k++) {
-					// set destination choice alternative availability to true if size > 0 for the segment.
+					// set destination choice alternative availability to true if size > 0 for the segment
+				    // and the subzone has short walk access.
 					if ( stopSize[processorIndex][0][tourType][k] <= 0.0 || (k+1) % 3 == 1 ) {
 						slcOBAvailability[k] = false;
 						slcSample[0][k] = 0;
@@ -310,7 +319,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			if ( chosenAlt == 3 || chosenAlt == 4 ) {
 
 				// get the stop location choice sample of alternatives for outbound sov, hov tours
-				if (chosenMode == 1 || chosenMode == 2) {
+				if ( autoTransit == 0 ) {
 	
 					Arrays.fill ( slcIBAvailability, false );
 			
@@ -532,8 +541,6 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 	public void mandatoryTourSmc ( Household hh ) {
 
-		long markTime=0;
-
 		
 		hh_id     = hh.getID();
 		if (useMessageWindow) mw.setMessage1 ( "Stop Mode Choice for Mandatory Tours");
@@ -551,139 +558,17 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 		for (int t=0; t < hh.mandatoryTours.length; t++) {
 
 			// if the primary mode for this mandatory tour is non-motorized or school bus, skip stop mode choice 
-			if (hh.mandatoryTours[t].getMode() == TourModeType.NONMOTORIZED ||
-				hh.mandatoryTours[t].getMode() == TourModeType.SCHOOLBUS) {
+            if (hh.mandatoryTours[t].getMode() == TourModeType.NM ||
+                hh.mandatoryTours[t].getMode() == TourModeType.SB) {
+                        return;
+                }
 
-					continue;
-			}
+                
+	        //set hh attributes for using hh to get @dmuVariables for trip mode choice determination
+	        hh.setTourCategory(TourType.MANDATORY_CATEGORY);
+	        hh.setTourID(t);
 
-			
-			int startPeriod = com.pb.morpc.models.TODDataManager.getTodStartPeriod( hh.mandatoryTours[t].getTimeOfDayAlt() );
-			int endPeriod = com.pb.morpc.models.TODDataManager.getTodEndPeriod( hh.mandatoryTours[t].getTimeOfDayAlt() );
-			index.setOriginZone( hh.mandatoryTours[t].getOrigTaz() );
-			index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
-
-
-			markTime = System.currentTimeMillis();
-        
-			// determine the half tour segment mode choices if the tour has stops	
-			switch ( hh.mandatoryTours[t].getStopFreqAlt() ) {
-				
-				// no stops for this tour
-				case 1:
-
-				    break;
-					
-				// 1 outbound, 0 inbound
-				case 2:
-
-				    index.setStopZone( hh.mandatoryTours[t].getStopLocOB() );
-
-				    // set outbound (ik) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[0].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[8].solve( index, new Object(), smcSample );
-					else  // wt, op
-					    submodeUtility = smcUEC[4].solve( index, new Object(), smcSample );
-					hh.mandatoryTours[t].setTripIkMode ( getIkMode ( hh, hh.mandatoryTours[t].getMode(), hh.mandatoryTours[t].getSubmodeOB(), submodeUtility ) );
-
-					// set outbound (kj) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[1].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[9].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[5].solve( index, new Object(), smcSample );
-					hh.mandatoryTours[t].setTripKjMode ( getKjMode ( hh, hh.mandatoryTours[t].getMode(), hh.mandatoryTours[t].getSubmodeOB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-					break;
-					
-				// 0 outbound, 1 inbound
-				case 3:
-
-				    index.setStopZone( hh.mandatoryTours[t].getStopLocIB() );
-
-					// set the mode for each portion of the inbound half-tour
-					// set inbound (jk) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[2].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[10].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[6].solve( index, new Object(), smcSample );
-					hh.mandatoryTours[t].setTripJkMode ( getJkMode ( hh, hh.mandatoryTours[t].getMode(), hh.mandatoryTours[t].getSubmodeIB(), submodeUtility ) );
-
-					// set inbound (ki) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[3].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[11].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[7].solve( index, new Object(), smcSample );
-					hh.mandatoryTours[t].setTripKiMode ( getKiMode ( hh, hh.mandatoryTours[t].getMode(), hh.mandatoryTours[t].getSubmodeIB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-					break;
-					
-				// 1 outbound, 1 inbound
-				case 4:
-
-				    index.setStopZone( hh.mandatoryTours[t].getStopLocOB() );
-
-					// set the mode for each portion of the outbound half-tour
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[0].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[8].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[4].solve( index, new Object(), smcSample );
-					hh.mandatoryTours[t].setTripIkMode ( getIkMode ( hh, hh.mandatoryTours[t].getMode(), hh.mandatoryTours[t].getSubmodeOB(), submodeUtility ) );
-
-					// set outbound (kj) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[1].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[9].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[5].solve( index, new Object(), smcSample );
-					hh.mandatoryTours[t].setTripKjMode ( getKjMode ( hh, hh.mandatoryTours[t].getMode(), hh.mandatoryTours[t].getSubmodeOB(), submodeUtility ) );
-
-
-					index.setStopZone( hh.mandatoryTours[t].getStopLocIB() );
-
-					// set the mode for each portion of the inbound half-tour
-					// set inbound (jk) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[2].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[10].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[6].solve( index, new Object(), smcSample );
-					hh.mandatoryTours[t].setTripJkMode ( getJkMode ( hh, hh.mandatoryTours[t].getMode(), hh.mandatoryTours[t].getSubmodeIB(), submodeUtility ) );
-
-					// set inbound (ki) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[3].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[11].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[7].solve( index, new Object(), smcSample );
-					hh.mandatoryTours[t].setTripKiMode ( getKiMode ( hh, hh.mandatoryTours[t].getMode(), hh.mandatoryTours[t].getSubmodeIB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-
-					break;
-					
-			}
+            setTripModes( hh, hh.mandatoryTours[t] );
 
 		}
 		
@@ -727,7 +612,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			index.setDestZone( hh.jointTours[t].getDestTaz() );
 
 			// if the primary mode for this joint tour is non-motorized, skip stop freq choice 
-			if (hh.jointTours[t].getMode() == TourModeType.NONMOTORIZED) {
+			if (hh.jointTours[t].getMode() == TourModeType.NM) {
 				
 				//Wu added for FTA restart
 				hh.jointTours[t].setStopFreqAlt(0);
@@ -757,13 +642,13 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			int chosenMode = hh.jointTours[t].getMode();
 //			int chosenDest = hh.jointTours[t].getDestTaz();
 //			int chosenShrtWlkSeg = hh.jointTours[t].getDestShrtWlk();
-			int autoTransit = hh.jointTours[t].getMode() < 3 ? 0 : 1;
+			int autoTransit = hh.jointTours[t].getModeIsAutoMode() == 1 ? 0 : 1;
 
 
 			// get the destination choice sample of alternatives
 			markTime = System.currentTimeMillis();
 
-			if (autoTransit == 0) {
+			if ( autoTransit == 0 ) {
 
 				Arrays.fill ( slcIBAvailability, false );
 
@@ -1096,8 +981,6 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 	public void jointTourSmc ( Household hh ) {
 
-		long markTime=0;
-
 	    hh_id     = hh.getID();
 		if (useMessageWindow) mw.setMessage1 ("Stop Mode Choice for Joint Tours");
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
@@ -1113,140 +996,15 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 		for (int t=0; t < hh.jointTours.length; t++) {
 
 			// if the primary mode for this joint tour is non-motorized, skip stop mode choice 
-			if (hh.jointTours[t].getMode() == TourModeType.NONMOTORIZED) {
-
+			if (hh.jointTours[t].getMode() == TourModeType.NM) {
 					continue;
 			}
 
-			
-			int startPeriod = com.pb.morpc.models.TODDataManager.getTodStartPeriod( hh.jointTours[t].getTimeOfDayAlt() );
-			int endPeriod = com.pb.morpc.models.TODDataManager.getTodEndPeriod( hh.jointTours[t].getTimeOfDayAlt() );
-			index.setOriginZone( hh.jointTours[t].getOrigTaz() );
-			index.setDestZone( hh.jointTours[t].getDestTaz() );
-        
-			// determine the half tour segment mode choices if the tour has stops	
-			switch ( hh.jointTours[t].getStopFreqAlt() ) {
-				
-				// no stops for this tour
-				case 1:
+            //set hh attributes for using hh to get @dmuVariables for trip mode choice determination
+            hh.setTourCategory(TourType.JOINT_CATEGORY);
+            hh.setTourID(t);
 
-					break;
-					
-				// 1 outbound, 0 inbound
-				case 2:
-
-				    index.setStopZone( hh.jointTours[t].getStopLocOB() );
-
-					// set outbound (ik) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					markTime = System.currentTimeMillis();
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[0].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[8].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[4].solve( index, new Object(), smcSample );
-					hh.jointTours[t].setTripIkMode ( getIkMode ( hh, hh.jointTours[t].getMode(), hh.jointTours[t].getSubmodeOB(), submodeUtility ) );
-
-					// set outbound (kj) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[1].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[9].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[5].solve( index, new Object(), smcSample );
-					hh.jointTours[t].setTripKjMode ( getKjMode ( hh, hh.jointTours[t].getMode(), hh.jointTours[t].getSubmodeOB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-					break;
-					
-				// 0 outbound, 1 inbound
-				case 3:
-
-				    index.setStopZone( hh.jointTours[t].getStopLocIB() );
-
-					// set the mode for each portion of the inbound half-tour
-					markTime = System.currentTimeMillis();
-					// set inbound (jk) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[2].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[10].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[6].solve( index, new Object(), smcSample );
-					hh.jointTours[t].setTripJkMode ( getJkMode ( hh, hh.jointTours[t].getMode(), hh.jointTours[t].getSubmodeIB(), submodeUtility ) );
-
-					// set inbound (ki) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[3].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[11].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[7].solve( index, new Object(), smcSample );
-					hh.jointTours[t].setTripKiMode ( getKiMode ( hh, hh.jointTours[t].getMode(), hh.jointTours[t].getSubmodeIB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-					break;
-					
-				// 1 outbound, 1 inbound
-				case 4:
-
-				    index.setStopZone( hh.jointTours[t].getStopLocOB() );
-
-					// set the mode for each portion of the outbound half-tour
-					markTime = System.currentTimeMillis();
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[0].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[8].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[4].solve( index, new Object(), smcSample );
-					hh.jointTours[t].setTripIkMode ( getIkMode ( hh, hh.jointTours[t].getMode(), hh.jointTours[t].getSubmodeOB(), submodeUtility ) );
-
-					// set outbound (kj) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[1].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[9].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[5].solve( index, new Object(), smcSample );
-					hh.jointTours[t].setTripKjMode ( getKjMode ( hh, hh.jointTours[t].getMode(), hh.jointTours[t].getSubmodeOB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-
-					index.setStopZone( hh.jointTours[t].getStopLocIB() );
-
-					// set the mode for each portion of the inbound half-tour
-					markTime = System.currentTimeMillis();
-					// set inbound (jk) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[2].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[10].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[6].solve( index, new Object(), smcSample );
-					hh.jointTours[t].setTripJkMode ( getJkMode ( hh, hh.jointTours[t].getMode(), hh.jointTours[t].getSubmodeIB(), submodeUtility ) );
-
-					// set inbound (ki) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[3].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[11].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[7].solve( index, new Object(), smcSample );
-					hh.jointTours[t].setTripKiMode ( getKiMode ( hh, hh.jointTours[t].getMode(), hh.jointTours[t].getSubmodeIB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-
-					break;
-					
-			}
+            setTripModes( hh, hh.jointTours[t] );
 
 		}
 
@@ -1293,14 +1051,14 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			index.setDestZone( hh.indivTours[t].getDestTaz() );
 
 			// if the primary mode for this indiv non-mandatory tour is non-motorized, skip stop freq choice 
-			if (hh.indivTours[t].getMode() == TourModeType.NONMOTORIZED) {
+			if (hh.indivTours[t].getMode() == TourModeType.NM) {
 				
 				//Wu added for FTA restart
 				hh.indivTours[t].setStopFreqAlt(0);
 				hh.indivTours[t].setStopLocOB(0);
 				hh.indivTours[t].setStopLocIB(0);
 
-					continue;
+				continue;
 			}
 
         
@@ -1323,7 +1081,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			int chosenMode = hh.indivTours[t].getMode();
 //			int chosenDest = hh.indivTours[t].getDestTaz();
 //			int chosenShrtWlkSeg = hh.indivTours[t].getDestShrtWlk();
-			int autoTransit = hh.indivTours[t].getMode() < 3 ? 0 : 1;
+			int autoTransit = hh.indivTours[t].getModeIsAutoMode() == 1 ? 0 : 1;
 
 
 
@@ -1663,9 +1421,6 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 	public void nonMandatoryTourSmc ( Household hh ) {
 
-		long markTime=0;
-
-
 		hh_id     = hh.getID();
 		if (useMessageWindow) mw.setMessage1 ("Stop Mode Choice for non-mandatory Tours");
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
@@ -1682,140 +1437,16 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 		for (int t=0; t < hh.indivTours.length; t++) {
 
 			// if the primary mode for this indiv non-mandatory tour is non-motorized, skip trip mode choice 
-			if (hh.indivTours[t].getMode() == TourModeType.NONMOTORIZED ) {
-
+			if (hh.indivTours[t].getMode() == TourModeType.NM ) {
 					continue;
 			}
 
 			
-			int startPeriod = com.pb.morpc.models.TODDataManager.getTodStartPeriod( hh.indivTours[t].getTimeOfDayAlt() );
-			int endPeriod = com.pb.morpc.models.TODDataManager.getTodEndPeriod( hh.indivTours[t].getTimeOfDayAlt() );
-			index.setOriginZone( hh.indivTours[t].getOrigTaz() );
-			index.setDestZone( hh.indivTours[t].getDestTaz() );
-        
-			// determine the half tour segment mode choices if the tour has stops	
-			switch ( hh.indivTours[t].getStopFreqAlt() ) {
-				
-				// no stops for this tour
-				case 1:
+            //set hh attributes for using hh to get @dmuVariables for trip mode choice determination
+            hh.setTourCategory(TourType.NON_MANDATORY_CATEGORY);
+            hh.setTourID(t);
 
-					break;
-					
-				// 1 outbound, 0 inbound
-				case 2:
-
-					index.setStopZone( hh.indivTours[t].getStopLocOB() );
-
-					// set outbound (ik) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					markTime = System.currentTimeMillis();
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[0].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[8].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[4].solve( index, new Object(), smcSample );
-					hh.indivTours[t].setTripIkMode ( getIkMode ( hh, hh.indivTours[t].getMode(), hh.indivTours[t].getSubmodeOB(), submodeUtility ) );
-
-					// set outbound (kj) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[1].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[9].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[5].solve( index, new Object(), smcSample );
-					hh.indivTours[t].setTripKjMode ( getKjMode ( hh, hh.indivTours[t].getMode(), hh.indivTours[t].getSubmodeOB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-					break;
-					
-				// 0 outbound, 1 inbound
-				case 3:
-
-					index.setStopZone( hh.indivTours[t].getStopLocIB() );
-
-					// set the mode for each portion of the inbound half-tour
-					markTime = System.currentTimeMillis();
-					// set inbound (jk) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[2].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[10].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[6].solve( index, new Object(), smcSample );
-					hh.indivTours[t].setTripJkMode ( getJkMode ( hh, hh.indivTours[t].getMode(), hh.indivTours[t].getSubmodeIB(), submodeUtility ) );
-
-					// set inbound (ki) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[3].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[11].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[7].solve( index, new Object(), smcSample );
-					hh.indivTours[t].setTripKiMode ( getKiMode ( hh, hh.indivTours[t].getMode(), hh.indivTours[t].getSubmodeIB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-					break;
-					
-				// 1 outbound, 1 inbound
-				case 4:
-
-					index.setStopZone( hh.indivTours[t].getStopLocOB() );
-
-					// set the mode for each portion of the outbound half-tour
-					markTime = System.currentTimeMillis();
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[0].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[8].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[4].solve( index, new Object(), smcSample );
-					hh.indivTours[t].setTripIkMode ( getIkMode ( hh, hh.indivTours[t].getMode(), hh.indivTours[t].getSubmodeOB(), submodeUtility ) );
-
-					// set outbound (kj) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( startPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[1].solve( index, new Object(), smcSample );
-					else if ( startPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[9].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[5].solve( index, new Object(), smcSample );
-					hh.indivTours[t].setTripKjMode ( getKjMode ( hh, hh.indivTours[t].getMode(), hh.indivTours[t].getSubmodeOB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-
-					index.setStopZone( hh.indivTours[t].getStopLocIB() );
-
-					// set the mode for each portion of the inbound half-tour
-					markTime = System.currentTimeMillis();
-					// set inbound (jk) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[2].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[10].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[6].solve( index, new Object(), smcSample );
-					hh.indivTours[t].setTripJkMode ( getJkMode ( hh, hh.indivTours[t].getMode(), hh.indivTours[t].getSubmodeIB(), submodeUtility ) );
-
-					// set inbound (ki) submode utilities (returns a string of 0s and 1s
-					// indicating which submodes are available).
-					if ( endPeriod == AM_PERIOD )	// wt, am
-						submodeUtility = smcUEC[3].solve( index, new Object(), smcSample );
-					else if ( endPeriod == PM_PERIOD)	// wt, pm
-						submodeUtility = smcUEC[11].solve( index, new Object(), smcSample );
-					else  // wt, op
-						submodeUtility = smcUEC[7].solve( index, new Object(), smcSample );
-					hh.indivTours[t].setTripKiMode ( getKiMode ( hh, hh.indivTours[t].getMode(), hh.indivTours[t].getSubmodeIB(), submodeUtility ) );
-					mcTime += (System.currentTimeMillis() - markTime);
-
-
-					break;
-					
-			}
+            setTripModes( hh, hh.indivTours[t] );
 
 		}
 
@@ -1890,7 +1521,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				index.setDestZone( hh.mandatoryTours[t].subTours[s].getDestTaz() );
 
 				// if the primary mode for this at-work subtour is non-motorized, skip stop frequency choice 
-				if (hh.mandatoryTours[t].subTours[s].getMode() == TourModeType.NONMOTORIZED) {
+				if (hh.mandatoryTours[t].subTours[s].getMode() == TourModeType.NM) {
 					//Wu added for FTA restart
 					hh.mandatoryTours[t].subTours[s].setStopFreqAlt(0);
 					hh.mandatoryTours[t].subTours[s].setStopLocOB(0);
@@ -1904,7 +1535,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 				int chosenMode = hh.mandatoryTours[t].subTours[s].getMode();
 //				int chosenDest = hh.mandatoryTours[t].subTours[s].getDestTaz();
 //				int chosenShrtWlkSeg = hh.mandatoryTours[t].subTours[s].getDestShrtWlk();
-				int autoTransit = hh.mandatoryTours[t].subTours[s].getMode() < 3 ? 0 : 1;
+				int autoTransit = hh.mandatoryTours[t].subTours[s].getModeIsAutoMode() == 1 ? 0 : 1;
 
         
 				int subtourType = hh.mandatoryTours[t].subTours[s].getSubTourType();
@@ -1943,7 +1574,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 					markTime = System.currentTimeMillis();
 
 					// get the stop location choice sample of alternatives for outbound sov, hov tours
-					if (chosenMode == 1 || chosenMode == 2) {
+					if ( autoTransit == 0 ) {
 
 						Arrays.fill ( slcIBAvailability, false );
 				
@@ -2251,14 +1882,6 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	
 	public void atWorkTourSmc ( Household hh ) {
 
-		long markTime=0;
-
-//		Tour[] st;
-//		int todAlt;
-//		int startP;
-//		int endP;
-
-
 		hh_id     = hh.getID();
 		if (useMessageWindow) mw.setMessage1 ("Stop Mode Choice for At-work Tours");
 		if (useMessageWindow) mw.setMessage2 ( "household " + count + " (" + hh_id + ")" );
@@ -2282,140 +1905,16 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 			for (int s=0; s < hh.mandatoryTours[t].subTours.length; s++) {
 
 				// if the primary mode for this at-work subtour is non-motorized, skip stop mode choice 
-				if (hh.mandatoryTours[t].subTours[s].getMode() == TourModeType.NONMOTORIZED) {
-
+				if (hh.mandatoryTours[t].subTours[s].getMode() == TourModeType.NM) {
 					continue;
 				}
 			
         
-				int startPeriod = com.pb.morpc.models.TODDataManager.getTodStartPeriod( hh.mandatoryTours[t].subTours[s].getTimeOfDayAlt() );
-				int endPeriod = com.pb.morpc.models.TODDataManager.getTodEndPeriod( hh.mandatoryTours[t].subTours[s].getTimeOfDayAlt() );
-				index.setOriginZone( hh.mandatoryTours[t].subTours[s].getOrigTaz() );
-				index.setDestZone( hh.mandatoryTours[t].subTours[s].getDestTaz() );
-        
-				// determine the half tour segment mode choices if the tour has stops	
-				switch ( hh.mandatoryTours[t].subTours[s].getStopFreqAlt() ) {
-				
-					// no stops for this tour
-					case 1:
+	            //set hh attributes for using hh to get @dmuVariables for trip mode choice determination
+	            hh.setTourCategory(TourType.AT_WORK_CATEGORY);
+	            hh.setTourID(t);
 
-						break;
-					
-					// 1 outbound, 0 inbound
-					case 2:
-
-						index.setStopZone( hh.mandatoryTours[t].subTours[s].getStopLocOB() );
-
-						// set outbound (ik) submode utilities (returns a string of 0s and 1s
-						// indicating which submodes are available).
-						markTime = System.currentTimeMillis();
-						if ( startPeriod == AM_PERIOD )	// wt, am
-							submodeUtility = smcUEC[0].solve( index, new Object(), smcSample );
-						else if ( startPeriod == PM_PERIOD)	// wt, pm
-							submodeUtility = smcUEC[8].solve( index, new Object(), smcSample );
-						else  // wt, op
-							submodeUtility = smcUEC[4].solve( index, new Object(), smcSample );
-						hh.mandatoryTours[t].subTours[s].setTripIkMode ( getIkMode ( hh, hh.mandatoryTours[t].subTours[s].getMode(), hh.mandatoryTours[t].subTours[s].getSubmodeOB(), submodeUtility ) );
-
-						// set outbound (kj) submode utilities (returns a string of 0s and 1s
-						// indicating which submodes are available).
-						if ( startPeriod == AM_PERIOD )	// wt, am
-							submodeUtility = smcUEC[1].solve( index, new Object(), smcSample );
-						else if ( startPeriod == PM_PERIOD)	// wt, pm
-							submodeUtility = smcUEC[9].solve( index, new Object(), smcSample );
-						else  // wt, op
-							submodeUtility = smcUEC[5].solve( index, new Object(), smcSample );
-						hh.mandatoryTours[t].subTours[s].setTripKjMode ( getKjMode ( hh, hh.mandatoryTours[t].subTours[s].getMode(), hh.mandatoryTours[t].subTours[s].getSubmodeOB(), submodeUtility ) );
-						mcTime += (System.currentTimeMillis() - markTime);
-
-						break;
-					
-					// 0 outbound, 1 inbound
-					case 3:
-
-						index.setStopZone( hh.mandatoryTours[t].subTours[s].getStopLocIB() );
-
-						// set the mode for each portion of the inbound half-tour
-						markTime = System.currentTimeMillis();
-						// set inbound (jk) submode utilities (returns a string of 0s and 1s
-						// indicating which submodes are available).
-						if ( endPeriod == AM_PERIOD )	// wt, am
-							submodeUtility = smcUEC[2].solve( index, new Object(), smcSample );
-						else if ( endPeriod == PM_PERIOD)	// wt, pm
-							submodeUtility = smcUEC[10].solve( index, new Object(), smcSample );
-						else  // wt, op
-							submodeUtility = smcUEC[6].solve( index, new Object(), smcSample );
-						hh.mandatoryTours[t].subTours[s].setTripJkMode ( getJkMode ( hh, hh.mandatoryTours[t].subTours[s].getMode(), hh.mandatoryTours[t].subTours[s].getSubmodeIB(), submodeUtility ) );
-
-						// set inbound (ki) submode utilities (returns a string of 0s and 1s
-						// indicating which submodes are available).
-						if ( endPeriod == AM_PERIOD )	// wt, am
-							submodeUtility = smcUEC[3].solve( index, new Object(), smcSample );
-						else if ( endPeriod == PM_PERIOD)	// wt, pm
-							submodeUtility = smcUEC[11].solve( index, new Object(), smcSample );
-						else  // wt, op
-							submodeUtility = smcUEC[7].solve( index, new Object(), smcSample );
-						hh.mandatoryTours[t].subTours[s].setTripKiMode ( getKiMode ( hh, hh.mandatoryTours[t].subTours[s].getMode(), hh.mandatoryTours[t].subTours[s].getSubmodeIB(), submodeUtility ) );
-						mcTime += (System.currentTimeMillis() - markTime);
-
-						break;
-					
-					// 1 outbound, 1 inbound
-					case 4:
-
-						index.setStopZone( hh.mandatoryTours[t].subTours[s].getStopLocOB() );
-
-						// set the mode for each portion of the outbound half-tour
-						markTime = System.currentTimeMillis();
-						if ( startPeriod == AM_PERIOD )	// wt, am
-							submodeUtility = smcUEC[0].solve( index, new Object(), smcSample );
-						else if ( startPeriod == PM_PERIOD)	// wt, pm
-							submodeUtility = smcUEC[8].solve( index, new Object(), smcSample );
-						else  // wt, op
-							submodeUtility = smcUEC[4].solve( index, new Object(), smcSample );
-						hh.mandatoryTours[t].subTours[s].setTripIkMode ( getIkMode ( hh, hh.mandatoryTours[t].subTours[s].getMode(), hh.mandatoryTours[t].subTours[s].getSubmodeOB(), submodeUtility ) );
-
-						// set outbound (kj) submode utilities (returns a string of 0s and 1s
-						// indicating which submodes are available).
-						if ( startPeriod == AM_PERIOD )	// wt, am
-							submodeUtility = smcUEC[1].solve( index, new Object(), smcSample );
-						else if ( startPeriod == PM_PERIOD)	// wt, pm
-							submodeUtility = smcUEC[9].solve( index, new Object(), smcSample );
-						else  // wt, op
-							submodeUtility = smcUEC[5].solve( index, new Object(), smcSample );
-						hh.mandatoryTours[t].subTours[s].setTripKjMode ( getKjMode ( hh, hh.mandatoryTours[t].subTours[s].getMode(), hh.mandatoryTours[t].subTours[s].getSubmodeOB(), submodeUtility ) );
-						mcTime += (System.currentTimeMillis() - markTime);
-
-
-						index.setStopZone( hh.mandatoryTours[t].subTours[s].getStopLocIB() );
-
-						// set the mode for each portion of the inbound half-tour
-						markTime = System.currentTimeMillis();
-						// set inbound (jk) submode utilities (returns a string of 0s and 1s
-						// indicating which submodes are available).
-						if ( endPeriod == AM_PERIOD )	// wt, am
-							submodeUtility = smcUEC[2].solve( index, new Object(), smcSample );
-						else if ( endPeriod == PM_PERIOD)	// wt, pm
-							submodeUtility = smcUEC[10].solve( index, new Object(), smcSample );
-						else  // wt, op
-							submodeUtility = smcUEC[6].solve( index, new Object(), smcSample );
-						hh.mandatoryTours[t].subTours[s].setTripJkMode ( getJkMode ( hh, hh.mandatoryTours[t].subTours[s].getMode(), hh.mandatoryTours[t].subTours[s].getSubmodeIB(), submodeUtility ) );
-
-						// set inbound (ki) submode utilities (returns a string of 0s and 1s
-						// indicating which submodes are available).
-						if ( endPeriod == AM_PERIOD )	// wt, am
-							submodeUtility = smcUEC[3].solve( index, new Object(), smcSample );
-						else if ( endPeriod == PM_PERIOD)	// wt, pm
-							submodeUtility = smcUEC[11].solve( index, new Object(), smcSample );
-						else  // wt, op
-							submodeUtility = smcUEC[7].solve( index, new Object(), smcSample );
-						hh.mandatoryTours[t].subTours[s].setTripKiMode ( getKiMode ( hh, hh.mandatoryTours[t].subTours[s].getMode(), hh.mandatoryTours[t].subTours[s].getSubmodeIB(), submodeUtility ) );
-						mcTime += (System.currentTimeMillis() - markTime);
-
-
-						break;
-					
-				}
+	            setTripModes( hh, hh.mandatoryTours[t].subTours[s] );
 					
 			}
 		
@@ -2425,7 +1924,121 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	
 	
 	
+    private void setTripModes( Household hh, Tour tour ){
 
+        long markTime=0;
+        
+        double[] result;
+
+        index.setOriginZone( tour.getOrigTaz() );
+        index.setDestZone( tour.getDestTaz() );
+
+        markTime = System.currentTimeMillis();
+    
+        // determine the half tour segment mode choices if the tour has stops   
+        switch ( tour.getStopFreqAlt() ) {
+            
+            // no stops for this tour
+            case 1:
+
+                break;
+                
+            // 1 outbound, 0 inbound
+            case 2:
+
+                if (tour.getMode() == TourModeType.SOV || tour.getMode() == TourModeType.HOV) {
+                    tour.setTripIkMode ( tour.getMode() );
+                    tour.setTripKjMode ( tour.getMode() );
+                }
+                else {                       
+
+                    index.setStopZone( tour.getStopLocOB() );
+    
+                    // set outbound (ik) submode 
+                    result = smcUECik.solve( index, hh, smcSample );
+                    tour.setTripIkMode ( (int)result[0] );
+                    
+                    // set outbound (kj) submode 
+                    result = smcUECkj.solve( index, hh, smcSample );
+                    tour.setTripKjMode ( (int)result[0] );
+                    
+                }   
+                
+                mcTime += (System.currentTimeMillis() - markTime);
+
+                break;
+                
+            // 0 outbound, 1 inbound
+            case 3:
+
+                if (tour.getMode() == TourModeType.SOV || tour.getMode() == TourModeType.HOV) {
+                    tour.setTripJkMode ( tour.getMode() );
+                    tour.setTripKiMode ( tour.getMode() );
+                }
+                else {                       
+
+                    index.setStopZone( tour.getStopLocIB() );
+
+                    // set inbound (jk) submode 
+                    result = smcUECjk.solve( index, hh, smcSample );
+                    tour.setTripJkMode ( (int)result[0] );
+                    
+                    // set inbound (ki) submode 
+                    result = smcUECki.solve( index, hh, smcSample );
+                    tour.setTripKiMode ( (int)result[0] );
+
+                }
+                
+                mcTime += (System.currentTimeMillis() - markTime);
+
+                break;
+                
+            // 1 outbound, 1 inbound
+            case 4:
+
+                if (tour.getMode() == TourModeType.SOV || tour.getMode() == TourModeType.HOV) {
+                    tour.setTripIkMode ( tour.getMode() );
+                    tour.setTripKjMode ( tour.getMode() );
+                    tour.setTripJkMode ( tour.getMode() );
+                    tour.setTripKiMode ( tour.getMode() );
+                }
+                else {                       
+
+                    index.setStopZone( tour.getStopLocOB() );
+
+                    // set outbound (ik) submode 
+                    result = smcUECik.solve( index, hh, smcSample );
+                    tour.setTripIkMode ( (int)result[0] );
+                    
+                    // set outbound (kj) submode 
+                    result = smcUECkj.solve( index, hh, smcSample );
+                    tour.setTripKjMode ( (int)result[0] );
+    
+    
+                    
+                    index.setStopZone( tour.getStopLocIB() );
+    
+                    // set inbound (jk) submode 
+                    result = smcUECjk.solve( index, hh, smcSample );
+                    tour.setTripJkMode ( (int)result[0] );
+                    
+                    // set inbound (ki) submode 
+                    result = smcUECki.solve( index, hh, smcSample );
+                    tour.setTripKiMode ( (int)result[0] );
+
+                }
+                
+                mcTime += (System.currentTimeMillis() - markTime);
+
+
+                break;
+                
+        }
+        
+    }
+        
+
+	
 	public void resetHouseholdCount () {
 		count = 0;
 	}

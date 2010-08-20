@@ -11,6 +11,7 @@ import com.pb.common.calculator.IndexValues;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.model.ChoiceModelApplication;
+import com.pb.common.util.SeededRandom;
 
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
@@ -90,6 +91,10 @@ public class DTMModelBase implements java.io.Serializable {
 	protected int[] pcSample;
 	protected int[] smcSample = new int[2];
 
+    protected int[] transitTourModeIndices = { 3, 4, 5, 6, 7, 8 };
+    protected int[] localTransitTourModeIndices = { 3, 4, 5 };
+    protected int[] premiumTransitTourModeIndices = { 6, 7, 8 };
+	
     protected TableDataSet cbdAltsTable = null;
     
 	
@@ -107,15 +112,15 @@ public class DTMModelBase implements java.io.Serializable {
 
     // university tour mode choice alternatives:    Alt1    Alt2    Alt3    Alt4    Alt5
     //                                              SOV     HOV     WT      DT      NM      SB
-	private int[][] allocationUniv = { { 0, 1, 2, 3, 4 }, { 0, 1, 1, 2, 2 } };
-	private double[][] dispersionParametersUniv = { { 1.00, 1.00, 1.00, 1.00, 1.00 },
-											{ 1.00, 0.53, 0.53, 0.53, 0.53 } };
+	//private int[][] allocationUniv = { { 0, 1, 2, 3, 4 }, { 0, 1, 1, 2, 2 } };
+	//private double[][] dispersionParametersUniv = { { 1.00, 1.00, 1.00, 1.00, 1.00 },
+	//										{ 1.00, 0.53, 0.53, 0.53, 0.53 } };
     
     // school tour mode choice alternatives:    Alt1    Alt2    Alt3    Alt4    Alt5    Alt6
     //                                          SOV     HOV     WT      DT      NM      SB
-	protected int[][] allocationSchool = { { 0, 1, 2, 3, 4, 5 }, { 0, 1, 2, 3, 2, 3 } };
-	protected double[][] dispersionParametersSchool = { { 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 },
-												{ 1.00, 0.5333, 0.5333, 0.5333, 0.5333, 0.5333 } };
+	//protected int[][] allocationSchool = { { 0, 1, 2, 3, 4, 5 }, { 0, 1, 2, 3, 2, 3 } };
+	//protected double[][] dispersionParametersSchool = { { 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 },
+	//											{ 1.00, 0.5333, 0.5333, 0.5333, 0.5333, 0.5333 } };
 
 	protected int hh_id;
 	protected int hh_taz_id;
@@ -131,7 +136,24 @@ public class DTMModelBase implements java.io.Serializable {
 	protected short tourTypeCategory; 
 	protected short[] tourTypes; 
 
-	protected double[] submodeUtility = new double[1];
+	
+	
+    protected static final int WWL_OB = 1;
+    protected static final int PWL_OB = 2;
+    protected static final int KWL_OB = 3;
+    protected static final int WWP_OB = 4;
+    protected static final int PWP_OB = 5;
+    protected static final int KWP_OB = 6;
+    protected static final int WWL_IB = 7;
+    protected static final int WPL_IB = 8;
+    protected static final int WKL_IB = 9;
+    protected static final int WWP_IB = 10;
+    protected static final int WPP_IB = 11;
+    protected static final int WKP_IB = 12;
+    protected static final int NUM_SUBMODE_SHEETS = 12;
+	
+    protected double[] obSubmodeUtility = new double[1];
+    protected double[] ibSubmodeUtility = new double[1];
 	
 	
 //	private HashMap[] modalODUtilityMap = null;
@@ -253,9 +275,10 @@ public class DTMModelBase implements java.io.Serializable {
 
 			
 
+            /*
 			// create logit model (nested logit model for univ & school) objects
 			dc[i].createLogitModel();
-			tc[i].createLogitModel();
+			c[i].createLogitModel();
 
 
 			if ( tourTypeCategory == TourType.MANDATORY_CATEGORY ) {
@@ -276,8 +299,10 @@ public class DTMModelBase implements java.io.Serializable {
 				mc[i].createLogitModel();
 
 			}
+             */
 
-
+            
+            
 			if (dc[i].getNumberOfAlternatives() > numDcAlternatives)
 				numDcAlternatives = dc[i].getNumberOfAlternatives();
 			if (tc[i].getNumberOfAlternatives() > numTcAlternatives)
@@ -289,12 +314,12 @@ public class DTMModelBase implements java.io.Serializable {
 		smcSample[0] = 1;
 		smcSample[1] = 1;
 	
-		// create UECs for each time period/main transit mode
-        // used by derived classes to implement trip mode allocations for tours with WT or DT tour mode choice.
+		// create UECs for each transit tour mode - outbound and inbound
+        // used by derived classes to implement trip mode allocations for tours with any transit tour mode choice.
 		logger.info ("Creating Submode Choice UECs");
-        smcUEC = new UtilityExpressionCalculator[12];
-		for (int i=0; i < 12; i++)
-			smcUEC[i] = new UtilityExpressionCalculator(new File( (String)propertyMap.get( "Model72.controlFile" ) ), i+1, 0, propertyMap, Household.class);
+        smcUEC = new UtilityExpressionCalculator[NUM_SUBMODE_SHEETS+1];
+		for (int i=1; i < smcUEC.length; i++)
+			smcUEC[i] = new UtilityExpressionCalculator(new File( (String)propertyMap.get( "Model72.controlFile" ) ), i, 0, propertyMap, Household.class);
 
 
 		// create UECs for each of the model 9 model sheets		
@@ -487,38 +512,66 @@ public class DTMModelBase implements java.io.Serializable {
 		final int M651_MODEL_SHEET = 5;
 		final int M652_MODEL_SHEET = 6;
 		final int M66_MODEL_SHEET = 7;
-		final int M71_MODEL_SHEET = 2;
-		final int M71_OD_UTIL_SHEET = 3;
-		final int M72_MODEL_SHEET = 4;
-		final int M72_OD_UTIL_SHEET = 5;
-		final int M73_MODEL_SHEET = 6;
-		final int M73_OD_UTIL_SHEET = 7;
-		final int M741_MODEL_SHEET = 8;
-		final int M741_OD_UTIL_SHEET = 9;
-		final int M742_MODEL_SHEET = 10;
-		final int M742_OD_UTIL_SHEET = 11;
-		final int M743_MODEL_SHEET = 12;
-		final int M743_OD_UTIL_SHEET = 13;
-		final int M744_MODEL_SHEET = 14;
-		final int M744_OD_UTIL_SHEET = 15;
-		final int M751_MODEL_SHEET = 16;
-		final int M751_OD_UTIL_SHEET = 17;
-		final int M752_MODEL_SHEET = 18;
-		final int M752_OD_UTIL_SHEET = 19;
-		final int M753_MODEL_SHEET = 20;
-		final int M753_OD_UTIL_SHEET = 21;
-		final int M754_MODEL_SHEET = 22;
-		final int M754_OD_UTIL_SHEET = 23;
-		final int M755_MODEL_SHEET = 24;
-		final int M755_OD_UTIL_SHEET = 25;
-		final int M76_MODEL_SHEET = 26;
-		final int M76_OD_UTIL_SHEET = 27;
+
+//        final int M71_MODEL_SHEET = 2;
+//        final int M71_OD_UTIL_SHEET = 3;
+//        final int M72_MODEL_SHEET = 4;
+//        final int M72_OD_UTIL_SHEET = 5;
+//        final int M73_MODEL_SHEET = 6;
+//        final int M73_OD_UTIL_SHEET = 7;
+//        final int M741_MODEL_SHEET = 8;
+//        final int M741_OD_UTIL_SHEET = 9;
+//        final int M742_MODEL_SHEET = 10;
+//        final int M742_OD_UTIL_SHEET = 11;
+//        final int M743_MODEL_SHEET = 12;
+//        final int M743_OD_UTIL_SHEET = 13;
+//        final int M744_MODEL_SHEET = 14;
+//        final int M744_OD_UTIL_SHEET = 15;
+//        final int M751_MODEL_SHEET = 16;
+//        final int M751_OD_UTIL_SHEET = 17;
+//        final int M752_MODEL_SHEET = 18;
+//        final int M752_OD_UTIL_SHEET = 19;
+//        final int M753_MODEL_SHEET = 20;
+//        final int M753_OD_UTIL_SHEET = 21;
+//        final int M754_MODEL_SHEET = 22;
+//        final int M754_OD_UTIL_SHEET = 23;
+//        final int M755_MODEL_SHEET = 24;
+//        final int M755_OD_UTIL_SHEET = 25;
+//        final int M76_MODEL_SHEET = 26;
+//        final int M76_OD_UTIL_SHEET = 27;
+
+        final int M71_MODEL_SHEET = 1;
+        final int M71_OD_UTIL_SHEET = 2;
+        final int M72_MODEL_SHEET = 3;
+        final int M72_OD_UTIL_SHEET = 4;
+        final int M73_MODEL_SHEET = 5;
+        final int M73_OD_UTIL_SHEET = 6;
+        final int M741_MODEL_SHEET = 8;
+        final int M741_OD_UTIL_SHEET = 7;
+        final int M742_MODEL_SHEET = 9;
+        final int M742_OD_UTIL_SHEET = 7;
+        final int M743_MODEL_SHEET = 10;
+        final int M743_OD_UTIL_SHEET = 7;
+        final int M744_MODEL_SHEET = 11;
+        final int M744_OD_UTIL_SHEET = 7;
+        final int M751_MODEL_SHEET = 13;
+        final int M751_OD_UTIL_SHEET = 12;
+        final int M752_MODEL_SHEET = 14;
+        final int M752_OD_UTIL_SHEET = 12;
+        final int M753_MODEL_SHEET = 15;
+        final int M753_OD_UTIL_SHEET = 12;
+        final int M754_MODEL_SHEET = 16;
+        final int M754_OD_UTIL_SHEET = 12;
+        final int M755_MODEL_SHEET = 17;
+        final int M755_OD_UTIL_SHEET = 12;
+        final int M76_MODEL_SHEET = 19;
+        final int M76_OD_UTIL_SHEET = 18;
 
 
 		// assign the model sheet numbers for the desired tour purpose
 		m5DataSheet = 0;
 		m6DataSheet = 0;
-		m7ODDataSheet = 1;
+		m7ODDataSheet = 0;
 		m7DataSheet = 0;
 		if (tourCategory == 1) {
 			if (tourType == TourType.WORK) {
@@ -723,6 +776,31 @@ public class DTMModelBase implements java.io.Serializable {
 
 	}
 	
-	
+    // if the tour mode argument is in the list of transit tour mode indices, return true, otherwise return false.
+    protected boolean tourModeIsTransit( int tourModeIndex ){     
+        for ( int index : transitTourModeIndices )
+            if ( index == tourModeIndex )
+                return true;
+        
+        return false;
+    }
+
+    // if the tour mode argument is in the list of local transit tour mode indices, return true, otherwise return false.
+    protected boolean tourModeIsLocalTransit( int tourModeIndex ){     
+        for ( int index : localTransitTourModeIndices )
+            if ( index == tourModeIndex )
+                return true;
+        
+        return false;
+    }
+
+    // if the tour mode argument is in the list of premium transit tour mode indices, return true, otherwise return false.
+    protected boolean tourModeIsPremiumTransit( int tourModeIndex ){     
+        for ( int index : premiumTransitTourModeIndices )
+            if ( index == tourModeIndex )
+                return true;
+        
+        return false;
+    }
 	
 }

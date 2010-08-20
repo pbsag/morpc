@@ -286,7 +286,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
 				dc[tourTypeIndex].computeUtilities ( hh, index, dcAvailability, dcSample );
-				int chosen = dc[tourTypeIndex].getChoiceResult();
+				int chosen = dc[tourTypeIndex].getChoiceResult( SeededRandom.getRandom() );
 				int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
 				int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 				dcTime += (System.currentTimeMillis() - markTime);
@@ -435,14 +435,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
                 index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
 				setMcODUtility ( hh, index, tourTypeIndex );
                 
-				// set transit modes to unavailable if a no walk access subzone was selected in DC.
-				int chosenShrtWlk = hh.mandatoryTours[t].getDestShrtWlk();
-				if ( chosenShrtWlk == 0 ) {
-					mcSample[3] = 0;
-					mcAvailability[3] = false;
-					mcSample[4] = 0;
-					mcAvailability[4] = false;
-				}
 				
 				//this is the original by Jim				
 				//mc[tourTypeIndex].updateLogitModel ( hh, mcAvailability, mcSample );
@@ -453,12 +445,13 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				int chosenModeAlt = -1;
 				try {
                     mc[tourTypeIndex].computeUtilities ( hh, index, mcAvailability, mcSample );
-					chosenModeAlt = mc[tourTypeIndex].getChoiceResult();
+					chosenModeAlt = mc[tourTypeIndex].getChoiceResult( SeededRandom.getRandom() );
 				}
 				catch (java.lang.Exception e) {
 					logger.fatal ("runtime exception occurred in DTMHousehold.mandatoryTourMc() for household id=" + hh.getID(), e);
 					logger.fatal("");
-					logger.fatal("m=" + m);
+                    logger.fatal("hh_id=" + hh_id);
+                    logger.fatal("m=" + m);
 					logger.fatal("t=" + t);
 					logger.fatal("person=" + person);
 					logger.fatal("tourTypeIndex=" + tourTypeIndex);
@@ -498,11 +491,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 					
 					if ( hh.getFreeParking() == 1 ) {
 						pc[0].computeUtilities ( hh, index ,pcAvailability, pcSample );
-                        chosenParkAlt = pc[0].getChoiceResult();
+                        chosenParkAlt = pc[0].getChoiceResult( SeededRandom.getRandom() );
 					}
 					else {
 						pc[1].computeUtilities ( hh, index, pcAvailability, pcSample );
-                        chosenParkAlt = pc[1].getChoiceResult();
+                        chosenParkAlt = pc[1].getChoiceResult( SeededRandom.getRandom() );
 					}
 
 					hh.mandatoryTours[t].setChosenPark ((int)cbdAltsTable.getValueAt(chosenParkAlt,2));
@@ -515,107 +508,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				}
 
 
-
-
-				//wu added for FTA restart
-				int tod=hh.mandatoryTours[t].getTimeOfDayAlt();
-				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
-				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
-				
-				if ( chosenModeAlt == 3 || chosenModeAlt == 4 ) {
-
-					// set outbound submodes
-					if (chosenModeAlt == 3) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 1)	// wt, am
-							submodeUtility = smcUEC[0].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 2)	// wt, pm
-							submodeUtility = smcUEC[2].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[1].solve( index, hh, smcSample ); // wt, op
-
-					}
-					else if (chosenModeAlt == 4) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 1)	// dt, am
-							submodeUtility = smcUEC[3].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 2)	// dt, pm
-							submodeUtility = smcUEC[5].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[4].solve( index, hh, smcSample );	// dt, op
-				
-					}
-					
-					
-					
-					if (submodeUtility[0] >= 10000)
-						hh.mandatoryTours[t].setSubmodeOB ( SubmodeType.CRL );
-					else if (submodeUtility[0] >= 1000)
-						hh.mandatoryTours[t].setSubmodeOB ( SubmodeType.LRT );
-					else if (submodeUtility[0] >= 100)
-						hh.mandatoryTours[t].setSubmodeOB ( SubmodeType.BRT );
-					else if (submodeUtility[0] >= 10)
-						hh.mandatoryTours[t].setSubmodeOB ( SubmodeType.EBS );
-					else if (submodeUtility[0] >= 1)
-						hh.mandatoryTours[t].setSubmodeOB ( SubmodeType.LBS );
-					else
-						hh.mandatoryTours[t].setSubmodeOB ( 6 );
-
-
-					//wu added for FTA restart
-					start=hh.mandatoryTours[t].getTimeOfDayAlt();
-					
-					// set inbound submodes
-					if (chosenModeAlt == 3) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 1)	// wt, am
-							submodeUtility = smcUEC[6].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 2)	// wt, pm
-							submodeUtility = smcUEC[8].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[7].solve( index, hh, smcSample ); // wt, op
-				
-					}
-					else if (chosenModeAlt == 4) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 1)	// dt, am
-							submodeUtility = smcUEC[9].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 2)	// dt, pm
-							submodeUtility = smcUEC[11].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[10].solve( index, hh, smcSample );	// dt, op
-				
-					}
-
-
-					
-					if (submodeUtility[0] >= 10000)
-						hh.mandatoryTours[t].setSubmodeIB ( SubmodeType.CRL );
-					else if (submodeUtility[0] >= 1000)
-						hh.mandatoryTours[t].setSubmodeIB ( SubmodeType.LRT );
-					else if (submodeUtility[0] >= 100)
-						hh.mandatoryTours[t].setSubmodeIB ( SubmodeType.BRT );
-					else if (submodeUtility[0] >= 10)
-						hh.mandatoryTours[t].setSubmodeIB ( SubmodeType.EBS );
-					else if (submodeUtility[0] >= 1)
-						hh.mandatoryTours[t].setSubmodeIB ( SubmodeType.LBS );
-					else
-						hh.mandatoryTours[t].setSubmodeIB ( 6 );
-
-				}
-				else {
-
-					hh.mandatoryTours[t].setSubmodeOB ( 6 );
-					hh.mandatoryTours[t].setSubmodeIB ( 6 );
-
-				}
-
-				
-				if ( (hh.mandatoryTours[t].getMode() == 3 || hh.mandatoryTours[t].getMode() == 4) && (hh.mandatoryTours[t].getSubmodeOB() == 6 || hh.mandatoryTours[t].getSubmodeIB() == 6) ) {
-					logger.warn ( "invalid submode for mandatory tour=" + t + " for hhid=" + hh.getID() + ", tour mode=" + hh.mandatoryTours[t].getMode() + ", ob submode=" + hh.mandatoryTours[t].getSubmodeOB() + " and ib submode=" + hh.mandatoryTours[t].getSubmodeIB() + "." );
-				}
-				
-				
+				// store the tour submode in the tour object
+			    setTourSubMode( hh, hh.mandatoryTours[t], index, tourTypeIndex );
+			    
 			}
 			
 		}
@@ -767,7 +662,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
 				dc[m].computeUtilities ( hh, index, dcAvailability, dcSample );
-				int chosen = dc[m].getChoiceResult();
+				int chosen = dc[m].getChoiceResult( SeededRandom.getRandom() );
 				int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
 				int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 				dcTime += (System.currentTimeMillis() - markTime);
@@ -894,7 +789,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				int chosenTODAlt;
 				try {
-					chosenTODAlt = tc[m].getChoiceResult();
+					chosenTODAlt = tc[m].getChoiceResult( SeededRandom.getRandom() );
 				}
 				catch (ModelException e) {
 					chosenTODAlt = SeededRandom.getRandom() < 0.5 ? 1 : 190;
@@ -998,13 +893,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
                 index.setDestZone( hh.jointTours[t].getDestTaz() );
                 setMcODUtility ( hh, index, m );
 
-				// set transit modes to unavailable if a no walk access subzone was selected in DC.
-				if ( hh.jointTours[t].getDestShrtWlk() == 0 ) {
-					mcSample[3] = 0;
-					mcAvailability[3] = false;
-					mcSample[4] = 0;
-					mcAvailability[4] = false;
-				}
 				
 				//Jim's original
 				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
@@ -1013,7 +901,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
                 //Wu added for Summit Aggregation
 				mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
-				int chosenModeAlt = mc[m].getChoiceResult();
+				int chosenModeAlt = mc[m].getChoiceResult( SeededRandom.getRandom() );
 				
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
@@ -1032,97 +920,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.jointTours[t].setChosenPark (0);
 
 
-				//wu added for FTA restart
-				int tod=hh.jointTours[t].getTimeOfDayAlt();
-				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
-				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
-				
-				if ( chosenModeAlt == 3 || chosenModeAlt == 4 ) {
-
-					// set outbound submodes
-					if (chosenModeAlt == 3) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 1)	// wt, am
-							submodeUtility = smcUEC[0].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 2)	// wt, pm
-							submodeUtility = smcUEC[2].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[1].solve( index, hh, smcSample ); // wt, op
-				
-					}
-					else if (chosenModeAlt == 4) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 1)	// dt, am
-							submodeUtility = smcUEC[3].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 2)	// dt, pm
-							submodeUtility = smcUEC[5].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[4].solve( index, hh, smcSample );	// dt, op
-				
-					}
-
-					if (submodeUtility[0] >= 10000)
-						hh.jointTours[t].setSubmodeOB ( SubmodeType.CRL );
-					else if (submodeUtility[0] >= 1000)
-						hh.jointTours[t].setSubmodeOB ( SubmodeType.LRT );
-					else if (submodeUtility[0] >= 100)
-						hh.jointTours[t].setSubmodeOB ( SubmodeType.BRT );
-					else if (submodeUtility[0] >= 10)
-						hh.jointTours[t].setSubmodeOB ( SubmodeType.EBS );
-					else if (submodeUtility[0] >= 1)
-						hh.jointTours[t].setSubmodeOB ( SubmodeType.LBS );
-					else
-						hh.jointTours[t].setSubmodeOB ( 6 );
-
-
-					
-					// set inbound submodes
-					if (chosenModeAlt == 3) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 1)	// wt, am
-							submodeUtility = smcUEC[6].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 2)	// wt, pm
-							submodeUtility = smcUEC[8].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[7].solve( index, hh, smcSample ); // wt, op
-				
-					}
-					else if (chosenModeAlt == 4) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 1)	// dt, am
-							submodeUtility = smcUEC[9].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 2)	// dt, pm
-							submodeUtility = smcUEC[11].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[10].solve( index, hh, smcSample );	// dt, op
-				
-					}
-
-					if (submodeUtility[0] >= 10000)
-						hh.jointTours[t].setSubmodeIB ( SubmodeType.CRL );
-					else if (submodeUtility[0] >= 1000)
-						hh.jointTours[t].setSubmodeIB ( SubmodeType.LRT );
-					else if (submodeUtility[0] >= 100)
-						hh.jointTours[t].setSubmodeIB ( SubmodeType.BRT );
-					else if (submodeUtility[0] >= 10)
-						hh.jointTours[t].setSubmodeIB ( SubmodeType.EBS );
-					else if (submodeUtility[0] >= 1)
-						hh.jointTours[t].setSubmodeIB ( SubmodeType.LBS );
-					else
-						hh.jointTours[t].setSubmodeIB ( 6 );
-
-				}
-				else {
-
-					hh.jointTours[t].setSubmodeOB ( 6 );
-					hh.jointTours[t].setSubmodeIB ( 6 );
-
-				}
-
-			
-				if ( (hh.jointTours[t].getMode() == 3 || hh.jointTours[t].getMode() == 4) && (hh.jointTours[t].getSubmodeOB() == 6 || hh.jointTours[t].getSubmodeOB() == 6) ) {
-					logger.warn ( "invalid submode for joint tour=" + t + " for hhid=" + hh.getID() + ", tour mode=" + hh.jointTours[t].getMode() + ", ob submode=" + hh.jointTours[t].getSubmodeOB() + " and ib submode=" + hh.jointTours[t].getSubmodeIB() + "." );
-				}
+                // store the tour submode in the tour object
+                setTourSubMode( hh, hh.jointTours[t], index, m );
+                
 				
 			}
 
@@ -1272,8 +1072,18 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
-				dc[m].computeUtilities ( hh, index, dcAvailability, dcSample );
-				int chosen = dc[m].getChoiceResult();
+                int chosen = -1;
+				try{
+				    dc[m].computeUtilities ( hh, index, dcAvailability, dcSample );
+	                chosen = dc[m].getChoiceResult( SeededRandom.getRandom() );
+				}
+				catch(Exception e){
+				    logger.error("exception calculating tour DC for hhid=" + hh_id + ", m=" + m + ", t=" + t );
+		            mcODUEC[m].logAnswersArray( logger, "MC Logsum OD Utilities" );
+		            mc[m].logUECResults( logger, "MC Logsum Utilities" );
+				    dc[m].logUECResults( logger, "DC Utilities", 10 );
+				    throw new RuntimeException();
+				}
 				int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
 				int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 				dcTime += (System.currentTimeMillis() - markTime);
@@ -1637,7 +1447,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				int chosenTODAlt;
 				try {
-					chosenTODAlt = tc[m].getChoiceResult();
+					chosenTODAlt = tc[m].getChoiceResult( SeededRandom.getRandom() );
 				}
 				catch (ModelException e) {
 					chosenTODAlt = SeededRandom.getRandom() < 0.5 ? 1 : 190;
@@ -1728,20 +1538,13 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				index.setDestZone( hh.indivTours[t].getDestTaz() );
 				setMcODUtility ( hh, index, m );
                 
-				// set transit modes to unavailable if a no walk access subzone was selected in DC.
-				if ( hh.indivTours[t].getDestShrtWlk() == 0 ) {
-					mcSample[3] = 0;
-					mcAvailability[3] = false;
-					mcSample[4] = 0;
-					mcAvailability[4] = false;
-				}
 
 				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
 				//int chosenModeAlt = mc[m].getChoiceResult();
 				
 				//Wu added for Summit Aggregation
 				mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
-				int chosenModeAlt = mc[m].getChoiceResult();
+				int chosenModeAlt = mc[m].getChoiceResult( SeededRandom.getRandom() );
 				
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
@@ -1762,7 +1565,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				if ( hh.getCbdDest() && chosenModeAlt < 3 ) {
 					
 					pc[2].computeUtilities ( hh, index, pcAvailability, pcSample );
-					chosenParkAlt = pc[2].getChoiceResult();
+					chosenParkAlt = pc[2].getChoiceResult( SeededRandom.getRandom() );
 
 					hh.indivTours[t].setChosenPark ((int)cbdAltsTable.getValueAt(chosenParkAlt,2));
 
@@ -1775,99 +1578,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 
 
-
-				//wu added for FTA restart
-				int tod=hh.indivTours[t].getTimeOfDayAlt();
-				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
-				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
-
-				if ( chosenModeAlt == 3 || chosenModeAlt == 4 ) {
-
-					// set outbound submodes
-					if (chosenModeAlt == 3) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 1)	// wt, am
-							submodeUtility = smcUEC[0].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 2)	// wt, pm
-							submodeUtility = smcUEC[2].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[1].solve( index, hh, smcSample ); // wt, op
-				
-					}
-					else if (chosenModeAlt == 4) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 1)	// dt, am
-							submodeUtility = smcUEC[3].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 2)	// dt, pm
-							submodeUtility = smcUEC[5].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[4].solve( index, hh, smcSample );	// dt, op
-				
-					}
-
-					if (submodeUtility[0] >= 10000)
-						hh.indivTours[t].setSubmodeOB ( SubmodeType.CRL );
-					else if (submodeUtility[0] >= 1000)
-						hh.indivTours[t].setSubmodeOB ( SubmodeType.LRT );
-					else if (submodeUtility[0] >= 100)
-						hh.indivTours[t].setSubmodeOB ( SubmodeType.BRT );
-					else if (submodeUtility[0] >= 10)
-						hh.indivTours[t].setSubmodeOB ( SubmodeType.EBS );
-					else if (submodeUtility[0] >= 1)
-						hh.indivTours[t].setSubmodeOB ( SubmodeType.LBS );
-					else
-						hh.indivTours[t].setSubmodeOB ( 6 );
-
-
-					
-					// set inbound submodes
-					if (chosenModeAlt == 3) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 1)	// wt, am
-							submodeUtility = smcUEC[6].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 2)	// wt, pm
-							submodeUtility = smcUEC[8].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[7].solve( index, hh, smcSample ); // wt, op
-				
-					}
-					else if (chosenModeAlt == 4) {
-					
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 1)	// dt, am
-							submodeUtility = smcUEC[9].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 2)	// dt, pm
-							submodeUtility = smcUEC[11].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[10].solve( index, hh, smcSample );	// dt, op
-				
-					}
-
-					if (submodeUtility[0] >= 10000)
-						hh.indivTours[t].setSubmodeIB ( SubmodeType.CRL );
-					else if (submodeUtility[0] >= 1000)
-						hh.indivTours[t].setSubmodeIB ( SubmodeType.LRT );
-					else if (submodeUtility[0] >= 100)
-						hh.indivTours[t].setSubmodeIB ( SubmodeType.BRT );
-					else if (submodeUtility[0] >= 10)
-						hh.indivTours[t].setSubmodeIB ( SubmodeType.EBS );
-					else if (submodeUtility[0] >= 1)
-						hh.indivTours[t].setSubmodeIB ( SubmodeType.LBS );
-					else
-						hh.indivTours[t].setSubmodeIB ( 6 );
-
-				}
-				else {
-
-					hh.indivTours[t].setSubmodeOB ( 6 );
-					hh.indivTours[t].setSubmodeIB ( 6 );
-
-				}
-
-			
-				if ( (hh.indivTours[t].getMode() == 3 || hh.indivTours[t].getMode() == 4) && (hh.indivTours[t].getSubmodeOB() == 6 || hh.indivTours[t].getSubmodeOB() == 6) ) {
-					logger.warn ( "invalid submode for individual non-mandatory tour=" + t + " for hhid=" + hh.getID() + ", tour mode=" + hh.indivTours[t].getMode() + ", ob submode=" + hh.indivTours[t].getSubmodeOB() + " and ib submode=" + hh.indivTours[t].getSubmodeIB() + "." );
-				}
-				
+                // store the tour submode in the tour object
+                setTourSubMode( hh, hh.indivTours[t], index, m );
+                
 			}
 				
 		}
@@ -2038,7 +1751,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
         		// compute destination choice proportions and choose alternative
 				markTime = System.currentTimeMillis();
 				dc[m].computeUtilities ( hh, index, dcAvailability, dcSample );
-				int chosen = dc[m].getChoiceResult();
+				int chosen = dc[m].getChoiceResult( SeededRandom.getRandom() );
         		int chosenDestAlt = (int)((chosen-1)/ZonalDataManager.WALK_SEGMENTS) + 1;
         		int chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 				dcTime += (System.currentTimeMillis() - markTime);
@@ -2212,7 +1925,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 
 				int chosenTODAlt;
 				try {
-					chosenTODAlt = tc[m].getChoiceResult();
+					chosenTODAlt = tc[m].getChoiceResult( SeededRandom.getRandom() );
 				}
 				catch (ModelException e) {
 					chosenTODAlt = SeededRandom.getRandom() < 0.5 ? 1 : 190;
@@ -2340,13 +2053,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
                 index.setDestZone( hh.mandatoryTours[t].subTours[s].getDestTaz() );
                 setMcODUtility ( hh, index, m );
 
-				// set transit modes to unavailable if a no walk access subzone was selected in DC.
-				if ( hh.mandatoryTours[t].subTours[s].getDestShrtWlk() == 0 ) {
-					mcSample[3] = 0;
-					mcAvailability[3] = false;
-					mcSample[4] = 0;
-					mcAvailability[4] = false;
-				}
 				
 				//Jim's original
 				//mc[m].updateLogitModel ( hh, mcAvailability, mcSample );
@@ -2354,7 +2060,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 				//Wu added for Summit Aggregation
 				mc[m].computeUtilities ( hh, index, mcAvailability, mcSample );
-				int chosenModeAlt = mc[m].getChoiceResult();
+				int chosenModeAlt = mc[m].getChoiceResult( SeededRandom.getRandom() );
 				
 				//Wu added for Summit Aggregation
 				if( (String)propertyMap.get("writeSummitAggregationFields") != null ){
@@ -2373,106 +2079,16 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				hh.mandatoryTours[t].subTours[s].setChosenPark (0);
 
 
-                //wu added for FTA restart
-				int tod=hh.mandatoryTours[t].subTours[s].getTimeOfDayAlt();
-				start = com.pb.morpc.models.TODDataManager.getTodStartHour ( tod );
-				end = com.pb.morpc.models.TODDataManager.getTodEndHour ( tod );
-				
-				if ( chosenModeAlt == 3 || chosenModeAlt == 4 ) {
-
-					// set outbound submodes
-					if (chosenModeAlt == 3) {
-				
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 1)	// wt, am
-							submodeUtility = smcUEC[0].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 2)	// wt, pm
-							submodeUtility = smcUEC[2].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[1].solve( index, hh, smcSample ); // wt, op
-			
-					}
-					else if (chosenModeAlt == 4) {
-				
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 1)	// dt, am
-							submodeUtility = smcUEC[3].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(start) ) == 2)	// dt, pm
-							submodeUtility = smcUEC[5].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[4].solve( index, hh, smcSample );	// dt, op
-			
-					}
-
-					if (submodeUtility[0] >= 10000)
-						hh.mandatoryTours[t].subTours[s].setSubmodeOB ( SubmodeType.CRL );
-					else if (submodeUtility[0] >= 1000)
-						hh.mandatoryTours[t].subTours[s].setSubmodeOB ( SubmodeType.LRT );
-					else if (submodeUtility[0] >= 100)
-						hh.mandatoryTours[t].subTours[s].setSubmodeOB ( SubmodeType.BRT );
-					else if (submodeUtility[0] >= 10)
-						hh.mandatoryTours[t].subTours[s].setSubmodeOB ( SubmodeType.EBS );
-					else if (submodeUtility[0] >= 1)
-						hh.mandatoryTours[t].subTours[s].setSubmodeOB ( SubmodeType.LBS );
-					else
-						hh.mandatoryTours[t].subTours[s].setSubmodeOB ( 6 );
-
-
-				
-					// set inbound submodes
-					if (chosenModeAlt == 3) {
-				
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 1)	// wt, am
-							submodeUtility = smcUEC[6].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 2)	// wt, pm
-							submodeUtility = smcUEC[8].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[7].solve( index, hh, smcSample ); // wt, op
-			
-					}
-					else if (chosenModeAlt == 4) {
-				
-						if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 1)	// dt, am
-							submodeUtility = smcUEC[9].solve( index, hh, smcSample );
-						else if (com.pb.morpc.models.TODDataManager.getTodSkimPeriod ( com.pb.morpc.models.TODDataManager.getTodPeriod(end) ) == 2)	// dt, pm
-							submodeUtility = smcUEC[11].solve( index, hh, smcSample );
-						else
-							submodeUtility = smcUEC[10].solve( index, hh, smcSample );	// dt, op
-			
-					}
-
-					if (submodeUtility[0] >= 10000)
-						hh.mandatoryTours[t].subTours[s].setSubmodeIB ( SubmodeType.CRL );
-					else if (submodeUtility[0] >= 1000)
-						hh.mandatoryTours[t].subTours[s].setSubmodeIB ( SubmodeType.LRT );
-					else if (submodeUtility[0] >= 100)
-						hh.mandatoryTours[t].subTours[s].setSubmodeIB ( SubmodeType.BRT );
-					else if (submodeUtility[0] >= 10)
-						hh.mandatoryTours[t].subTours[s].setSubmodeIB ( SubmodeType.EBS );
-					else if (submodeUtility[0] >= 1)
-						hh.mandatoryTours[t].subTours[s].setSubmodeIB ( SubmodeType.LBS );
-					else
-						hh.mandatoryTours[t].subTours[s].setSubmodeIB ( 6 );
-
-				}
-				else {
-
-					hh.mandatoryTours[t].subTours[s].setSubmodeOB ( 6 );
-					hh.mandatoryTours[t].subTours[s].setSubmodeIB ( 6 );
-
-				}
-			
-
-			
-				if ( (hh.mandatoryTours[t].subTours[s].getMode() == 3 || hh.mandatoryTours[t].subTours[s].getMode() == 4) && (hh.mandatoryTours[t].subTours[s].getSubmodeOB() == 6 || hh.mandatoryTours[t].subTours[s].getSubmodeOB() == 6) ) {
-					logger.warn ( "invalid submode for at-work subtour=" + t + ", subtour=" + s + " for hhid=" + hh.getID() + ", tour mode=" + hh.mandatoryTours[t].subTours[s].getMode() + ", ob submode=" + hh.mandatoryTours[t].subTours[s].getSubmodeOB() + " and ib submode=" + hh.mandatoryTours[t].subTours[s].getSubmodeIB() + "." );
-				}
+                // store the tour submode in the tour object
+                setTourSubMode( hh, hh.mandatoryTours[t].subTours[s], index, m );
+                
 				
 				
 				// reset the Household object data members to their original values
 				hh.setOrigTaz ( hhOrigTaz );
 				hh.setOriginWalkSegment( hhOrigWalkSegment );
+
 			}
-			
-			
 					
 		}
 
@@ -3004,7 +2620,7 @@ public void mandatoryTourTc ( Household hh ) {
     			
     			int chosenTODAlt;
     			try {
-    			    chosenTODAlt = tc[tourTypeIndex].getChoiceResult();
+    			    chosenTODAlt = tc[tourTypeIndex].getChoiceResult( SeededRandom.getRandom() );
     			}
     			catch (ModelException e) {
     				chosenTODAlt = SeededRandom.getRandom() < 0.5 ? 1 : 190;
@@ -3198,4 +2814,129 @@ public void mandatoryTourTc ( Household hh ) {
         
         return elementalProbs;
 	}
+	
+	
+    
+	
+	private void setTourSubMode( Household hh, Tour tour, IndexValues index, int tourTypeIndex ){
+
+	    boolean error = false;
+        int obSubmodeUecIndex = -1;            
+        int ibSubmodeUecIndex = -1;            
+	    
+        // set outbound direction half-tour submode
+        if ( tourModeIsLocalTransit( tour.getMode() ) ) {
+
+            if ( tour.getMode() == TourModeType.WL ) {                
+                obSubmodeUecIndex = WWL_OB;            
+                ibSubmodeUecIndex = WWL_IB;            
+                obSubmodeUtility = smcUEC[WWL_OB].solve( index, hh, smcSample );
+                ibSubmodeUtility = smcUEC[WWL_IB].solve( index, hh, smcSample );
+            }
+            else if ( tour.getMode() == TourModeType.PL ) {
+                obSubmodeUecIndex = PWL_OB;            
+                ibSubmodeUecIndex = WPL_IB;            
+                obSubmodeUtility = smcUEC[PWL_OB].solve( index, hh, smcSample );
+                ibSubmodeUtility = smcUEC[WPL_IB].solve( index, hh, smcSample );
+            }
+            else if ( tour.getMode() == TourModeType.KL ) {
+                obSubmodeUecIndex = KWL_OB;            
+                ibSubmodeUecIndex = WKL_IB;            
+                obSubmodeUtility = smcUEC[KWL_OB].solve( index, hh, smcSample );
+                ibSubmodeUtility = smcUEC[WKL_IB].solve( index, hh, smcSample );
+            }
+            
+            if ( obSubmodeUtility[0] >= 1 && ibSubmodeUtility[0] >= 1 ){
+                tour.setSubmodeOB ( SubmodeType.LBS );
+                tour.setSubmodeIB ( SubmodeType.LBS );
+            }
+            else{
+                logger.error ( "calculating tour submode for hhid=" + hh_id + ", tourTypeIndex=" + tourTypeIndex );
+                logger.error ( "obSubmodeUtility < 1 for local transit tour mode." );
+                error = true;
+                // throw new RuntimeException();                
+            }
+
+        }
+        else if ( tourModeIsPremiumTransit( tour.getMode() ) ) {
+            
+            if ( tour.getMode() == TourModeType.WP ) {
+                obSubmodeUecIndex = WWP_OB;            
+                ibSubmodeUecIndex = WWP_IB;            
+                obSubmodeUtility = smcUEC[WWP_OB].solve( index, hh, smcSample );
+                ibSubmodeUtility = smcUEC[WWP_IB].solve( index, hh, smcSample );
+            }
+            else if ( tour.getMode() == TourModeType.PP ) {
+                obSubmodeUecIndex = PWP_OB;            
+                ibSubmodeUecIndex = WPP_IB;            
+                obSubmodeUtility = smcUEC[PWP_OB].solve( index, hh, smcSample );
+                ibSubmodeUtility = smcUEC[WPP_IB].solve( index, hh, smcSample );
+            }
+            else if ( tour.getMode() == TourModeType.KP ) {
+                obSubmodeUecIndex = KWP_OB;            
+                ibSubmodeUecIndex = WKP_IB;            
+                obSubmodeUtility = smcUEC[KWP_OB].solve( index, hh, smcSample );
+                ibSubmodeUtility = smcUEC[WKP_IB].solve( index, hh, smcSample );
+            }
+            
+            if (obSubmodeUtility[0] >= 10000)
+                tour.setSubmodeOB ( SubmodeType.CRL );
+            else if (obSubmodeUtility[0] >= 1000)
+                tour.setSubmodeOB ( SubmodeType.LRT );
+            else if (obSubmodeUtility[0] >= 100)
+                tour.setSubmodeOB ( SubmodeType.BRT );
+            else if (obSubmodeUtility[0] >= 10)
+                tour.setSubmodeOB ( SubmodeType.EBS );
+            else if (obSubmodeUtility[0] >= 1)
+                tour.setSubmodeOB ( SubmodeType.LBS );
+            else{
+                logger.error ( "calculating tour submode for hhid=" + hh_id + ", tourTypeIndex=" + tourTypeIndex );
+                logger.error ( "obSubmodeUtility < 1 for premium transit tour mode." );
+                error  = true;
+                //throw new RuntimeException();
+            }
+            
+            if (ibSubmodeUtility[0] >= 10000)
+                tour.setSubmodeIB ( SubmodeType.CRL );
+            else if (ibSubmodeUtility[0] >= 1000)
+                tour.setSubmodeIB ( SubmodeType.LRT );
+            else if (ibSubmodeUtility[0] >= 100)
+                tour.setSubmodeIB ( SubmodeType.BRT );
+            else if (ibSubmodeUtility[0] >= 10)
+                tour.setSubmodeIB ( SubmodeType.EBS );
+            else if (ibSubmodeUtility[0] >= 1)
+                tour.setSubmodeIB ( SubmodeType.LBS );
+            else{
+                logger.error ( "calculating tour submode for hhid=" + hh_id + ", tourTypeIndex=" + tourTypeIndex );
+                logger.error ( "ibSubmodeUtility < 1 for premium transit tour mode." );
+                error  = true;
+                //throw new RuntimeException();
+            }
+            
+        }
+        else {
+
+            tour.setSubmodeOB ( SubmodeType.NM );
+            tour.setSubmodeIB ( SubmodeType.NM );
+
+        }
+        
+        
+        if ( error || ( ( tourModeIsTransit( tour.getMode() ) ) && ( tour.getSubmodeOB() == 6 || tour.getSubmodeIB() == 6 ) ) ) {
+            logger.warn ( "" );
+            logger.warn ( "" );
+            logger.warn ( "non-motorized submode for " + TourType.TYPE_CATEGORY_LABELS[hh.getTourCategory()] + " tour=" + hh.getTourID() + " for hhid=" + hh.getID() + ", tour mode=" + tour.getMode() + ", ob submode=" + tour.getSubmodeOB() + " and ib submode=" + tour.getSubmodeIB() + "." );
+            logger.warn ( "calculating tour submode for hhid=" + hh_id + ", tourTypeIndex=" + tourTypeIndex );
+            
+            mcODUEC[tourTypeIndex].logAnswersArray( logger, "MC OD Utilities" );
+            mc[tourTypeIndex].logUECResults( logger, "MC Utilities" );
+
+            smcUEC[obSubmodeUecIndex].logAnswersArray( logger, "OB Submode Choice Utilities" );
+            smcUEC[ibSubmodeUecIndex].logAnswersArray( logger, "IB Submode Choice Utilities" );
+
+            throw new RuntimeException();
+        }
+
+	}
+
 }

@@ -17,6 +17,8 @@ public class Tour implements java.io.Externalizable {
 	protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 	static final int WALK_SEGMENTS = 3;
+    static final int[] AUTO_MODE_ALTS = { 1, 2 }; 
+    static final int[] TRANSIT_MODE_ALTS = { 3, 4, 5, 6, 7, 8 }; 
 
     boolean[] personParticipation;
 	short tourType;
@@ -135,12 +137,40 @@ public class Tour implements java.io.Externalizable {
 		this.mode = (short)arg;
 	}
 
-	/**
-	 * return the tour mode for this Tour object
-	 */
-	public int getMode () {
-		return this.mode;
-	}
+    /**
+     * return the tour mode for this Tour object
+     */
+    public int getMode () {
+        return this.mode;
+    }
+
+    /**
+     * return 1 if the tour mode for this Tour object is an auto mode, 0 otherwise
+     */
+    public int getModeIsAutoMode () {
+        int returnValue = 0;
+        for ( int m : AUTO_MODE_ALTS ){
+            if ( mode == m ){
+                returnValue = 1;
+                break;
+            }
+        }
+        return returnValue;
+    }
+
+    /**
+     * return 1 if the tour mode for this Tour object is a transit mode, 0 otherwise
+     */
+    public int getModeIsTransitMode () {
+        int returnValue = 0;
+        for ( int m : TRANSIT_MODE_ALTS ){
+            if ( mode == m ){
+                returnValue = 1;
+                break;
+            }
+        }
+        return returnValue;
+    }
 
 	/**
 	 * set ik trip mode for this Tour object

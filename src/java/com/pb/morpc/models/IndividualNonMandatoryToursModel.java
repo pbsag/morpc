@@ -2631,7 +2631,6 @@ public class IndividualNonMandatoryToursModel {
 	                    it1 = new Tour[1];
 	                    it1[0] = new Tour(hh[h].getHHSize());
 	                    it1[0].setTourType (TourType.ATWORK);
-	                    it1[0].setTourType (TourType.ATWORK);
 	                    it1[0].setSubTourType (SubTourType.OTHER);
 	                    it1[0].setTourOrder (0);
 	                    it1[0].setSubTourPerson(person);
