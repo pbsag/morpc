@@ -5,6 +5,7 @@ package com.pb.morpc.daf;
  *
  * Main Model Sever for Distributed Application
  */
+import com.pb.common.calculator.TableDataSetManager;
 import com.pb.common.daf.DAF;
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
@@ -331,7 +332,7 @@ public class MorpcModelServer extends MessageProcessingTask {
         }
         
         // clear the household data from the TableDataSetManager for the next iteration
-		com.pb.common.calculator.UtilityExpressionCalculator.clearData();
+        TableDataSetManager.getInstance().clearData();
                
         String createDiskObjectArray=(String)propertyMap.get("CreateDiskObjectArray");
         
