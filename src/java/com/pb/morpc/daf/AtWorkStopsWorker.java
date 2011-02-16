@@ -147,11 +147,13 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 			}
 			else if ( msg.getId().equals( MessageID.RELEASE_MATRIX_MEMORY ) ) {
 
+			    /*
 				if (LOGGING)
 				logger.info (this.getName() + " releasing UEC matrix memory after getting " + msg.getId() + " from " + msg.getSender() );
 			    
 				com.pb.common.calculator.UtilityExpressionCalculator.clearData();
-
+                */
+			    
 			}
 			else if ( msg.getId().equals( MessageID.EXIT ) ) {
 
@@ -206,7 +208,7 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 	
 						}
 						catch (java.lang.Exception e) {
-							logger.fatal ("runtime exception occurred in at-work stop freq/loc for household id=" + hhList[i].getID() + "in " + this.getName() );
+							logger.fatal ("runtime exception occurred in at-work stop freq/loc for household id=" + hhList[i].getID() + " in " + this.getName() );
 							logger.fatal(e.getMessage());
 							e.printStackTrace();
 							hhList[i].writeContentToLogger(logger);
@@ -225,7 +227,7 @@ public class AtWorkStopsWorker extends MessageProcessingTask implements java.io.
 
 						}
 						catch (java.lang.Exception e) {
-							logger.fatal ("runtime exception occurred in at-work stop mode for household id=" + hhList[i].getID() + "in " + this.getName() );
+							logger.fatal ("runtime exception occurred in at-work stop mode for household id=" + hhList[i].getID() + " in " + this.getName() );
 							logger.fatal(e.getMessage());
 							e.printStackTrace();
 							hhList[i].writeContentToLogger(logger);

@@ -181,11 +181,14 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 			}
 			else if ( msg.getId().equals( MessageID.RELEASE_MATRIX_MEMORY ) ) {
 
+			    /*
 				if (LOGGING)
 					logger.info (this.getName() + " releasing UEC matrix memory after getting " + msg.getId() + " from " + msg.getSender() );
-			    
-				com.pb.common.calculator.UtilityExpressionCalculator.clearData();
 
+				com.pb.common.calculator.UtilityExpressionCalculator.clearData();
+                */
+
+			    
 			}
 			else if ( msg.getId().equals( MessageID.EXIT ) ) {
 
