@@ -318,7 +318,6 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				
 	public void mandatoryTourMc ( Household hh ) {
 		
-        
         IndexValues index = new IndexValues();
         
         
@@ -434,6 +433,9 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
                 
                 index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
 				setMcODUtility ( hh, index, tourTypeIndex );
+//                if ( hh_id == 455 && t == 0 ){
+//                    mcODUEC[tourTypeIndex].logAnswersArray(logger, "MC OD Utility hh id=" + hh.getID());
+//                }
                 
 				
 				//this is the original by Jim				
@@ -446,6 +448,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 				try {
                     mc[tourTypeIndex].computeUtilities ( hh, index, mcAvailability, mcSample );
 					chosenModeAlt = mc[tourTypeIndex].getChoiceResult( SeededRandom.getRandom() );
+
+//			        if ( hh_id == 455 && t == 0 ){
+//			            mc[tourTypeIndex].logUECResults(logger, "MC Utility hh id=" + hh.getID() + ", t=" + t);
+//			        }
+			        
 				}
 				catch (java.lang.Exception e) {
 					logger.fatal ("runtime exception occurred in DTMHousehold.mandatoryTourMc() for household id=" + hh.getID(), e);

@@ -24,6 +24,9 @@ import java.io.*;
 
 public class DTMModelBase implements java.io.Serializable {
 
+//    protected static final int DEBUG_HH_ID = -1;
+    protected static final int DEBUG_HH_ID = 2770;
+    
 	protected static Logger logger = Logger.getLogger(DTMModelBase.class);
 
 
@@ -447,6 +450,14 @@ public class DTMModelBase implements java.io.Serializable {
         
             try {
     			ModalUtilities = mcODUEC[tourTypeIndex].solve(dmuIndex, hh, mcLogsumAvailability);
+    			
+//    			if ( hh.getOrigTaz() == 121 && hh.getChosenDest() == 815 && hh.getTourCategory() == 3 ){
+//                    ModalUtilities = mcODUEC[tourTypeIndex].solve(dmuIndex, hh, mcLogsumAvailability);
+//                    logger.info("");
+//    			    mcODUEC[tourTypeIndex].logAnswersArray(logger, "$$$$$ Mode Choice OD Utility Expression values for hh=" + hh.getID() + " $$$$$");
+//    			    logger.info("$$$$$ End Debug Logging for Tour $$$$$");
+//                    logger.info("");
+//    			}
     		}
     		catch (java.lang.Exception e) {
     			logger.fatal ("runtime exception occurred in DTMModelBase.setMcODUtility() for household id=" + hh.getID(), e );
