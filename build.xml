@@ -16,6 +16,7 @@
         <pathelement location="${build.classes.dir}"/>
         <pathelement location="${basedir}/config"/>
         <pathelement location="${common-base.dir}/config"/>
+        <pathelement location="${common-base.dir}/../../third-party/cajo/cajo-bin.jar"/>
         <pathelement location="${common-base.dir}/../../third-party/jexcelapi/jxl.jar"/>
     <!-- <pathelement location="${common-base.dir}/lib/jxl.jar"/> -->
         <pathelement location="${dafapps.dir}/morpcDaf"/>
