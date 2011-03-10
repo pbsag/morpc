@@ -1,5 +1,7 @@
 package com.pb.morpc.models;
 
+import com.pb.morpc.matrix.MatrixDataServer;
+import com.pb.morpc.matrix.MatrixDataServerRmi;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 
@@ -77,7 +79,10 @@ public class DTMOutput implements java.io.Serializable {
     private static final int JK = 3;
     private static final int KJ = 4;
     private static final int KI = 5;
-    
+
+    // this matrix holds walk trips on transit tour segments found while scanning transit tours
+    // and adds them to non-motorized tables created from non-motorized tour modes.
+    float[][] accumulatedNonMotorized;
     
 
 
@@ -87,6 +92,9 @@ public class DTMOutput implements java.io.Serializable {
     boolean useMessageWindow = false;
     MessageWindow mw;
 
+    String matrixSeverAddress;
+    String matrixSeverPort;
+    
     IndexValues index = new IndexValues();
 
 
@@ -94,6 +102,9 @@ public class DTMOutput implements java.io.Serializable {
     public DTMOutput (HashMap<String, String> propertyMap, ZonalDataManager zdm) {
 
         this.propertyMap = propertyMap;
+
+        matrixSeverAddress = (String) propertyMap.get("RunModel.MatrixServerAddress");
+        matrixSeverPort = (String) propertyMap.get("RunModel.MatrixServerPort");
 
         // get the indicator for whether to use the message window or not
         // from the properties file.
@@ -106,7 +117,7 @@ public class DTMOutput implements java.io.Serializable {
         }
 
 
-        this.numberOfZones = zdm.getNumberOfZones();
+        numberOfZones = zdm.getNumberOfZones();
 
         logger.info ("done with DTMOutput constructor.");
         
@@ -129,6 +140,8 @@ public class DTMOutput implements java.io.Serializable {
             // loop over periods - am, pm, md, nt
             for ( int period=1; period <= 4; period++ ) {
 
+                accumulatedNonMotorized = new float[numberOfZones][numberOfZones];
+
                 float[][][] hwyTrips = null;                
                 
                 // write the highway mode trip tables ...
@@ -136,13 +149,15 @@ public class DTMOutput implements java.io.Serializable {
                 // construct filename
                 String tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[HWY] + periodName[period] + ".tpp";
                 
-                String[] hNames = { "sov person", "hov person", "sov vehicle", "hov vehicle" };
-                String[] hDescriptions = { String.format("%s %s sov person trips", purposeName[type], periodName[period]),
+                String[] hNames = { "", "sov person", "hov person", "sov vehicle", "hov vehicle" };
+                String[] hDescriptions = { "",
+                        String.format("%s %s sov person trips", purposeName[type], periodName[period]),
                         String.format("%s %s hov person trips", purposeName[type], periodName[period]),
                         String.format("%s %s sov vehicle trips", purposeName[type], periodName[period]),
                         String.format("%s %s hov vehicle trips", purposeName[type], periodName[period]) };
                 hwyTrips = getHwyTripTables ( hh, vocRatios, period, type );
                 writeTpplusMatrices ( tppFileName, hwyTrips, hNames, hDescriptions );
+                hwyTrips = null;
 
                 
                 
@@ -165,11 +180,9 @@ public class DTMOutput implements java.io.Serializable {
                     }
                 }
 
-                transitTrips = getTransitTripTables ( hh, period, type, localSubModeIndices, localTransitModes );
+                transitTrips = getTransitTripTables ( hh, period, type, localSubModeIndices, localTransitModes );                    
                 for (int i=1; i < tppFileNames.length; i++){
-                    for (int j=1; j < localSubModeIndices.length; j++){
-                        writeTpplusMatrices ( tppFileNames[i], transitTrips[i], tableNames[i], tableDescriptions[i] );
-                    }
+                    writeTpplusMatrices ( tppFileNames[i], transitTrips[i], tableNames[i], tableDescriptions[i] );
                 }
                 
                 
@@ -193,11 +206,9 @@ public class DTMOutput implements java.io.Serializable {
 
                 transitTrips = getTransitTripTables ( hh, period, type, premiumSubModeIndices, premiumTransitModes );
                 for (int i=1; i < tppFileNames.length; i++){
-                    for (int j=1; j < premiumSubModeIndices.length; j++){
-                        writeTpplusMatrices ( tppFileNames[i], transitTrips[i], tableNames[i], tableDescriptions[i] );
-                    }
+                    writeTpplusMatrices ( tppFileNames[i], transitTrips[i], tableNames[i], tableDescriptions[i] );
                 }
-                
+                transitTrips = null;
                 
                 
                 
@@ -206,13 +217,14 @@ public class DTMOutput implements java.io.Serializable {
                 // construct filename
                 tppFileName = outputDirectory + "/" + purposeName[type] + "_" + primaryMode[NM] + "_" + periodName[period] + ".tpp";
                 
-                String[] nmNames = { "non-motorized" };
+                String[] nmNames = { "", "non-motorized" };
 
-                String[] nmDescriptions = { String.format("%s %s %s person trips", purposeName[type], periodName[period], nmNames[0]) };
+                String[] nmDescriptions = { "", String.format("%s %s %s person trips", purposeName[type], periodName[period], nmNames[0]) };
 
-                float[][][] nmTrips = new float[1][][];
-                nmTrips[0] = getNmTripTables ( hh, period, type );
+                float[][][] nmTrips = new float[1+1][][];
+                nmTrips[1] = getNmTripTables ( hh, period, type );
                 writeTpplusMatrices ( tppFileName, nmTrips, nmNames, nmDescriptions );
+                nmTrips = null;
                 
             }
             
@@ -220,6 +232,16 @@ public class DTMOutput implements java.io.Serializable {
             
     }
 
+
+    /*
+    private void logArrayTotal(String label, float[][] array){
+        float sum = 0;
+        for ( int k=0; k < array.length; k++ )
+            for ( int m=0; m < array[k].length; m++ )
+                sum += array[k][m];
+        logger.info(label + sum );
+    }
+    */
     
 
     private float[][][] getHwyTripTables ( Household[] hh, float[][] vocRatios, int period, int type ) {
@@ -311,11 +333,11 @@ public class DTMOutput implements java.io.Serializable {
         }
 
         
-        float[][][] result = new float[4][][];
-        result[0] = sovPerson;
-        result[1] = hovPerson;
-        result[2] = sovVehicle;
-        result[3] = hovVehicle;
+        float[][][] result = new float[4+1][][];
+        result[1] = sovPerson;
+        result[2] = hovPerson;
+        result[3] = sovVehicle;
+        result[4] = hovVehicle;
         
         return result;
 
@@ -364,7 +386,7 @@ public class DTMOutput implements java.io.Serializable {
                             int tourMode = tours[t].getMode();
                             for (int m=0; m < transitModes.length; m++){
                                 if ( tourMode == transitModes[m] )
-                                    accumulateTransitTripsForTour ( tours[t], false, tourMode, period, subModeIndices, transitPerson );
+                                    accumulateTransitTripsForTour ( tours[t], true, tourMode, period, subModeIndices, transitPerson );
                             }
                         }
                     }
@@ -383,6 +405,8 @@ public class DTMOutput implements java.io.Serializable {
                         }
                     }
 
+
+                    
                     // at-work sub-tours ...
                     tours = hh[i].getMandatoryTours();
                     if (tours != null) {
@@ -397,7 +421,7 @@ public class DTMOutput implements java.io.Serializable {
                                         int subTourMode = subTours[s].getMode();
                                         for (int m=0; m < transitModes.length; m++){
                                             if ( subTourMode == transitModes[m] )
-                                                accumulateTransitTripsForTour ( tours[t], false, subTourMode, period, subModeIndices, transitPerson );
+                                                accumulateTransitTripsForTour ( subTours[s], false, subTourMode, period, subModeIndices, transitPerson );
                                         }
                                         
                                     }
@@ -409,7 +433,7 @@ public class DTMOutput implements java.io.Serializable {
                 
             }
             catch (RuntimeException e) {
-                logger.fatal ("Caught runtime exception processing hhid" + i);
+                logger.fatal ("Caught runtime exception processing hhid " + i);
                 throw e;
             }
                 
@@ -496,6 +520,12 @@ public class DTMOutput implements java.io.Serializable {
         }
 
         
+        // add the walk trips accumulated from transit tours to the non-motorized table.
+        for (int i=0; i < result.length; i++)
+            for (int j=0; j < result.length; j++)
+                result[i][j] += accumulatedNonMotorized[i][j];
+        
+                
         return result;
 
     }
@@ -548,7 +578,8 @@ public class DTMOutput implements java.io.Serializable {
         float hovVehicleTripUnit = 0;
 
 
-        if ( periodOut == period ) {
+        // accumulate motorized trips in the outbound direction if the specified period equals the tour start period.
+        if ( period == periodOut ) {
     
             float vocRatioOB = vocRatios[tourType][periodOut];
             
@@ -593,7 +624,8 @@ public class DTMOutput implements java.io.Serializable {
         }
     
         
-        if ( periodIn == period ) {
+        // accumulate motorized trips in the inbound direction if the specified period equals the tour end period.
+        if ( period == periodIn ) {
 
             float vocRatioIB = vocRatios[tourType][periodIn];
 
@@ -652,10 +684,10 @@ public class DTMOutput implements java.io.Serializable {
     private void invalidTripMode( int modeIndex, int[] subModeIndices, String identifier ){
         logger.fatal( "invalid trip mode = " + modeIndex + " for half tour." );
         logger.fatal( "tour identifier: " + identifier );
-        String validIndices = "[" + Integer.toString(subModeIndices[0]);
-        for (int i=1; i < subModeIndices.length; i++)
+        String validIndices = "[ " + subModeIndices[1];
+        for (int i=2; i < subModeIndices.length; i++)
             validIndices += ", " + subModeIndices[i];
-        validIndices += "]";
+        validIndices += " ]";
         logger.fatal( "valid indices for this trip mode are: " + validIndices );
         throw new RuntimeException();
     }
@@ -669,6 +701,7 @@ public class DTMOutput implements java.io.Serializable {
             return;
             
         int periodOut = com.pb.morpc.models.TODDataManager.getTodStartSkimPeriod ( tod );
+        int periodIn = com.pb.morpc.models.TODDataManager.getTodEndSkimPeriod ( tod );
 
         int tripPark = tour.getChosenPark();
         int tripOrigOB = tour.getOrigTaz();
@@ -714,7 +747,8 @@ public class DTMOutput implements java.io.Serializable {
         }
     
 
-        if ( periodOut == period ) {
+        // accumulate transit trips in the outbound direction if the specified period equals the tour start period.
+        if ( period == periodOut ) {
 
             // there is an outbound stop for this tour
             if ( tripStopOB > 0 ) {
@@ -724,68 +758,145 @@ public class DTMOutput implements java.io.Serializable {
 
                 if ( tripModeIk < 1 || tripModeIk > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for first segment in outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
                     throw (new RuntimeException());
                 }
                 if ( tripModeKj < 1 || tripModeKj > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for second segment in outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
                     throw (new RuntimeException());
                 }
 
                 
-                // for p&r half-tours in outbound direction, ik segment is p&r and kj segment is walkTransit.
+                // for p&r half-tours in outbound direction, ik segment is p&r and kj segment is walkTransit or walk.
                 if ( tourMode == TourModeType.PL ) {
-                    // accumulate trip, if it's transit, for first segment only in pTw table
-                    if ( tripModeIk != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
-                            transitPerson[PTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
-                        else
-                            invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
-                    }
+                    // accumulate local trip, if it's transit, for first segment only in pTw table
+                    if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
+                        transitPerson[PTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                    else
+                        invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
                    
-                    // accumulate trip, if it's transit for second segment only in wTw table
+                    // accumulate local trip, if it's transit for second segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
                     if ( tripModeKj != SubmodeType.NM ){
                         if ( tripModeIsValidMode( tripModeKj, subModeIndices ) )
                             transitPerson[WTW][tripModeKj][tripStopOB-1][tripDestOB-1] += tripUnit;
                         else
-                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripStopOB-1][tripDestOB-1] += tripUnit;
                     }
                 }
-                // for k&r half-tours in outbound direction, ik segment is k&r and kj segment is walkTransit.
-                if ( tourMode == TourModeType.KL ) {
-                    // accumulate trip, if it's transit, for first segment only in kTw table
-                    if ( tripModeIk != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
-                            transitPerson[KTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                // for p&r half-tours in outbound direction, ik segment is p&r and kj segment is walkTransit or walk.
+                else if ( tourMode == TourModeType.PP ) {
+                    // accumulate premium trip, if it's transit, for first segment only in pTw table
+                    if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
+                        transitPerson[PTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                    else
+                        invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
+                   
+                    // accumulate premium trip, if it's transit for second segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
+                    if ( tripModeKj != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKj, subModeIndices ) )
+                            transitPerson[WTW][tripModeKj][tripStopOB-1][tripDestOB-1] += tripUnit;
                         else
-                            invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
                     }
+                    else {
+                        accumulatedNonMotorized[tripStopOB-1][tripDestOB-1] += tripUnit;
+                    }
+                }
+                // for k&r half-tours in outbound direction, ik segment is k&r and kj segment is walkTransit or walk.
+                else if ( tourMode == TourModeType.KL ) {
+                    // accumulate local trip, if it's transit, for first segment only in kTw table
+                    if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
+                        transitPerson[KTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                    else
+                        invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
                     
-                    // accumulate trip, if it's transit for second segment only in wTw table
+                    // accumulate local trip, if it's transit for second segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
                     if ( tripModeKj != SubmodeType.NM ){
                         if ( tripModeIsValidMode( tripModeKj, subModeIndices ) )
                             transitPerson[WTW][tripModeKj][tripStopOB-1][tripDestOB-1] += tripUnit;
                         else
-                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripStopOB-1][tripDestOB-1] += tripUnit;
                     }
                 }
-                // for walk local half-tours in outbound direction, ik segment and kj segment are walkTransit.
+                // for k&r half-tours in outbound direction, ik segment is k&r and kj segment is walkTransit or walk.
+                else if ( tourMode == TourModeType.KP ) {
+                    // accumulate premium trip, if it's transit, for first segment only in kTw table
+                    if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
+                        transitPerson[KTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                    else
+                        invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
+                    
+                    // accumulate premium trip, if it's transit for second segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
+                    if ( tripModeKj != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKj, subModeIndices ) )
+                            transitPerson[WTW][tripModeKj][tripStopOB-1][tripDestOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripStopOB-1][tripDestOB-1] += tripUnit;
+                    }
+                }
+                // for walk transit half-tours in outbound direction, ik segment and kj segment are either walkTransit or walk.
                 else if ( tourMode == TourModeType.WL ) {
-                    // accumulate trip, if it's transit, for first segment only in wTw table
+                    // accumulate local trip, if it's transit, for first segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
                     if ( tripModeIk != SubmodeType.NM ){
                         if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
                             transitPerson[WTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
                         else
-                            invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                            invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%dtripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripOrigOB-1][tripStopOB-1] += tripUnit;
                     }
                     
-                    // accumulate trip, if it's transit for second segment only in wTw table
+                    // accumulate local trip, if it's transit for second segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
                     if ( tripModeKj != SubmodeType.NM ){
                         if ( tripModeIsValidMode( tripModeKj, subModeIndices ) )
                             transitPerson[WTW][tripModeKj][tripStopOB-1][tripDestOB-1] += tripUnit;
                         else
-                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripStopOB-1][tripDestOB-1] += tripUnit;
+                    }
+                }
+                else if ( tourMode == TourModeType.WP ) {
+                    // accumulate premium trip, if it's transit, for first segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
+                    if ( tripModeIk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeIk, subModeIndices ) )
+                            transitPerson[WTW][tripModeIk][tripOrigOB-1][tripStopOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeIk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripOrigOB-1][tripStopOB-1] += tripUnit;
+                    }
+                    
+                    // accumulate premium trip, if it's transit for second segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
+                    if ( tripModeKj != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKj, subModeIndices ) )
+                            transitPerson[WTW][tripModeKj][tripStopOB-1][tripDestOB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeKj, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripStopOB-1][tripDestOB-1] += tripUnit;
                     }
                 }
                 
@@ -793,47 +904,39 @@ public class DTMOutput implements java.io.Serializable {
             // no outbound stop for this tour
             else {                
                 
-                if ( tourSubmodeOB < 1 || tourSubmodeOB > SubmodeType.NM ) {
-                    logger.fatal( "invalid tourSubmodeOB for outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
-                    throw (new RuntimeException());
-                }
-                
-                // for p&r half-tours in outbound direction, ik segment is p&r and kj segment is walkTransit.
-                if ( tourMode == TourModeType.PL ) {
-                    // accumulate trip, if it's transit, in pTw table
-                    if ( tourSubmodeOB != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tourSubmodeOB, subModeIndices ) )
-                            transitPerson[PTW][tourSubmodeOB][tripOrigOB-1][tripDestOB-1] += tripUnit;
-                        else
-                            invalidTripMode( tourSubmodeOB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
-                    }
+                // for p&r half-tours in outbound direction.
+                if ( tourMode == TourModeType.PL || tourMode == TourModeType.PP ) {
+                    // accumulate pnr transit trip, if it's valid transit, in pTw table
+                    if ( tripModeIsValidMode( tourSubmodeOB, subModeIndices ) )
+                        transitPerson[PTW][tourSubmodeOB][tripOrigOB-1][tripDestOB-1] += tripUnit;
+                    else
+                        invalidTripMode( tourSubmodeOB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB ) );
                 }
                 // for k&r half-tours in outbound direction, ik segment is k&r and kj segment is walkTransit.
-                if ( tourMode == TourModeType.KL ) {
-                    // accumulate trip, if it's transit, in kTw table
-                    if ( tourSubmodeOB != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tourSubmodeOB, subModeIndices ) )
-                            transitPerson[KTW][tourSubmodeOB][tripOrigOB-1][tripDestOB-1] += tripUnit;
-                        else
-                            invalidTripMode( tourSubmodeOB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
-                    }
+                else if ( tourMode == TourModeType.KL || tourMode == TourModeType.KP ) {
+                    // accumulate knr transit trip, if it's walid transit, in kTw table
+                    if ( tripModeIsValidMode( tourSubmodeOB, subModeIndices ) )
+                        transitPerson[KTW][tourSubmodeOB][tripOrigOB-1][tripDestOB-1] += tripUnit;
+                    else
+                        invalidTripMode( tourSubmodeOB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB ) );
                 }
                 // for walk local half-tours in outbound direction, ik segment and kj segment are walkTransit.
-                else if ( tourMode == TourModeType.WL ) {
-                    // accumulate trip, if it's transit, in wTw table
-                    if ( tourSubmodeOB != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tourSubmodeOB, subModeIndices ) )
-                            transitPerson[WTW][tourSubmodeOB][tripOrigOB-1][tripDestOB-1] += tripUnit;
-                        else
-                            invalidTripMode( tourSubmodeOB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
-                    }
+                else if ( tourMode == TourModeType.WL || tourMode == TourModeType.WP ) {
+                    // accumulate walk transit trip, if it's valid transit, in wTw table
+                    if ( tripModeIsValidMode( tourSubmodeOB, subModeIndices ) )
+                        transitPerson[WTW][tourSubmodeOB][tripOrigOB-1][tripDestOB-1] += tripUnit;
+                    else
+                        invalidTripMode( tourSubmodeOB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripOrigOB, tripStopOB, tripDestOB ) );
                 }
                 
             }
 
-            
-            
+        }
+        
+        
+        // accumulate transit trips in the inbound direction if the specified period equals the tour end period.
+        if ( period == periodIn ) {
+                        
             // there is an inbound stop for this tour
             if ( tripStopIB > 0 ) {
 
@@ -842,68 +945,143 @@ public class DTMOutput implements java.io.Serializable {
 
                 if ( tripModeJk < 1 || tripModeJk > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for first segment in inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
                     throw (new RuntimeException());
                 }
                 if ( tripModeKi < 1 || tripModeKi > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for second segment in inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
                     throw (new RuntimeException());
                 }
 
                 
-                // for p&r half-tours in inbound direction, jk segment is walkTransit and ki segment is p&r.
+                // for p&r half-tours in inbound direction, jk segment is walkTransit or walk and ki segment is p&r.
                 if ( tourMode == TourModeType.PL ) {
-                    // accumulate trip, if it's transit, for first segment only in wTw table
+                    // accumulate local trip, if it's transit, for first segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
                     if ( tripModeJk != SubmodeType.NM ){
                         if ( tripModeIsValidMode( tripModeJk, subModeIndices ) )
                             transitPerson[WTW][tripModeJk][tripOrigIB-1][tripStopIB-1] += tripUnit;
                         else
-                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripOrigIB-1][tripStopIB-1] += tripUnit;
                     }
                    
-                    // accumulate trip, if it's transit for second segment only in wTp table
-                    if ( tripModeKi != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
-                            transitPerson[WTP][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
-                        else
-                            invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
-                    }
+                    // accumulate local trip, if it's transit for second segment only in wTp table
+                    if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
+                        transitPerson[WTP][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
+                    else
+                        invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
                 }
-                // for k&r half-tours in inbound direction, ik segment is walkTransit and kj segment is k&r.
-                if ( tourMode == TourModeType.KL ) {
-                    // accumulate trip, if it's transit, for first segment only in wTw table
+                else if ( tourMode == TourModeType.PP ) {
+                    // accumulate premium trip, if it's transit, for first segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
                     if ( tripModeJk != SubmodeType.NM ){
                         if ( tripModeIsValidMode( tripModeJk, subModeIndices ) )
                             transitPerson[WTW][tripModeJk][tripOrigIB-1][tripStopIB-1] += tripUnit;
                         else
-                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
                     }
-                    
-                    // accumulate trip, if it's transit for second segment only in wTk table
-                    if ( tripModeKi != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
-                            transitPerson[WTK][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
-                        else
-                            invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                    else {
+                        accumulatedNonMotorized[tripOrigIB-1][tripStopIB-1] += tripUnit;
                     }
+                   
+                    // accumulate premium trip, if it's transit for second segment only in wTp table
+                    if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
+                        transitPerson[WTP][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
+                    else
+                        invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
                 }
-                // for walk local half-tours in inbound direction, jk segment and ki segment are walkTransit.
-                else if ( tourMode == TourModeType.WL ) {
-                    // accumulate trip, if it's transit, for first segment only in wTw table
+                // for k&r half-tours in inbound direction, ik segment is walkTransit or walk and kj segment is k&r.
+                else if ( tourMode == TourModeType.KL ) {
+                    // accumulate local trip, if it's transit, for first segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
                     if ( tripModeJk != SubmodeType.NM ){
                         if ( tripModeIsValidMode( tripModeJk, subModeIndices ) )
-                            transitPerson[WTP][tripModeJk][tripOrigIB-1][tripStopIB-1] += tripUnit;
+                            transitPerson[WTW][tripModeJk][tripOrigIB-1][tripStopIB-1] += tripUnit;
                         else
-                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripOrigIB-1][tripStopIB-1] += tripUnit;
                     }
                     
-                    // accumulate trip, if it's transit for second segment only in wTw table
+                    // accumulate local trip, if it's transit for second segment only in wTk table
+                    if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
+                        transitPerson[WTK][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
+                    else
+                        invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
+                }
+                else if ( tourMode == TourModeType.KP ) {
+                    // accumulate premium trip, if it's transit, for first segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
+                    if ( tripModeJk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeJk, subModeIndices ) )
+                            transitPerson[WTW][tripModeJk][tripOrigIB-1][tripStopIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripOrigIB-1][tripStopIB-1] += tripUnit;
+                    }
+                    
+                    // accumulate premium trip, if it's transit for second segment only in wTk table
+                    if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
+                        transitPerson[WTK][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
+                    else
+                        invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
+                }
+                // for walk transit half-tours in inbound direction, jk segment and ki segment are either walkTransit or walk.
+                else if ( tourMode == TourModeType.WL ) {
+                    // accumulate local trip, if it's transit, for first segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
+                    if ( tripModeJk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeJk, subModeIndices ) )
+                            transitPerson[WTW][tripModeJk][tripOrigIB-1][tripStopIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripOrigIB-1][tripStopIB-1] += tripUnit;
+                    }
+                    
+                    // accumulate local trip, if it's transit for second segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
                     if ( tripModeKi != SubmodeType.NM ){
                         if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
                             transitPerson[WTW][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
                         else
-                            invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                            invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripStopIB-1][tripDestIB-1] += tripUnit;
+                    }
+                }
+                else if ( tourMode == TourModeType.WP ) {
+                    // accumulate premium trip, if it's transit, for first segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
+                    if ( tripModeJk != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeJk, subModeIndices ) )
+                            transitPerson[WTW][tripModeJk][tripStopIB-1][tripDestIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeJk, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripStopIB-1][tripDestIB-1] += tripUnit;
+                    }
+                    
+                    // accumulate premium trip, if it's transit for second segment only in wTw table
+                    // or if walk, accumulate in non-motorized table
+                    if ( tripModeKi != SubmodeType.NM ){
+                        if ( tripModeIsValidMode( tripModeKi, subModeIndices ) )
+                            transitPerson[WTW][tripModeKi][tripStopIB-1][tripDestIB-1] += tripUnit;
+                        else
+                            invalidTripMode( tripModeKi, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
+                    }
+                    else {
+                        accumulatedNonMotorized[tripStopIB-1][tripDestIB-1] += tripUnit;
                     }
                 }
                 
@@ -911,45 +1089,33 @@ public class DTMOutput implements java.io.Serializable {
             // no inbound stop for this tour
             else {                
                 
-                if ( tourSubmodeIB < 1 || tourSubmodeIB > SubmodeType.NM ) {
-                    logger.fatal( "invalid tourSubmodeIB for inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
-                    throw (new RuntimeException());
-                }
-                
                 // for p&r half-tours in inbound direction, half-tour is p&r.
-                if ( tourMode == TourModeType.PL ) {
-                    // accumulate trip, if it's transit, in wTp table
-                    if ( tourSubmodeIB != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tourSubmodeIB, subModeIndices ) )
-                            transitPerson[WTP][tourSubmodeIB][tripOrigIB-1][tripDestIB-1] += tripUnit;
-                        else
-                            invalidTripMode( tourSubmodeIB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
-                    }
+                if ( tourMode == TourModeType.PL || tourMode == TourModeType.PP ) {
+                    // accumulate pnr trip, if it's valid transit, in wTp table
+                    if ( tripModeIsValidMode( tourSubmodeIB, subModeIndices ) )
+                        transitPerson[WTP][tourSubmodeIB][tripOrigIB-1][tripDestIB-1] += tripUnit;
+                    else
+                        invalidTripMode( tourSubmodeIB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
                 }
                 // for k&r half-tours in inbound direction, half-tour is k&r.
-                if ( tourMode == TourModeType.KL ) {
-                    // accumulate trip, if it's transit, in wTk table
-                    if ( tourSubmodeIB != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tourSubmodeIB, subModeIndices ) )
-                            transitPerson[WTK][tourSubmodeIB][tripOrigIB-1][tripDestIB-1] += tripUnit;
-                        else
-                            invalidTripMode( tourSubmodeIB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
-                    }
+                else if ( tourMode == TourModeType.KL || tourMode == TourModeType.KP ) {
+                    // accumulate knr trip, if it's valid transit, in wTk table
+                    if ( tripModeIsValidMode( tourSubmodeIB, subModeIndices ) )
+                        transitPerson[WTK][tourSubmodeIB][tripOrigIB-1][tripDestIB-1] += tripUnit;
+                    else
+                        invalidTripMode( tourSubmodeIB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
                 }
                 // for walk local half-tours in inbound direction, half-tour walkTransit.
-                else if ( tourMode == TourModeType.WL ) {
-                    // accumulate trip, if it's transit, in wTw table
-                    if ( tourSubmodeIB != SubmodeType.NM ){
-                        if ( tripModeIsValidMode( tourSubmodeIB, subModeIndices ) )
-                            transitPerson[WTW][tourSubmodeIB][tripOrigIB-1][tripDestIB-1] += tripUnit;
-                        else
-                            invalidTripMode( tourSubmodeIB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
-                    }
+                else if ( tourMode == TourModeType.WL || tourMode == TourModeType.WP ) {
+                    // accumulate walk transit trip, if it's valid transit, in wTw table
+                    if ( tripModeIsValidMode( tourSubmodeIB, subModeIndices ) )
+                        transitPerson[WTW][tourSubmodeIB][tripOrigIB-1][tripDestIB-1] += tripUnit;
+                    else
+                        invalidTripMode( tourSubmodeIB, subModeIndices, String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
                 }
                 
             }
-
+            
         }
 
     }
@@ -1000,8 +1166,6 @@ public class DTMOutput implements java.io.Serializable {
         int tripModeKj = tour.getTripKjMode();
         int tripModeJk = tour.getTripJkMode();
         int tripModeKi = tour.getTripKiMode();
-        int tourSubmodeOB = tour.getSubmodeOB();
-        int tourSubmodeIB = tour.getSubmodeIB();
         
         int tourMode = tour.getMode();
     
@@ -1012,7 +1176,8 @@ public class DTMOutput implements java.io.Serializable {
         }
     
 
-        if ( periodOut == period ) {
+        // accumulate non-motorized trips in the outbound direction if the specified period equals the tour start period.
+        if ( period == periodOut ) {
 
             if ( tripStopOB > 0 ) {
 
@@ -1021,39 +1186,31 @@ public class DTMOutput implements java.io.Serializable {
                 
                 if ( tripModeIk < 1 || tripModeIk > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for first segment in outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
                     throw (new RuntimeException());
                 }
                 if ( tripModeKj < 1 || tripModeKj > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for second segment in outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB, tripModeIk, tripModeKj ) );
+                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tripOrigOB=%d, tripStopOB=%d, tripDestOB=%d, tripModeIk=%d, tripModeKj=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tripOrigOB, tripStopOB, tripDestOB, tripModeIk, tripModeKj ) );
                     throw (new RuntimeException());
                 }
 
                 
-                if ( tripModeIk == SubmodeType.NM )
-                    nmPerson[tripOrigOB-1][tripStopOB-1] += tripUnit;
-                if ( tripModeKj == SubmodeType.NM )
-                    nmPerson[tripStopOB-1][tripDestOB-1] += tripUnit;
+                nmPerson[tripOrigOB-1][tripStopOB-1] += tripUnit;
+                nmPerson[tripStopOB-1][tripDestOB-1] += tripUnit;
                 
             }
             else {
              
-                if ( tourSubmodeOB < 1 || tourSubmodeOB > SubmodeType.NM ) {
-                    logger.fatal( "invalid tourSubmodeOB for outbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeOB=%d, tripStopOB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeOB, tripStopOB ) );
-                    throw (new RuntimeException());
-                }
-                
-                if ( tourSubmodeOB == SubmodeType.NM )
-                    nmPerson[tripOrigOB-1][tripDestOB-1] += tripUnit;
+                nmPerson[tripOrigOB-1][tripDestOB-1] += tripUnit;
 
             }
 
         }
 
     
-        if ( periodIn == period ) {
+        // accumulate non-motorized trips in the inbound direction if the specified period equals the tour end period.
+        if ( period == periodIn ) {
 
             if (tripStopIB > 0) {
 
@@ -1062,32 +1219,23 @@ public class DTMOutput implements java.io.Serializable {
                 
                 if ( tripModeJk < 1 || tripModeJk > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for first segment in inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
                     throw (new RuntimeException());
                 }
                 if ( tripModeKi < 1 || tripModeKi > SubmodeType.NM ) {
                     logger.fatal( "invalid tripMode for second segment in inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB, tripModeJk, tripModeKi ) );
+                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tripOrigIB=%d, tripStopIB=%d, tripDestIB=%d, tripModeJk=%d, tripModeKi=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tripOrigIB, tripStopIB, tripDestIB, tripModeJk, tripModeKi ) );
                     throw (new RuntimeException());
                 }
 
 
-                if ( tripModeJk == SubmodeType.NM )
-                    nmPerson[tripOrigIB-1][tripStopIB-1] += tripUnit;
-                if ( tripModeKi == SubmodeType.NM )
-                    nmPerson[tripStopIB-1][tripDestIB-1] += tripUnit;
+                nmPerson[tripOrigIB-1][tripStopIB-1] += tripUnit;
+                nmPerson[tripStopIB-1][tripDestIB-1] += tripUnit;
                 
             }
             else {
              
-                if ( tourSubmodeIB < 1 || tourSubmodeIB > SubmodeType.NM ) {
-                    logger.fatal( "invalid tourSubmodeIB for inbound half tour." );
-                    logger.fatal( String.format( "person=%d, tourType=%d, tourOrder=%d, tourMode=%d, tourSubmodeIB=%d, tripStopIB=%d.", tour.getTourPerson(), tour.getTourType(), tour.getTourOrder(), tourMode, tourSubmodeIB, tripStopIB ) );
-                    throw (new RuntimeException());
-                }
-                
-                if ( tourSubmodeIB == SubmodeType.NM )
-                    nmPerson[tripOrigIB-1][tripDestIB-1] += tripUnit;
+                nmPerson[tripOrigIB-1][tripDestIB-1] += tripUnit;
 
             }
 
@@ -1098,20 +1246,27 @@ public class DTMOutput implements java.io.Serializable {
     
 
     private void writeTpplusMatrices ( String tppFileName, float[][][] trips, String[] names, String[] descriptions ) {
+        Matrix[] outputMatrices = new Matrix[trips.length-1];
+        String[] newNames = new String[trips.length-1];            
+        String[] newDescriptions = new String[trips.length-1];            
+        logger.info( String.format("matrix totals for %d tables written to %s:", trips.length-1, tppFileName) );
+        for (int i=1; i < trips.length; i++) {
+            newNames[i-1] = names[i];
+            newDescriptions[i-1] = descriptions[i];
+            outputMatrices[i-1] = new Matrix( names[i], descriptions[i], trips[i] );
+            logger.info( String.format("    [%d] %-16s: %.0f", i-1, newNames[i-1], outputMatrices[i-1].getSum()) );
+        }            
 
-        MatrixWriter tppWriter = MatrixWriter.createWriter (MatrixType.TPPLUS, new File( tppFileName ) );
-
-        Matrix[] outputMatrices = new Matrix[trips.length];
-       
-        logger.info( String.format("matrix total for tables in %s:", tppFileName) );
-        for (int i=0; i < trips.length; i++) {
-            outputMatrices[i] = new Matrix( names[i], descriptions[i], trips[i] );
-            logger.info( String.format("    [%d] %-16s: %.0f", i, names[i], outputMatrices[i].getSum()) );
-
-            trips[i] = null;
+        if (matrixSeverAddress == null){
+            MatrixWriter tppWriter = MatrixWriter.createWriter (MatrixType.TPPLUS, new File( tppFileName ) );            
+            tppWriter.writeMatrices(newNames, outputMatrices);
+            trips = null;
         }
-
-        tppWriter.writeMatrices(names, outputMatrices);
+        else {
+            MatrixDataServerRmi ms = new MatrixDataServerRmi( matrixSeverAddress, Integer.parseInt(matrixSeverPort), MatrixDataServer.MATRIX_DATA_SERVER_NAME);
+            ms.writeTpplusMatrices(tppFileName, trips, newNames, newDescriptions);
+            trips = null;
+        }
     }
 
 
@@ -1130,6 +1285,8 @@ public class DTMOutput implements java.io.Serializable {
 
     public void writeDTMOutput ( Household[] hh ) {
 
+        float[][] vocRatios = getVehOccRatios ();
+        
         String modeName[] = { "", "sov", "hov", "walkLocal", "pnrLocal", "knrLocal", "walkPremium", "pnrPremium", "knrPremium", "nonmotor", "schoolbus" };        
         String tlPurposeName[] = { "", "1 Work-low", "1 Work-med", "1 Work-high", "2 University", "3 School", "4 Escorting", "5 Shopping - ind", "5 Shopping - joint", "6 Maintenance - ind", "6 Maintenance - joint", "7 Discretionary - ind", "7 Discretionary - joint", "8 Eating out - ind", "8 Eating out - joint", "9 At work" };        
 
@@ -1302,6 +1459,8 @@ public class DTMOutput implements java.io.Serializable {
             tableHeadings.add("LRT_IVT_JI");
             tableHeadings.add("CRL_IVT_IJ");
             tableHeadings.add("CRL_IVT_JI");
+            tableHeadings.add("VEH_OCC_RATIO_OB");
+            tableHeadings.add("VEH_OCC_RATIO_IB");
 
             
             tableFormats = new ArrayList<String>();
@@ -1369,6 +1528,8 @@ public class DTMOutput implements java.io.Serializable {
             tableFormats.add("%.2f");     //LRT_IVT_IB
             tableFormats.add("%.2f");     //CRL_IVT_OB
             tableFormats.add("%.2f");     //CRL_IVT_IB
+            tableFormats.add("%.2f");     //VEH_OCC_OB
+            tableFormats.add("%.2f");     //VEH_OCC_IB
 
             // define an array for use in writing output file
             tableData = new float[tableHeadings.size()];
@@ -1555,6 +1716,15 @@ public class DTMOutput implements java.io.Serializable {
                             tableData[k+49] = 0.0f;
                         }
                         
+                        if ( it[t].getMode() == HOV_MODE ){
+                            tableData[k+50] = vocRatios[it[t].getTourType()][(int)tableData[k+9]];
+                            tableData[k+51] = vocRatios[it[t].getTourType()][(int)tableData[k+10]];
+                        }
+                        else {
+                            tableData[k+50] = 1.0f;
+                            tableData[k+51] = 1.0f;
+                        }
+                        
                         if (outputFileDTM != null) {
 
                             fieldFormat = (String)tableFormats.get(0);
@@ -1736,6 +1906,9 @@ public class DTMOutput implements java.io.Serializable {
                             tableData[k+49] = 0.0f;
                         }
                         
+                        tableData[k+50] = 1.0f;
+                        tableData[k+51] = 1.0f;
+
                         if (outputFileDTM != null) {
 
                             fieldFormat = (String)tableFormats.get(0);
@@ -1911,6 +2084,15 @@ public class DTMOutput implements java.io.Serializable {
                             tableData[k+49] = 0.0f;
                         }
                         
+                        if ( it[t].getMode() == HOV_MODE ){
+                            tableData[k+50] = vocRatios[it[t].getTourType()][(int)tableData[k+9]];
+                            tableData[k+51] = vocRatios[it[t].getTourType()][(int)tableData[k+10]];
+                        }
+                        else {
+                            tableData[k+50] = 1.0f;
+                            tableData[k+51] = 1.0f;
+                        }
+                        
                         if (outputFileDTM != null) {
 
                             fieldFormat = (String)tableFormats.get(0);
@@ -2073,6 +2255,15 @@ public class DTMOutput implements java.io.Serializable {
                                         tableData[k+47] = 0.0f;
                                         tableData[k+48] = 0.0f;
                                         tableData[k+49] = 0.0f;
+                                    }
+                                    
+                                    if ( st[s].getMode() == HOV_MODE ){
+                                        tableData[k+50] = vocRatios[it[t].getTourType()][(int)tableData[k+9]];
+                                        tableData[k+51] = vocRatios[it[t].getTourType()][(int)tableData[k+10]];
+                                    }
+                                    else {
+                                        tableData[k+50] = 1.0f;
+                                        tableData[k+51] = 1.0f;
                                     }
 
                                     if (outputFileDTM != null) {
