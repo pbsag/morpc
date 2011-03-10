@@ -22,7 +22,7 @@ public class Household implements java.io.Externalizable {
 
     private int ID;
 	private short taz;
-	private short origTaz;
+    private short origTaz;
     private int serialno;
 
 	private short tourCategory;
@@ -405,6 +405,9 @@ public class Household implements java.io.Externalizable {
 	 * return the atwork subtour mode of the tour for which the UEC.solve() has been called
 	 */
 	public int getSubtourMode () {
+        if (tourCategory != TourType.AT_WORK_CATEGORY)
+            return 0;
+
 		return mandatoryTours[tourID].subTours[subtourID].getMode();
 	}
 
@@ -2042,12 +2045,26 @@ public class Household implements java.io.Externalizable {
 		return ZonalDataManager.propfree[alt];
 	}
 
-	/**
-	 * return the zonal_nonw_au_op for the origin of this tour
-	*/
-	public float getZonal_nonw_au_op_orig () {
-		return ZonalDataManager.zonal_nonw_au_op[origTaz];
-	}
+    /**
+     * return the zonalCalibDist for the origin of this tour
+    */
+    public float getZonalCalibDistOrig () {
+        return ZonalDataManager.zonalCalibDist[origTaz];
+    }
+
+    /**
+     * return the zonalCalibDist for the destination of this tour
+    */
+    public float getZonalCalibDistDest () {
+        return ZonalDataManager.zonalCalibDist[chosenDest];
+    }
+
+    /**
+     * return the zonal_nonw_au_op for the origin of this tour
+    */
+    public float getZonal_nonw_au_op_orig () {
+        return ZonalDataManager.zonal_nonw_au_op[origTaz];
+    }
 
 	/**
 	 * return the zonal_nonw_walk for the origin of this tour

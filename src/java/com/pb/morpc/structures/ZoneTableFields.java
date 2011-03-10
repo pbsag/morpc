@@ -8,15 +8,17 @@ import java.io.Serializable;
  */
 public final class ZoneTableFields implements Serializable{
     
-    public static final short FIELDS=36;
+    public static final short FIELDS=42;
 	public static final String TAZ = "taz";
 	public static final String PUMA = "puma";
 	public static final String SCHDIST = "schdist";
 	public static final String COUNTY = "cnty";
 	public static final String ACRES = "acres";
 	public static final String AREA = "area";
-	public static final String POP = "totpop";
-	public static final String HHS = "hhs_gq";
+    public static final String HHPOP = "hhpop";
+    public static final String POP = "totpop";
+    public static final String HHS_NO_GQ = "hhs";
+    public static final String HHS = "hhs_gq";
 	public static final String GQPOP = "gqpop";
 	public static final String LABF = "labf";
 	public static final String INCOME = "hhinc";
@@ -47,4 +49,6 @@ public final class ZoneTableFields implements Serializable{
 	public static final String PARKRATE = "PARKRATE";
 	public static final String RINGS = "rings";
 	public static final String SUPRDIST = "suprdist";
+    public static final String LICKING = "licking"; 
+    public static final String CALIBDIST = "calibdist"; 
 }
