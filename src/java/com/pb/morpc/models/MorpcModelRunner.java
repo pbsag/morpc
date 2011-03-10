@@ -8,9 +8,16 @@ package com.pb.morpc.models;
  */
 
 
+import com.pb.common.calculator.MatrixDataManager;
+import com.pb.common.calculator.MatrixDataServerIf;
 import com.pb.common.matrix.MatrixIO32BitJvm;
 import com.pb.common.matrix.MatrixType;
+import com.pb.common.util.SeededRandom;
+import com.pb.morpc.structures.Household;
 import com.pb.morpc.structures.TourType;
+import com.pb.morpc.matrix.MatrixDataServer;
+import com.pb.morpc.matrix.MatrixDataServerRmi;
+import com.pb.morpc.matrix.MorpcMatrixAggregaterTpp;
 //import com.pb.morpc.report.Report;
 
 import org.apache.log4j.Logger;
@@ -19,14 +26,101 @@ import org.apache.log4j.Logger;
 public class MorpcModelRunner extends MorpcModelBase {
     static Logger logger = Logger.getLogger(MorpcModelRunner.class);
 
+
     public MorpcModelRunner() {
-        super();
+        super();        
     }
 
     public void runModels() {
 
 		
-		if ( ((String)propertyMap.get("RUN_MANDATORY_DTM")).equalsIgnoreCase("true") ) {
+        //instantiate ZonalDataManager and TODDataManager objects so that their static members are available to other classes (eg. DTMOutput)
+        zdm = new ZonalDataManager ( propertyMap );
+        tdm = new TODDataManager(propertyMap);
+    
+    
+        // set the global random number generator seed read from the properties file
+        SeededRandom.setSeed ( Integer.parseInt( (String)propertyMap.get("RandomSeed") ) );
+    
+        
+        // if new skims were generated as part of this model run or prior to it, run aggregation step for TPP submode skims
+        String property = (String)propertyMap.get("AGGREGATE_TPPLUS_SKIM_MATRICES");
+        if ( property.equalsIgnoreCase("true") ) {
+            
+            logger.info( "aggregating slc skim matrices" );                
+            MorpcMatrixAggregaterTpp ma = new MorpcMatrixAggregaterTpp(propertyMap);
+            ma.aggregateSlcSkims();
+            logger.info( "finished aggregating slc skim matrices" );                
+    
+        }
+        
+        
+        
+        
+        // build a synthetic population
+        if ( ((String)propertyMap.get("RUN_POPULATION_SYNTHESIS_MODEL")).equalsIgnoreCase("true") )
+            runPopulationSynthesizer();
+        
+        
+        
+        // assign auto ownership attributes to population
+        if ( ((String)propertyMap.get("RUN_AUTO_OWNERSHIP_MODEL")).equalsIgnoreCase("true") ) {
+    
+            logger.info( "computing accessibilities." );                
+    
+            //update accessibily indices, and then write it to hard drive as a .csv file.
+            if ( ((String)propertyMap.get("format")).equalsIgnoreCase("tpplus") ) {
+                AccessibilityIndicesTpp accInd = new AccessibilityIndicesTpp( PROPERTIES_FILE_BASENAME );
+                accInd.writeIndices();
+            }
+            else {
+                AccessibilityIndices accInd = new AccessibilityIndices( PROPERTIES_FILE_BASENAME );
+                accInd.writeIndices();
+            }
+    
+            logger.info ("finished computing accessibilities");
+    
+            runAutoOwnershipModel();
+            
+        }
+    
+    
+        
+        // assign person type and daily activity pattern attributes and generate mandatory tours
+        if ( ((String)propertyMap.get("RUN_DAILY_PATTERN_MODELS")).equalsIgnoreCase("true") )
+            runDailyActivityPatternModels();
+    
+        
+    
+        
+        
+        // create an array of Household objects from the household table data
+        hhMgr = new HouseholdArrayManager( propertyMap );
+    
+        // check if property is set to start the model iteration from a DiskObjectArray,
+        // and if so, get HHs from the existing DiskObjectArray.
+        if(((String)propertyMap.get("StartFromDiskObjectArray")).equalsIgnoreCase("true")) {
+            hhMgr.createBigHHArrayFromDiskObject();
+        } 
+        // otherwise, create an array of HHs from the household table data stored on disk
+        else {
+            hhMgr.createBigHHArray ();
+        }
+        
+        hhMgr.createHHArrayToProcess (); 
+    
+    
+        
+        // run Free Parking Eligibility Model
+        Household[] hh = hhMgr.getHouseholds();
+        FreeParkingEligibility fpModel = new FreeParkingEligibility( propertyMap );
+        fpModel.runFreeParkingEligibility (hh);
+        hhMgr.sendResults ( hh );
+        fpModel = null;
+        hh = null;
+
+
+        if ( ((String)propertyMap.get("RUN_MANDATORY_DTM")).equalsIgnoreCase("true") ) {
             
             // first apply destination choice for tours with shadow pricing
             zdm.balanceSizeVariables(hhMgr.getHouseholds());
@@ -97,7 +191,7 @@ public class MorpcModelRunner extends MorpcModelBase {
             atWorkDTM = null;
         }
 
-        com.pb.common.calculator.UtilityExpressionCalculator.clearData();
+        //com.pb.common.calculator.UtilityExpressionCalculator.clearData();
 
 		if ( ((String)propertyMap.get("RUN_MANDATORY_STOPS")).equalsIgnoreCase("true") ) {
 
@@ -195,8 +289,6 @@ public class MorpcModelRunner extends MorpcModelBase {
      //end runModels
     
     
-    
-    
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
 
@@ -204,19 +296,37 @@ public class MorpcModelRunner extends MorpcModelBase {
 
         try {
             
-            logger.info ("starting matrix data server in a 32 bit process.");
-            // start the 32 bit JVM used specifically for running matrix io classes
-            ioVm32Bit = MatrixIO32BitJvm.getInstance();
-            ioVm32Bit.startJVM32();
-            
-            // establish that matrix reader and writer classes will use the RMI versions for TPPLUS format matrices
-            ioVm32Bit.startMatrixDataServer( MatrixType.TPPLUS );
-            
-            
-            
             // create a model runner object and run models
             MorpcModelRunner mr = new MorpcModelRunner();
 
+            if ( mr.serverAddress != null && mr.serverPort > 0 ) {
+                try
+                {
+                    logger.info("attempting connection to matrix server " + mr.serverAddress + ":" + mr.serverPort);
+        
+                    MatrixDataManager mdm = MatrixDataManager.getInstance();
+                    mr.ms = new MatrixDataServerRmi(mr.serverAddress, mr.serverPort, MatrixDataServer.MATRIX_DATA_SERVER_NAME);
+                    mr.ms.testRemote();
+                    mdm.setMatrixDataServerObject(mr.ms);
+                    logger.info( "connected to matrix server " + mr.serverAddress + ":" + mr.serverPort);
+        
+                } catch (Exception e)
+                {
+                    logger.error("exception caught running ctramp model components -- exiting.", e);
+                    throw new RuntimeException();
+                }
+            }
+            else {
+                logger.info ("starting matrix data server in a 32 bit process.");
+                // start the 32 bit JVM used specifically for running matrix io classes
+                ioVm32Bit = MatrixIO32BitJvm.getInstance();
+                ioVm32Bit.startJVM32();
+                
+                // establish that matrix reader and writer classes will use the RMI versions for TPPLUS format matrices
+                ioVm32Bit.startMatrixDataServer( MatrixType.TPPLUS );
+            }
+            
+            
             // run tour based models
             try {
             
@@ -230,14 +340,20 @@ public class MorpcModelRunner extends MorpcModelBase {
 
             
             
-            // establish that matrix reader and writer classes will not use the RMI versions any longer.
-            // local matrix i/o, as specified by setting types, is now the default again.
-            ioVm32Bit.stopMatrixDataServer();
-            
-            // close the JVM in which the RMI reader/writer classes were running
-            ioVm32Bit.stopJVM32();
-            logger.info ("matrix data server 32 bit process stopped.");
-            
+            if ( mr.ms == null ) {
+                // establish that matrix reader and writer classes will not use the RMI versions any longer.
+                // local matrix i/o, as specified by setting types, is now the default again.
+                ioVm32Bit.stopMatrixDataServer();
+                
+                // close the JVM in which the RMI reader/writer classes were running
+                ioVm32Bit.stopJVM32();
+                logger.info ("matrix data server 32 bit process stopped.");
+            }
+            else {
+                mr.ms.stop32BitMatrixIoServer();
+                logger.info ("matrix data server 32 bit process stopped.");
+            }
+
         }
         catch (RuntimeException e) {
             logger.error ( "RuntimeException caught in com.pb.morpc.models.MorpcModelRunner.main() -- exiting.", e );

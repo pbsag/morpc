@@ -5,7 +5,10 @@ package com.pb.morpc.models;
  *
  * Individual Non-Madatory Tour Generation Model
  */
+import com.pb.common.calculator.MatrixDataManager;
+import com.pb.common.calculator.MatrixDataServerIf;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
 import com.pb.morpc.matrix.MorpcMatrixAggregaterTpp;
@@ -19,6 +22,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
 
 
@@ -34,100 +39,26 @@ public class MorpcModelBase {
 
     static final String PROPERTIES_FILE_BASENAME = "morpc_bench";
 
+    protected MatrixDataServerIf ms;
+    protected String serverAddress = null;
+    protected int serverPort = -1;
     
 	
     public MorpcModelBase () {
 
         propertyMap = ResourceUtil.getResourceBundleAsHashMap ( PROPERTIES_FILE_BASENAME );
 
+        logger.info("");
+        logger.info("");
+        serverAddress = (String)propertyMap.get("RunModel.MatrixServerAddress");
 
-        //instantiate ZonalDataManager and TODDataManager objects so that their static members are available to other classes (eg. DTMOutput)
-		zdm = new ZonalDataManager ( propertyMap );
-        tdm = new TODDataManager(propertyMap);
-
-
-		// set the global random number generator seed read from the properties file
-		SeededRandom.setSeed ( Integer.parseInt( (String)propertyMap.get("RandomSeed") ) );
-
-		
-        // if new skims were generated as part of this model run or prior to it, run aggregation step for TPP submode skims
-        String property = (String)propertyMap.get("AGGREGATE_TPPLUS_SKIM_MATRICES");
-        if ( property.equalsIgnoreCase("true") ) {
-            
-            logger.info( "aggregating slc skim matrices" );                
-            MorpcMatrixAggregaterTpp ma = new MorpcMatrixAggregaterTpp(propertyMap);
-            ma.aggregateSlcSkims();
-            logger.info( "finished aggregating slc skim matrices" );                
-
-        }
-        
-        
-        
-        
-		// build a synthetic population
-		if ( ((String)propertyMap.get("RUN_POPULATION_SYNTHESIS_MODEL")).equalsIgnoreCase("true") )
-			runPopulationSynthesizer();
-		
-		
-		
-		// assign auto ownership attributes to population
-		if ( ((String)propertyMap.get("RUN_AUTO_OWNERSHIP_MODEL")).equalsIgnoreCase("true") ) {
-
-            logger.info( "computing accessibilities." );                
-
-            //update accessibily indices, and then write it to hard drive as a .csv file.
-            if ( ((String)propertyMap.get("format")).equalsIgnoreCase("tpplus") ) {
-                AccessibilityIndicesTpp accInd = new AccessibilityIndicesTpp( PROPERTIES_FILE_BASENAME );
-                accInd.writeIndices();
-            }
-            else {
-                AccessibilityIndices accInd = new AccessibilityIndices( PROPERTIES_FILE_BASENAME );
-                accInd.writeIndices();
-            }
-	
-			logger.info ("finished computing accessibilities");
-
-			runAutoOwnershipModel();
-		    
-		}
-
-
-		
-		// assign person type and daily activity pattern attributes and generate mandatory tours
-		if ( ((String)propertyMap.get("RUN_DAILY_PATTERN_MODELS")).equalsIgnoreCase("true") )
-			runDailyActivityPatternModels();
-
-		
-
-		
-		
-		// create an array of Household objects from the household table data
-		hhMgr = new HouseholdArrayManager( propertyMap );
-
-		// check if property is set to start the model iteration from a DiskObjectArray,
-		// and if so, get HHs from the existing DiskObjectArray.
-		if(((String)propertyMap.get("StartFromDiskObjectArray")).equalsIgnoreCase("true")) {
-			hhMgr.createBigHHArrayFromDiskObject();
-		} 
-		// otherwise, create an array of HHs from the household table data stored on disk
-		else {
-			hhMgr.createBigHHArray ();
-		}
-		
-		hhMgr.createHHArrayToProcess (); 
-
-
-		
-		// run Free Parking Eligibility Model
-		Household[] hh = hhMgr.getHouseholds();
-		FreeParkingEligibility fpModel = new FreeParkingEligibility( propertyMap );
-		fpModel.runFreeParkingEligibility (hh);
-		hhMgr.sendResults ( hh );
-		fpModel = null;
-		hh = null;
+        String serverPortString = (String)propertyMap.get("RunModel.MatrixServerPort");
+        if ( serverPortString != null )
+            serverPort = Integer.parseInt(serverPortString);
 
     }
-
+    
+    
 
 
 	protected void runPopulationSynthesizer () {
@@ -249,7 +180,4 @@ public class MorpcModelBase {
 	  }
 	}
   
-  
-  
-
 }
