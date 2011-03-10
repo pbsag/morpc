@@ -5,9 +5,12 @@ import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.math.MathUtil;
 import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.MatrixIO32BitJvm;
 import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.ResourceUtil;
+import com.pb.morpc.matrix.MatrixDataServer;
+import com.pb.morpc.matrix.MatrixDataServerRmi;
 
 import java.io.*;
 
@@ -49,6 +52,9 @@ public class AccessibilityIndicesTpp {
     private Matrix wtLrtMd;
     private Matrix wtCrlMd;
 
+    private String matrixSeverAddress;
+    private String matrixSeverPort;
+
     
     //parameter in formula
     double[] negGama = {
@@ -77,6 +83,9 @@ public class AccessibilityIndicesTpp {
     public AccessibilityIndicesTpp(String propertiesName) {
         logger = Logger.getLogger(AccessibilityIndicesTpp.class);
         propertyMap = ResourceUtil.getResourceBundleAsHashMap(propertiesName);
+
+        matrixSeverAddress = (String) propertyMap.get("RunModel.MatrixServerAddress");
+        matrixSeverPort = (String) propertyMap.get("RunModel.MatrixServerPort");
 
         readTppSkimFiles();
         
@@ -149,10 +158,18 @@ public class AccessibilityIndicesTpp {
         String fullName = skimsDirectory + "/" + skimFileName;
         
         try {
-            MatrixReader reader = MatrixReader.createReader ( MatrixType.TPPLUS, new File(fullName) );
-            Matrix m = reader.readMatrix(skimTableIndex);
-            matrixMap.put ( tableIdentifier, m );
-        }
+            if ( matrixSeverAddress == null ){
+                MatrixReader reader = MatrixReader.createReader ( MatrixType.TPPLUS, new File(fullName) );
+                Matrix m = reader.readMatrix(skimTableIndex);
+                matrixMap.put ( tableIdentifier, m );
+            }
+            else{
+                //These lines will remote any matrix reader call
+                MatrixDataServerRmi ms = new MatrixDataServerRmi( matrixSeverAddress, Integer.parseInt(matrixSeverPort), MatrixDataServer.MATRIX_DATA_SERVER_NAME);
+                Matrix m = ms.readTppMatrix( fullName, skimTableIndex );
+                matrixMap.put ( tableIdentifier, m );
+            }
+        }        
         catch (RuntimeException e) {
             logger.fatal( String.format("could not create %s matrix reader to read %s", MatrixType.TPPLUS, fullName) );
             logger.fatal( String.format("tableIdentifier = %s", tableIdentifier) );
