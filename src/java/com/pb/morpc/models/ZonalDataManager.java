@@ -60,7 +60,8 @@ public class ZonalDataManager implements java.io.Serializable {
 	public static float[] propfree;
 	public static float[] parkrate;
 	public static float[] zonalShortAccess;
-	public static float[] zonalAreaType;
+    public static float[] zonalAreaType;
+    public static float[] zonalCalibDist;
 	public static float[] zonal_nonw_au_op;
 	public static float[] zonal_nonw_walk;
 	public static int numberOfZones;
@@ -250,7 +251,8 @@ public class ZonalDataManager implements java.io.Serializable {
         int ringsPosition = getColumnPosition(ZoneTableFields.RINGS, zoneTable);
         int suprdistPosition = getColumnPosition(ZoneTableFields.SUPRDIST, zoneTable);
         int schdistFieldPosition = getColumnPosition(ZoneTableFields.SCHDIST, zoneTable);
-
+        int calibDistFieldPosition = getColumnPosition(ZoneTableFields.CALIBDIST, zoneTable);
+        
         
         parkRate = new float[zoneTable.getRowCount() + 1];
         for (int i = 1; i <= zoneTable.getRowCount(); i++)
@@ -342,6 +344,11 @@ public class ZonalDataManager implements java.io.Serializable {
         for (int i = 1; i <= zoneTable.getRowCount(); i++)
             zonalAreaType[i] = zoneTable.getValueAt(i, areatypeFieldPosition);
 
+        zonalCalibDist = new float[zoneTable.getRowCount() + 1];
+        for (int i = 1; i <= zoneTable.getRowCount(); i++)
+            zonalCalibDist[i] = zoneTable.getValueAt(i, calibDistFieldPosition);
+
+        
         
         zonal_nonw_au_op = new float[zoneTable.getRowCount() + 1];
         for (int i = 1; i <= zoneTable.getRowCount(); i++) {
@@ -1895,7 +1902,7 @@ public class ZonalDataManager implements java.io.Serializable {
             "work_au_op", "work_tr_pk", "work_tr_op", "work_walk", "nonw_au_pk",
             "nonw_au_op", "nonw_tr_pk", "nonw_tr_op", "nonw_walk", "cbdatype",
             "parktot", "parklng", "propfree", "areatype", "urbtype", "parkrate",
-            "rings", "suprdist", "licking"
+            "rings", "suprdist", "licking", "calibdist"
         };
 
         TableDataSet result = new TableDataSet();
@@ -1940,7 +1947,8 @@ public class ZonalDataManager implements java.io.Serializable {
 		staticDataMap.put ( "propfree", propfree );
 		staticDataMap.put ( "parkrate", parkrate );
 		staticDataMap.put ( "zonalShortAccess", zonalShortAccess );
-		staticDataMap.put ( "zonalAreaType", zonalAreaType );
+        staticDataMap.put ( "zonalAreaType", zonalAreaType );
+        staticDataMap.put ( "zonalCalibDist", zonalCalibDist );
 		staticDataMap.put ( "zonal_nonw_au_op", zonal_nonw_au_op );
 		staticDataMap.put ( "zonal_nonw_walk", zonal_nonw_walk );
 		staticDataMap.put ( "odUtilModeAlt", odUtilModeAlt );
@@ -1975,7 +1983,8 @@ public class ZonalDataManager implements java.io.Serializable {
 		propfree         = (float[])staticDataMap.get ( "propfree" );
 		parkrate         = (float[])staticDataMap.get ( "parkrate" );
 		zonalShortAccess = (float[])staticDataMap.get ( "zonalShortAccess" );
-		zonalAreaType    = (float[])staticDataMap.get ( "zonalAreaType" );
+        zonalAreaType    = (float[])staticDataMap.get ( "zonalAreaType" );
+        zonalCalibDist   = (float[])staticDataMap.get ( "zonalCalibDist" );
 		zonal_nonw_au_op = (float[])staticDataMap.get ( "zonal_nonw_au_op" );
 		zonal_nonw_walk  = (float[])staticDataMap.get ( "zonal_nonw_walk" );
 		odUtilModeAlt    = (double[][])staticDataMap.get ( "odUtilModeAlt" );
