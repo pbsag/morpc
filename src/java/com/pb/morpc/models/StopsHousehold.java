@@ -444,11 +444,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					}
 					else {
-                        logger.warn ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
-                        logger.warn ( "chosen stop freq = " + chosenAlt + ", autoTransit = " + autoTransit + ", slcSample[0].length = " + slcSample[0].length);
-                        logger.warn ( "hh object orig = " + hh.getOrigTaz() + ", hh object dest = " + hh.getChosenDest() );
-                        logger.warn ( "hh object orig walk segment = " + hh.getOriginWalkSegment() + ", hh object dest walk segment = " + hh.getChosenWalkSegment() );
-                        logger.warn ( "tour object orig = " + hh.mandatoryTours[t].getOrigTaz() + ", tour object dest = " + hh.mandatoryTours[t].getDestTaz() );
+                        logger.error ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+                        logger.error ( "chosen stop freq = " + chosenAlt + ", autoTransit = " + autoTransit + ", slcSample[0].length = " + slcSample[0].length);
+                        logger.error ( "hh object orig = " + hh.getOrigTaz() + ", hh object dest = " + hh.getChosenDest() );
+                        logger.error ( "hh object orig walk segment = " + hh.getOriginWalkSegment() + ", hh object dest walk segment = " + hh.getChosenWalkSegment() );
+                        logger.error ( "tour object orig = " + hh.mandatoryTours[t].getOrigTaz() + ", tour object dest = " + hh.mandatoryTours[t].getDestTaz() );
 
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -460,7 +460,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[0][i] = 0;
                             }
                             slc[0][autoTransit][tourType].logUECResults(logger, "outbound mandatory SLC utilities", slcSample[0]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -506,11 +506,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					}
 					else {
-						logger.warn ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
-                        logger.warn ( "chosen stop freq = " + chosenAlt + ", autoTransit = " + autoTransit + ", slcSample[1].length = " + slcSample[1].length);
-                        logger.warn ( "hh object orig = " + hh.getOrigTaz() + ", hh object dest = " + hh.getChosenDest() );
-                        logger.warn ( "hh object orig walk segment = " + hh.getOriginWalkSegment() + ", hh object dest walk segment = " + hh.getChosenWalkSegment() );
-                        logger.warn ( "tour object orig = " + hh.mandatoryTours[t].getOrigTaz() + ", tour object dest = " + hh.mandatoryTours[t].getDestTaz() );
+						logger.error ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+                        logger.error ( "chosen stop freq = " + chosenAlt + ", autoTransit = " + autoTransit + ", slcSample[1].length = " + slcSample[1].length);
+                        logger.error ( "hh object orig = " + hh.getOrigTaz() + ", hh object dest = " + hh.getChosenDest() );
+                        logger.error ( "hh object orig walk segment = " + hh.getOriginWalkSegment() + ", hh object dest walk segment = " + hh.getChosenWalkSegment() );
+                        logger.error ( "tour object orig = " + hh.mandatoryTours[t].getOrigTaz() + ", tour object dest = " + hh.mandatoryTours[t].getDestTaz() );
 						
 						// log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
 						if (autoTransit == 1){
@@ -522,7 +522,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	                                slcSample[1][i] = 0;
 	                        }
 	                        slc[1][autoTransit][tourType].logUECResults(logger, "inbound mandatory SLC utilities", slcSample[1]);
-	                        logger.info("");
+	                        logger.error("");
                             throw new RuntimeException();
 						}
 
@@ -548,11 +548,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warn ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
-                        logger.warn ( "chosen stop freq = " + chosenAlt + ", autoTransit = " + autoTransit + ", slcSample[0].length = " + slcSample[0].length);
-                        logger.warn ( "hh object orig = " + hh.getOrigTaz() + ", hh object dest = " + hh.getChosenDest() );
-                        logger.warn ( "hh object orig walk segment = " + hh.getOriginWalkSegment() + ", hh object dest walk segment = " + hh.getChosenWalkSegment() );
-                        logger.warn ( "tour object orig = " + hh.mandatoryTours[t].getOrigTaz() + ", tour object dest = " + hh.mandatoryTours[t].getDestTaz() );
+						logger.error ( "no outbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+                        logger.error ( "chosen stop freq = " + chosenAlt + ", autoTransit = " + autoTransit + ", slcSample[0].length = " + slcSample[0].length);
+                        logger.error ( "hh object orig = " + hh.getOrigTaz() + ", hh object dest = " + hh.getChosenDest() );
+                        logger.error ( "hh object orig walk segment = " + hh.getOriginWalkSegment() + ", hh object dest walk segment = " + hh.getChosenWalkSegment() );
+                        logger.error ( "tour object orig = " + hh.mandatoryTours[t].getOrigTaz() + ", tour object dest = " + hh.mandatoryTours[t].getDestTaz() );
 
 						// log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -564,7 +564,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[0][i] = 0;
                             }
                             slc[0][autoTransit][tourType].logUECResults(logger, "outbound mandatory SLC utilities", slcSample[0]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -584,11 +584,11 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
-                        logger.warn ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
-                        logger.warn ( "chosen stop freq = " + chosenAlt + ", autoTransit = " + autoTransit + ", slcSample[1].length = " + slcSample[0].length);
-                        logger.warn ( "hh object orig = " + hh.getOrigTaz() + ", hh object dest = " + hh.getChosenDest() );
-                        logger.warn ( "hh object orig walk segment = " + hh.getOriginWalkSegment() + ", hh object dest walk segment = " + hh.getChosenWalkSegment() );
-                        logger.warn ( "tour object orig = " + hh.mandatoryTours[t].getOrigTaz() + ", tour object dest = " + hh.mandatoryTours[t].getDestTaz() );
+                        logger.error ( "no inbound mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+                        logger.error ( "chosen stop freq = " + chosenAlt + ", autoTransit = " + autoTransit + ", slcSample[1].length = " + slcSample[0].length);
+                        logger.error ( "hh object orig = " + hh.getOrigTaz() + ", hh object dest = " + hh.getChosenDest() );
+                        logger.error ( "hh object orig walk segment = " + hh.getOriginWalkSegment() + ", hh object dest walk segment = " + hh.getChosenWalkSegment() );
+                        logger.error ( "tour object orig = " + hh.mandatoryTours[t].getOrigTaz() + ", tour object dest = " + hh.mandatoryTours[t].getDestTaz() );
                         
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -600,7 +600,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[1][i] = 0;
                             }
                             slc[1][autoTransit][tourType].logUECResults(logger, "inbound mandatory SLC utilities", slcSample[1]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -963,7 +963,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					}
 					else {
-						logger.warn ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.error ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -975,7 +975,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[0][i] = 0;
                             }
                             slc[0][autoTransit][tourType].logUECResults(logger, "outbound joint SLC utilities", slcSample[0]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -1021,7 +1021,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
                     }
 					else {
-                        logger.warn ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+                        logger.error ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
                         
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -1033,7 +1033,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[1][i] = 0;
                             }
                             slc[1][autoTransit][tourType].logUECResults(logger, "inbound joint SLC utilities", slcSample[1]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -1079,7 +1079,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					}
 					else {
-						logger.warn ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.error ( "no outbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -1091,7 +1091,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[0][i] = 0;
                             }
                             slc[0][autoTransit][tourType].logUECResults(logger, "outbound joint SLC utilities", slcSample[0]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -1132,7 +1132,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 
 					}
 					else {
-                        logger.warn ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+                        logger.error ( "no inbound joint slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
                         
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -1144,7 +1144,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[1][i] = 0;
                             }
                             slc[1][autoTransit][tourType].logUECResults(logger, "inbound joint SLC utilities", slcSample[1]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -1498,7 +1498,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
-                        logger.warn ( "no outbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+                        logger.error ( "no outbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -1510,7 +1510,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[0][i] = 0;
                             }
                             slc[0][autoTransit][tourType].logUECResults(logger, "outbound indiv non-mandatory SLC utilities", slcSample[0]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -1538,7 +1538,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
-                        logger.warn ( "no inbound indiv non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+                        logger.error ( "no inbound indiv non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
                         
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -1550,7 +1550,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[1][i] = 0;
                             }
                             slc[1][autoTransit][tourType].logUECResults(logger, "inbound indiv non-mandatory SLC utilities", slcSample[1]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -1578,7 +1578,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
-						logger.warn ( "no outbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+						logger.error ( "no outbound non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -1590,7 +1590,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[0][i] = 0;
                             }
                             slc[0][autoTransit][tourType].logUECResults(logger, "outbound indiv non-mandatory SLC utilities", slcSample[0]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -1613,7 +1613,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 						chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 					}
 					else {
-                        logger.warn ( "no inbound indiv non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+                        logger.error ( "no inbound indiv non-mandatory slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
                         
                         // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                         if (autoTransit == 1){
@@ -1625,7 +1625,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                     slcSample[1][i] = 0;
                             }
                             slc[1][autoTransit][tourType].logUECResults(logger, "inbound indiv non-mandatory SLC utilities", slcSample[1]);
-                            logger.info("");
+                            logger.error("");
                             throw new RuntimeException();
                         }
 
@@ -2011,7 +2011,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 							chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 						}
 						else {
-							logger.warn ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+							logger.error ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 
 	                        // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
 	                        if (autoTransit == 1){
@@ -2023,7 +2023,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	                                    slcSample[0][i] = 0;
 	                            }
 	                            slc[0][autoTransit][subtourType].logUECResults(logger, "outbound at-work subtour SLC utilities", slcSample[0]);
-	                            logger.info("");
+	                            logger.error("");
 	                            throw new RuntimeException();
 	                        }
 
@@ -2051,7 +2051,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 							chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 						}
 						else {
-	                        logger.warn ( "no inbound at-work subtour slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+	                        logger.error ( "no inbound at-work subtour slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
 	                        
 	                        // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
 	                        if (autoTransit == 1){
@@ -2063,7 +2063,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 	                                    slcSample[1][i] = 0;
 	                            }
 	                            slc[1][autoTransit][subtourType].logUECResults(logger, "inbound at-work subtour SLC utilities", slcSample[1]);
-	                            logger.info("");
+	                            logger.error("");
 	                            throw new RuntimeException();
 	                        }
 
@@ -2091,7 +2091,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 							chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 						}
 						else {
-							logger.warn ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
+							logger.error ( "no outbound atwork slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t);
 
                             // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                             if (autoTransit == 1){
@@ -2103,7 +2103,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                         slcSample[0][i] = 0;
                                 }
                                 slc[0][autoTransit][subtourType].logUECResults(logger, "outbound at-work subtour SLC utilities", slcSample[0]);
-                                logger.info("");
+                                logger.error("");
                                 throw new RuntimeException();
                             }
 
@@ -2126,7 +2126,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
 							chosenShrtWlk = chosen - (chosenDestAlt-1)*ZonalDataManager.WALK_SEGMENTS - 1;
 						}
 						else {
-                            logger.warn ( "no inbound at-work subtour slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
+                            logger.error ( "no inbound at-work subtour slc alternatives available, hh_id=" + hh_id + ", person=" + person + ", tour=" + t + ".  Stop frequency for this tour set to 0.");
                             
                             // log the utility calculation for the SLC alternatives that have the same TAZ as the tour orig or dest
                             if (autoTransit == 1){
@@ -2138,7 +2138,7 @@ public class StopsHousehold extends StopsModelBase implements java.io.Serializab
                                         slcSample[1][i] = 0;
                                 }
                                 slc[1][autoTransit][subtourType].logUECResults(logger, "inbound at-work subtour SLC utilities", slcSample[1]);
-                                logger.info("");
+                                logger.error("");
                                 throw new RuntimeException();
                             }
 
