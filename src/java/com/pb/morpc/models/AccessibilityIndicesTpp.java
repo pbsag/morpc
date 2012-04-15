@@ -84,8 +84,8 @@ public class AccessibilityIndicesTpp {
         logger = Logger.getLogger(AccessibilityIndicesTpp.class);
         propertyMap = ResourceUtil.getResourceBundleAsHashMap(propertiesName);
 
-        matrixSeverAddress = (String) propertyMap.get("RunModel.MatrixServerAddress");
-        matrixSeverPort = (String) propertyMap.get("RunModel.MatrixServerPort");
+        matrixSeverAddress = (String) propertyMap.get("MatrixServerAddress");
+        matrixSeverPort = (String) propertyMap.get("MatrixServerPort");
 
         readTppSkimFiles();
         

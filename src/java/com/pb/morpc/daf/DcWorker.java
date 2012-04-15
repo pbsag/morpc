@@ -10,11 +10,15 @@ package com.pb.morpc.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
+import com.pb.common.calculator.MatrixDataManager;
+import com.pb.common.calculator.MatrixDataServerIf;
 import com.pb.morpc.models.DTMHousehold;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.models.TODDataManager;
 import com.pb.morpc.structures.Household;
 import com.pb.morpc.structures.TourType;
+import com.pb.morpc.matrix.MatrixDataServer;
+import com.pb.morpc.matrix.MatrixDataServerRmi;
 
 import java.util.HashMap;
 import org.apache.log4j.Logger;
@@ -37,7 +41,8 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 	private int shadowPriceIter = 0;
 
 	private String modelServer = "DcModelServer";
-
+	private boolean matrixServerSetup;
+	
 	private int processorIndex = 0;
 
     public DcWorker () {
@@ -47,6 +52,8 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 
 	public void onStart() {
 
+	    matrixServerSetup = false;
+	    
 		if (LOGGING)
 		    logger.info( this.name +  " onStart().");
 
@@ -68,7 +75,6 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
 
 	    Message newMessage = null;
-
 
 		//Do some work ...
 		int messageReturnType = respondToMessage(msg);
@@ -112,6 +118,8 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 				zdm.setStaticData ( zdmMap );
 				tdm.setStaticData ( tdmMap );
 
+		        startMatrixServer();                       
+		        				
 				// create a dtmHH object
 				if (LOGGING)
 				    logger.info (this.getName() + " building dtmHH object for mandatory dc for PINDEX=" + processorIndex);
@@ -225,5 +233,31 @@ public class DcWorker extends MessageProcessingTask implements java.io.Serializa
 
 		return newMessage;
 	}
+
+
+
+
+
+    private synchronized void startMatrixServer()
+    {
+        if ( matrixServerSetup )
+            return;
+        
+        String serverAddress = (String)propertyMap.get("MatrixServerAddress");
+        int serverPort = Integer.parseInt( (String)propertyMap.get("MatrixServerPort") );
+
+        try
+        {
+            MatrixDataServerIf ms = new MatrixDataServerRmi(serverAddress, serverPort, MatrixDataServer.MATRIX_DATA_SERVER_NAME);
+            MatrixDataManager mdm = MatrixDataManager.getInstance();
+            mdm.setMatrixDataServerObject(ms);
+            matrixServerSetup = true;
+        }
+        catch (Exception e) {
+            logger.error( "exception caught setting up connection to remote matrix server -- exiting.", e );
+            throw new RuntimeException();
+        }
+
+    }
 
 }

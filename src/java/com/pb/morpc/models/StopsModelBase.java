@@ -202,6 +202,11 @@ public class StopsModelBase implements java.io.Serializable {
 	
 	
 	
+    public void setProcessorIndex( int index ){
+        processorIndex = index;
+    }
+    
+
 	public void initStopsModelBase ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 
 		this.propertyMap = propertyMap;
@@ -217,7 +222,7 @@ public class StopsModelBase implements java.io.Serializable {
 
 		// get the indicator for whether to use the message window or not
 		// from the properties file.
-		String useMessageWindowString = (String)propertyMap.get(  "MessageWindow");
+		String useMessageWindowString = (String)propertyMap.get( "MessageWindow" );
 		if (useMessageWindowString != null) {
 			if (useMessageWindowString.equalsIgnoreCase("true")) {
 				useMessageWindow = true;

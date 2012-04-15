@@ -193,9 +193,9 @@ public class AtWorkDTMWorker extends MessageProcessingTask implements java.io.Se
 			else if ( msg.getId().equals( MessageID.EXIT ) ) {
 
 				if (LOGGING)
-					logger.info (this.getName() + " releasing UEC matrix memory after getting " + msg.getId() + " from " + msg.getSender() );
+					logger.info (this.getName() + " message: " + msg.getId() + " from " + msg.getSender() );
 			    
-				com.pb.common.calculator.UtilityExpressionCalculator.clearData();
+				//com.pb.common.calculator.UtilityExpressionCalculator.clearData();
 			}
 
 		}

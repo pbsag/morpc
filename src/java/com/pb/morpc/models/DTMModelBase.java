@@ -16,8 +16,14 @@ import com.pb.common.util.SeededRandom;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.apache.log4j.Logger;
 import java.io.*;
 
@@ -167,10 +173,11 @@ public class DTMModelBase implements java.io.Serializable {
 	public DTMModelBase ( int processorId, HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 		
 	    this.processorIndex = processorId;
+        this.propertyMap = propertyMap;
 	    
 	    logger.info ( "DTMModelBase constructor called with PINDEX=" + processorIndex);
 	    
-		initDTMModelBase ( propertyMap, tourTypeCategory, tourTypes );
+		initDTMModelBase ( tourTypeCategory, tourTypes );
 	  
 	}
 	
@@ -181,16 +188,20 @@ public class DTMModelBase implements java.io.Serializable {
 	public DTMModelBase ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 		
 		this.processorIndex = 0;
-		initDTMModelBase ( propertyMap, tourTypeCategory, tourTypes );
+        this.propertyMap = propertyMap;
+
+        initDTMModelBase ( tourTypeCategory, tourTypes );
 	  
 	}
 	
 	
+	public void setProcessorIndex( int index ){
+	    processorIndex = index;
+	}
 	
 
-	private void initDTMModelBase ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
+	private void initDTMModelBase ( short tourTypeCategory, short[] tourTypes ) {
 
-		this.propertyMap = propertyMap;
 		this.tourTypeCategory = tourTypeCategory; 
 		this.tourTypes = tourTypes; 
 
@@ -813,5 +824,6 @@ public class DTMModelBase implements java.io.Serializable {
         
         return false;
     }
-	
+
+    
 }

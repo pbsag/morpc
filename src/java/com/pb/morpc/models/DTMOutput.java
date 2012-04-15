@@ -10,6 +10,8 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.model.ChoiceModelApplication;
+import com.pb.common.calculator.MatrixDataManager;
+import com.pb.common.calculator.MatrixDataServerIf;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.calculator.IndexValues;
 
@@ -92,9 +94,6 @@ public class DTMOutput implements java.io.Serializable {
     boolean useMessageWindow = false;
     MessageWindow mw;
 
-    String matrixSeverAddress;
-    String matrixSeverPort;
-    
     IndexValues index = new IndexValues();
 
 
@@ -103,9 +102,8 @@ public class DTMOutput implements java.io.Serializable {
 
         this.propertyMap = propertyMap;
 
-        matrixSeverAddress = (String) propertyMap.get("RunModel.MatrixServerAddress");
-        matrixSeverPort = (String) propertyMap.get("RunModel.MatrixServerPort");
-
+        //startMatrixServer();
+        
         // get the indicator for whether to use the message window or not
         // from the properties file.
         String useMessageWindowString = (String)propertyMap.get( "MessageWindow");
@@ -1257,16 +1255,6 @@ public class DTMOutput implements java.io.Serializable {
             logger.info( String.format("    [%d] %-16s: %.0f", i-1, newNames[i-1], outputMatrices[i-1].getSum()) );
         }            
 
-        if (matrixSeverAddress == null){
-            MatrixWriter tppWriter = MatrixWriter.createWriter (MatrixType.TPPLUS, new File( tppFileName ) );            
-            tppWriter.writeMatrices(newNames, outputMatrices);
-            trips = null;
-        }
-        else {
-            MatrixDataServerRmi ms = new MatrixDataServerRmi( matrixSeverAddress, Integer.parseInt(matrixSeverPort), MatrixDataServer.MATRIX_DATA_SERVER_NAME);
-            ms.writeTpplusMatrices(tppFileName, trips, newNames, newDescriptions);
-            trips = null;
-        }
     }
 
 
@@ -2711,4 +2699,27 @@ public class DTMOutput implements java.io.Serializable {
         return returnValue - 1;
     }
     
+
+    private void startMatrixServer()
+    {
+
+        String serverAddress = (String)propertyMap.get("MatrixServerAddress");
+        int serverPort = Integer.parseInt( (String)propertyMap.get("MatrixServerPort") );
+
+        try
+        {
+            MatrixDataServerIf ms = new MatrixDataServerRmi(serverAddress, serverPort, MatrixDataServer.MATRIX_DATA_SERVER_NAME);
+            ms.testRemote( Thread.currentThread().getName() );
+            ms.start32BitMatrixIoServer(MatrixType.TPPLUS);
+
+            MatrixDataManager mdm = MatrixDataManager.getInstance();
+            mdm.setMatrixDataServerObject(ms);
+        }
+        catch (Exception e) {
+            logger.error( "exception caught setting up connection to remote matrix server -- exiting.", e );
+            throw new RuntimeException();
+        }
+
+    }
+
 }

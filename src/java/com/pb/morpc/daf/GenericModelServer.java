@@ -26,9 +26,6 @@ public class GenericModelServer extends MessageProcessingTask {
 	private boolean serverStarted = false;
 	private boolean serverExiting = false;
 
-	private Message startWorkMessage = null; 	
-	private Message exitMessage = null; 	
-
 	private ArrayList workerQueue = new ArrayList();
 
 	private ZonalDataManager zdm = 	null;
@@ -44,26 +41,30 @@ public class GenericModelServer extends MessageProcessingTask {
 
     
     public GenericModelServer () {
+
+        if (LOGGING)
+            logger.info( "GenericModelServer() constructor: " + this.name + ".");
+        
     }
 
 
 
     public void onStart () {
 
-		if (LOGGING)
-		    logger.info( this.name + " onStart().");
+        if (LOGGING)
+            logger.info( "GenericModelServer (name=" + this.name + ") onStart().");
 
     }
 
 
 
 
-	public void onMessage(Message msg) {
+	public synchronized void onMessage(Message msg) {
 		
 		int taskNumber = 0;
 
-		if (LOGGING)
-		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
+        if (LOGGING)
+            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", received from " + msg.getSender() + "." );
 
 		//The model server gets a START_INFO message from the main server
 		//when it's ready for the model to begin running.
@@ -98,18 +99,20 @@ public class GenericModelServer extends MessageProcessingTask {
 				if ( qMsg.getId().equals(MessageID.SEND_START_INFO)) {
 					String sender = qMsg.getSender();
 					if (serverExiting) {
-						if (LOGGING)
-						    logger.info( this.name + " sending an EXIT back to " + sender );
-						exitMessage = createMessage();
+
+                        if (LOGGING)
+                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", taking message out of workerQueue[" + workerQueue.size() + "], received from " + sender + ", serverExiting is true, sending an EXIT back to " + sender );
+
+                        Message exitMessage = createMessage();
 						exitMessage.setId(MessageID.EXIT);
 						sendTo( sender, exitMessage );
 						activeWorkers--;
-						i.remove();
 					}
 					else {
-						if (LOGGING)
-						    logger.info( this.name + " sending a START_INFO back to " + sender );
-
+    
+					    if (LOGGING)
+                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", taking message out of workerQueue[" + workerQueue.size() + "], received from " + sender + ", sending a START_INFO back to " + sender );
+    
 						// add the sender task name and number that requested work to a worker arrayList
 						// and to a processorId HashMap.
 						workerTaskList.add ( sender );
@@ -118,7 +121,7 @@ public class GenericModelServer extends MessageProcessingTask {
 
 						
 						// create start work message to send to workers
-						startWorkMessage = createMessage();
+						Message startWorkMessage = createMessage();
 						startWorkMessage.setId(MessageID.START_INFO);
 						startWorkMessage.setValue( MessageID.PROPERTY_MAP_KEY, propertyMap );
 						startWorkMessage.setValue( MessageID.ZONAL_DATA_MANAGER_KEY, zdm );
@@ -127,14 +130,21 @@ public class GenericModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.STATIC_TOD_DATA_MAP_KEY, tdmMap );
 						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
-						sendTo( sender, startWorkMessage );
+                        //sendTo( sender, startWorkMessage );
+                        sendTo( sender, startWorkMessage, logger, this.name );
+
 
 						activeWorkers++;
-						i.remove();
+
 					}
+                    i.remove();
 				}
 				else if (qMsg.getId().equals(MessageID.FINISHED)) {
-					//send a RELEASE_MEMORY to the worker to free its big local memory allocations
+
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", taking message out of workerQueue[" + workerQueue.size() + "], received from " + qMsg.getSender() + ", sending a RELEASE_MEMORY back to " + qMsg.getSender() );
+
+                    //send a RELEASE_MEMORY to the worker to free its big local memory allocations
 					Message rMsg = createMessage();
 					rMsg.setId(MessageID.RELEASE_MEMORY);
 					sendTo( qMsg.getSender(), rMsg );
@@ -152,6 +162,10 @@ public class GenericModelServer extends MessageProcessingTask {
 					}
 					//queue a SEND_START_INFO from a worker
 					qMsg.setId(MessageID.SEND_START_INFO);
+
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + qMsg.getId() + " adding message (taken from queue) with SEND_START_INFO to workerQueue[" + workerQueue.size() + "] on thread " + Thread.currentThread().getName() + " for sender " + qMsg.getSender() );
+
 					workerQueue.add( qMsg );
 					activeWorkers--;
 				}
@@ -166,18 +180,20 @@ public class GenericModelServer extends MessageProcessingTask {
 		        
 				if (msg.getId().equals(MessageID.SEND_START_INFO)) {
 					if (serverExiting) {
-						if (LOGGING)
-						    logger.info( this.name + " sending an EXIT back to " + msg.getSender() );
-						exitMessage = createMessage();
+
+                        if (LOGGING)
+                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", received from " + workerQueue.size() + "], received from " + msg.getSender() + ", serverExiting is true, sending an EXIT back to " + msg.getSender() );
+
+                        Message exitMessage = createMessage();
 						exitMessage.setId(MessageID.EXIT);
 						sendTo( msg.getSender(), exitMessage );
 						activeWorkers--;
 					}
 					else {
 						//Send a START_INFO message back to the worker
-						if (LOGGING)
-						    logger.info( this.name + " sending a START_INFO back to " + msg.getSender() );
-
+                        if (LOGGING)
+                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", received from " + msg.getSender() + ", sending a START_INFO back to " + msg.getSender() );
+            
 						// add the sender task name and number that requested work to a worker arrayList
 						// and to a processorId HashMap.
 						workerTaskList.add ( msg.getSender() );
@@ -186,7 +202,7 @@ public class GenericModelServer extends MessageProcessingTask {
 
 						
 						// create start work message to send to workers
-						startWorkMessage = createMessage();
+						Message startWorkMessage = createMessage();
 						startWorkMessage.setId(MessageID.START_INFO);
 						startWorkMessage.setValue( MessageID.PROPERTY_MAP_KEY, propertyMap );
 						startWorkMessage.setValue( MessageID.ZONAL_DATA_MANAGER_KEY, zdm );
@@ -195,14 +211,18 @@ public class GenericModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.STATIC_TOD_DATA_MAP_KEY, tdmMap );
 						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
-						replyToSender(startWorkMessage);
+						//replyToSender(startWorkMessage);
+                        replyToSender( startWorkMessage, logger, this.name, msg.getSender() );
 						
 						activeWorkers++;
 					}
 				}
 				else if (msg.getId().equals(MessageID.FINISHED)) {
 					//send a RELEASE_MEMORY to the worker to free its big local memory allocations
-					Message rMsg = createMessage();
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + " received from " + msg.getSender() + ", sending a RELEASE_MEMORY back to " + msg.getSender() );
+                    
+                    Message rMsg = createMessage();
 					rMsg.setId(MessageID.RELEASE_MEMORY);
 					sendTo( msg.getSender(), rMsg );
 					//If this is the last worker, send a RELEASE_MATRIX_MEMORY to all the workers.
@@ -217,6 +237,10 @@ public class GenericModelServer extends MessageProcessingTask {
 							sendTo( (String)workerTaskList.get(m), rmMsg );
 				        }
 					}
+					
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + msg.getId() + " adding message with SEND_START_INFO to workerQueue[" + workerQueue.size() + "] on thread " + Thread.currentThread().getName() + " for sender " + msg.getSender() );
+					
 					//queue a SEND_START_INFO from a worker
 					msg.setId(MessageID.SEND_START_INFO);
 					workerQueue.add( msg );
@@ -229,6 +253,9 @@ public class GenericModelServer extends MessageProcessingTask {
 				// queue the messages until DcModelServer is told to start
 				workerQueue.add( msg );
 				
+                if (LOGGING)
+                    logger.info( this.name + " onMessage() id=" + msg.getId() + " received from " + msg.getSender() + " added to workerQueue[" + workerQueue.size() + "] on thread " + Thread.currentThread().getName() );
+                
 			}
 		}
 
@@ -245,6 +272,10 @@ public class GenericModelServer extends MessageProcessingTask {
 				tdmMap = null;
 				propertyMap = null;
 			}
+
+            if (LOGGING)
+                logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", serverStarted && activeWorkers == 0, sending RESET_HHS_PROCESSED to HhArrayServer."  );
+            
 			
 			// send a resetHouseholdCount to the hhArrayServer to tell it to zero
 			// its hhs processed count once all workers have finished.
@@ -252,7 +283,10 @@ public class GenericModelServer extends MessageProcessingTask {
 			resetHHsMsg.setId(MessageID.RESET_HHS_PROCESSED);
 			sendTo("HhArrayServer", resetHHsMsg);
 
-			exitMessage = createMessage();
+            if (LOGGING)
+                logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", serverStarted && activeWorkers == 0, sending EXIT to MorpcServer."  );
+            
+			Message exitMessage = createMessage();
 			exitMessage.setId(MessageID.EXIT);
 			sendTo("MorpcServer", exitMessage);
 		}

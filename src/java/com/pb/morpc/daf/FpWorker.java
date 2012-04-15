@@ -33,6 +33,10 @@ public class FpWorker extends MessageProcessingTask implements java.io.Serializa
 	
 	
     public FpWorker () {
+
+        if (LOGGING)
+            logger.info( "FpWorker constructor: " +  this.name + "[" + Thread.currentThread().getId() + "]" + "().");
+        
     }
     
 
@@ -40,11 +44,11 @@ public class FpWorker extends MessageProcessingTask implements java.io.Serializa
 	public void onStart() {
 
 		if (LOGGING)
-		    logger.info( this.name +  " onStart().");
+		    logger.info(  this.name + "[" + Thread.currentThread().getId() + "]" + " onStart().");
 
 		// ask the free parking model server for start info including the propertyMap
 		if (LOGGING)
-		    logger.info( this.name +  " asking for START_INFO from " + modelServer + "." );
+		    logger.info(  this.name + "[" + Thread.currentThread().getId() + "]" +  " asking for START_INFO from " + modelServer + "." );
 		Message msg = createMessage();
 		msg.setId( MessageID.SEND_START_INFO );
 		sendTo( modelServer, msg );
@@ -57,7 +61,7 @@ public class FpWorker extends MessageProcessingTask implements java.io.Serializa
 
 
 		if (LOGGING)
-		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
+		    logger.info( this.name + "[" + Thread.currentThread().getId() + "]" + " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
 		
 		Message newMessage = null;
 

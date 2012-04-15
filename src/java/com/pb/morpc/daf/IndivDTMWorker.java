@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 public class IndivDTMWorker extends MessageProcessingTask implements java.io.Serializable {
 
 	private static boolean LOGGING = true;
+	
 	private static Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 	private Household[] hhList = null;

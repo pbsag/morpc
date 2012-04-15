@@ -5,7 +5,7 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.model.ConcreteAlternative;
-import com.pb.common.model.LogitModel;
+import com.pb.morpc.util.LogitModel;
 import com.pb.morpc.synpop.SyntheticPopulation;
 import com.pb.morpc.structures.MessageWindow;
 import com.pb.morpc.structures.Household;

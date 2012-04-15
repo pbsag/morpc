@@ -33,8 +33,6 @@ public class HHArrayServer extends MessageProcessingTask {
 	
 	private boolean hhServerStarted = false;
 
-	private Message startWorkMessage = null; 	
-
 	private ArrayList hhServerQueue = new ArrayList();
 
 	private HouseholdArrayManager hhMgr = null;
@@ -59,7 +57,7 @@ public class HHArrayServer extends MessageProcessingTask {
 		if (LOGGING)
 		    logger.info("HhArrayServer onStart().");
 
-		startWorkMessage = createMessage();
+		Message startWorkMessage = createMessage();
 		startWorkMessage.setId(MessageID.START_INFO);
 
 		MorpcModelServer.showMemory ();

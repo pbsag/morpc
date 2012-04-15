@@ -5,7 +5,7 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.model.ConcreteAlternative;
-import com.pb.common.model.LogitModel;
+import com.pb.morpc.util.LogitModel;
 import com.pb.morpc.synpop.SyntheticPopulation;
 import com.pb.morpc.structures.MessageWindow;
 import com.pb.morpc.structures.Household;
@@ -135,45 +135,53 @@ public class Model22 {
             // check for predrivers in the household
             if ( (int)hhTable.getValueAt( i+1, schoolpred_idPosition ) > 0 ) {
             	
-				// get utilities for each alternative for this household
-				index.setZoneIndex( hh_taz_id );
-				index.setHHIndex( hh_id );
-        
-				Arrays.fill(sample, 1);
-				double[] utilities = uec.solve( index, new Object(), sample );
+                try {
+                    
+                    // get utilities for each alternative for this household
+                    index.setZoneIndex( hh_taz_id );
+                    index.setHHIndex( hh_id );
+            
+                    Arrays.fill(sample, 1);
+                    double[] utilities = uec.solve( index, new Object(), sample );
 
-				//set utility for each alternative
-				for(int a=0;a < numberOfAlternatives;a++){
-					alts[a].setAvailability( sample[a+1] == 1 );
-					if (sample[a+1] == 1)
-						alts[a].setAvailability( (utilities[a] > -99.0) );
-					alts[a].setUtility(utilities[a]);
-				}
-				// set availabilities
-				root.computeAvailabilities();
-
-
-				root.getUtility();
-				root.calculateProbabilities();
+                    //set utility for each alternative
+                    for(int a=0;a < numberOfAlternatives;a++){
+                        alts[a].setAvailability( sample[a+1] == 1 );
+                        if (sample[a+1] == 1)
+                            alts[a].setAvailability( (utilities[a] > -99.0) );
+                        alts[a].setUtility(utilities[a]);
+                    }
+                    // set availabilities
+                    root.computeAvailabilities();
 
 
-                //loop over number of predrivers in household
-                for (int m=0; m < (int)hhTable.getValueAt( i+1, schoolpred_idPosition ); m++){
-                    ConcreteAlternative chosen = (ConcreteAlternative) root.chooseElementalAlternative();
-                    String chosenAltName= chosen.getName();
-                    if (chosenAltName.equals("Work_1"))
-                        ++ predriversWork1[i];
-                    else if (chosenAltName.equals("School_1"))
-                        ++ predriversSchool1[i];
-                    else if (chosenAltName.equals("School_2"))
-                        ++ predriversSchool2[i];
-                    else if (chosenAltName.equals("School_work"))
-                        ++ predriversSchoolWork[i];
-                    else if (chosenAltName.equals("Non_mand"))
-                        ++ predriversNonMand[i];
-                    else if (chosenAltName.equals("Home"))
-                        ++ predriversAtHome[i];
-                }//next predriver in household
+                    root.getUtility();
+                    root.calculateProbabilities();
+
+
+                    //loop over number of predrivers in household
+                    for (int m=0; m < (int)hhTable.getValueAt( i+1, schoolpred_idPosition ); m++){
+                        ConcreteAlternative chosen = (ConcreteAlternative) root.chooseElementalAlternative();
+                        String chosenAltName= chosen.getName();
+                        if (chosenAltName.equals("Work_1"))
+                            ++ predriversWork1[i];
+                        else if (chosenAltName.equals("School_1"))
+                            ++ predriversSchool1[i];
+                        else if (chosenAltName.equals("School_2"))
+                            ++ predriversSchool2[i];
+                        else if (chosenAltName.equals("School_work"))
+                            ++ predriversSchoolWork[i];
+                        else if (chosenAltName.equals("Non_mand"))
+                            ++ predriversNonMand[i];
+                        else if (chosenAltName.equals("Home"))
+                            ++ predriversAtHome[i];
+                    }//next predriver in household
+
+                }
+                catch( Exception e ){
+                    logger.error( "exception caught processing hh_id=" + hh_id + ", i=" + i + ".", e );
+                    System.exit(-1);
+                }
             }//end if
         }//next household
         //append predrivers at home onto HH data file

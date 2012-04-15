@@ -5,6 +5,8 @@ package com.pb.morpc.daf;
  *
  * Main Model Sever for Distributed Application
  */
+import com.pb.common.calculator.MatrixDataManager;
+import com.pb.common.calculator.MatrixDataServerIf;
 import com.pb.common.calculator.TableDataSetManager;
 import com.pb.common.daf.DAF;
 import com.pb.common.daf.Message;
@@ -18,6 +20,8 @@ import com.pb.common.matrix.MatrixIO32BitJvm;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
+import com.pb.morpc.matrix.MatrixDataServer;
+import com.pb.morpc.matrix.MatrixDataServerRmi;
 import com.pb.morpc.matrix.MorpcMatrixAggregaterTpp;
 import com.pb.morpc.matrix.MorpcMatrixZipper;
 import com.pb.morpc.models.AccessibilityIndicesTpp;
@@ -82,7 +86,7 @@ public class MorpcModelServer extends MessageProcessingTask {
 
     public void onStart() {
 
-        MatrixIO32BitJvm ioVm32Bit = null;
+        //MatrixIO32BitJvm ioVm32Bit = null;
 
         startTime = System.currentTimeMillis();
 
@@ -101,13 +105,11 @@ public class MorpcModelServer extends MessageProcessingTask {
         
         
         // start the 32 bit JVM used specifically for running matrix io classes
-        ioVm32Bit = MatrixIO32BitJvm.getInstance();
-        ioVm32Bit.startJVM32();
+        //ioVm32Bit = MatrixIO32BitJvm.getInstance();
+        //ioVm32Bit.startJVM32();
         
         // establish that matrix reader and writer classes will use the RMI versions for TPPLUS format matrices
-        ioVm32Bit.startMatrixDataServer( MatrixType.TPPLUS );
-        
-        
+        //ioVm32Bit.startMatrixDataServer( MatrixType.TPPLUS );
         
         
 		// send a message to the random number server so that the random number seed will be set on all nodes
@@ -147,7 +149,10 @@ public class MorpcModelServer extends MessageProcessingTask {
 			logger.info("Memory at end of RnServer");
 			showMemory();
 		}
-        
+
+		
+		
+		
         // set the global number of iterations read from the properties file
         numberOfIterations = (Integer.parseInt((String) propertyMap.get( "GlobalIterations")));
 
@@ -158,6 +163,8 @@ public class MorpcModelServer extends MessageProcessingTask {
         else
         	FtaRestartRun = false;
 
+        
+        startMatrixServer();        
         
         
         if(FtaRestartRun){
@@ -198,10 +205,10 @@ public class MorpcModelServer extends MessageProcessingTask {
         
         // establish that matrix reader and writer classes will not use the RMI versions any longer.
         // local matrix i/o, as specified by setting types, is now the default again.
-        ioVm32Bit.stopMatrixDataServer();
+        //ioVm32Bit.stopMatrixDataServer();
         
         // close the JVM in which the RMI reader/writer classes were running
-        ioVm32Bit.stopJVM32();
+        //ioVm32Bit.stopJVM32();
         
 
         if (LOGGING) {
@@ -442,6 +449,13 @@ public class MorpcModelServer extends MessageProcessingTask {
 	            logger.info(this.name + " waiting to hear from FpModelServer that free parking model for all hhs is processed.");
 	        waitMsg = receivePort.receive();
 	        while (!(waitMsg.getSender().equals("FpModelServer") && waitMsg.getId().equals(MessageID.EXIT))) {
+	            
+	            int dummy=0;
+	            if  ( !(waitMsg.getSender().equals("FpModelServer") ) )
+	                dummy = 1;
+	            else if ( waitMsg.getId().equals(MessageID.EXIT) )
+	                dummy = 2;
+	            
 	            waitMsg = receivePort.receive();
 	        }
 	
@@ -1481,4 +1495,26 @@ public class MorpcModelServer extends MessageProcessingTask {
 		return (String) propertyMap.get("CMD_LOCATION");
     }
     
+    private void startMatrixServer()
+    {
+
+        String serverAddress = (String)propertyMap.get("MatrixServerAddress");
+        int serverPort = Integer.parseInt( (String)propertyMap.get("MatrixServerPort") );
+
+        try
+        {
+            MatrixDataServerIf ms = new MatrixDataServerRmi(serverAddress, serverPort, MatrixDataServer.MATRIX_DATA_SERVER_NAME);
+            ms.testRemote( Thread.currentThread().getName() );
+            ms.start32BitMatrixIoServer(MatrixType.TPPLUS);
+
+            MatrixDataManager mdm = MatrixDataManager.getInstance();
+            mdm.setMatrixDataServerObject(ms);
+        }
+        catch (Exception e) {
+            logger.error( "exception caught setting up connection to remote matrix server -- exiting.", e );
+            throw new RuntimeException();
+        }
+
+    }
+
 }

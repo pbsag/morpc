@@ -44,7 +44,7 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	// this constructor used in non-distributed application
 	public DTMHousehold ( HashMap propertyMap, short tourTypeCategory, short[] tourTypes ) {
 
-		super ( propertyMap, tourTypeCategory, tourTypes );
+		super ( 0, propertyMap, tourTypeCategory, tourTypes );
 
 		this.count = 1;
 
@@ -433,9 +433,11 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
                 
                 index.setDestZone( hh.mandatoryTours[t].getDestTaz() );
 				setMcODUtility ( hh, index, tourTypeIndex );
-//                if ( hh_id == 455 && t == 0 ){
-//                    mcODUEC[tourTypeIndex].logAnswersArray(logger, "MC OD Utility hh id=" + hh.getID());
-//                }
+				
+				//  hh_id=168129, person=2, tour=0
+                if ( hh_id == 168129 && t == 0 ){
+                    mcODUEC[tourTypeIndex].logAnswersArray(logger, "MC OD Utility hh id=" + hh.getID());
+                }
                 
 				
 				//this is the original by Jim				
@@ -449,9 +451,10 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
                     mc[tourTypeIndex].computeUtilities ( hh, index, mcAvailability, mcSample );
 					chosenModeAlt = mc[tourTypeIndex].getChoiceResult( SeededRandom.getRandom() );
 
-//			        if ( hh_id == 455 && t == 0 ){
-//			            mc[tourTypeIndex].logUECResults(logger, "MC Utility hh id=" + hh.getID() + ", t=" + t);
-//			        }
+	                //  hh_id=168129, person=2, tour=0
+	                if ( hh_id == 168129 && t == 0 ){
+			            mc[tourTypeIndex].logUECResults(logger, "MC Utility hh id=" + hh.getID() + ", t=" + t);
+			        }
 			        
 				}
 				catch (java.lang.Exception e) {
@@ -2217,10 +2220,14 @@ public class DTMHousehold extends DTMModelBase implements java.io.Serializable {
 	}
 
 	
-	public void setShadowPricingIteration ( int iter ) {
-		shadowPricingIteration = iter;
-	}
-	
+    public void setShadowPricingIteration ( int iter ) {
+        shadowPricingIteration = iter;
+    }
+    
+    public int getShadowPricingIteration () {
+        return shadowPricingIteration;
+    }
+    
 
 	public void resetHouseholdCount () {
 		count = 0;

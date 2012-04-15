@@ -24,9 +24,6 @@ public class DcModelServer extends MessageProcessingTask {
 	private boolean serverStarted = false;
 	private boolean serverExiting = false;
 
-	private Message startWorkMessage = null; 	
-	private Message exitMessage = null; 	
-
 	private ArrayList workerQueue = new ArrayList();
 
 	private ZonalDataManager zdm = 	null;
@@ -41,14 +38,18 @@ public class DcModelServer extends MessageProcessingTask {
 
     
     public DcModelServer () {
+
+        if (LOGGING)
+            logger.info( "DcModelServer() constructor: " + this.name + ".");
+        
     }
 
 
 
     public void onStart () {
 
-		if (LOGGING)
-		    logger.info( this.name + " onStart().");
+        if (LOGGING)
+            logger.info( "DcModelServer (name=" + this.name + ") onStart().");
 
     }
 
@@ -59,8 +60,8 @@ public class DcModelServer extends MessageProcessingTask {
 		
 		int taskNumber = 0;
 
-		if (LOGGING)
-		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
+        if (LOGGING)
+            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", received from " + msg.getSender() + "." );
 
 		//The model server gets a START_INFO message from the main server
 		//when it's ready for the model to begin running.
@@ -81,7 +82,6 @@ public class DcModelServer extends MessageProcessingTask {
 				
 				serverStarted = true;
 				serverExiting = false;
-
 				activeWorkers = 0;
 			}
 			else if ( msg.getId().equals( MessageID.EXIT )	) {		
@@ -96,25 +96,26 @@ public class DcModelServer extends MessageProcessingTask {
 				if ( qMsg.getId().equals(MessageID.SEND_START_INFO)) {
 					String sender = qMsg.getSender();
 				    if (serverExiting) {
-						if (LOGGING)
-						    logger.info( this.name + " sending an EXIT back to " + sender );
-						
-						exitMessage = createMessage();
+                        
+                        if (LOGGING)
+                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", taking message out of workerQueue[" + workerQueue.size() + "], received from " + sender + ", serverExiting is true, sending an EXIT back to " + sender + ", activeWorkers=" + activeWorkers );
+                        						
+						Message exitMessage = createMessage();
 						exitMessage.setId(MessageID.EXIT);
-						sendTo( sender, exitMessage );
+
+						//sendTo( sender, exitMessage );
+                        sendTo( sender, exitMessage, logger, this.name );
 						activeWorkers--;
-						i.remove();
 				    }
 				    else {
-						if (LOGGING)
-						    logger.info( this.name + " sending a START_INFO back to " + sender );
 
+                        if (LOGGING)
+                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", taking message out of workerQueue[" + workerQueue.size() + "], received from " + sender + ", sending a START_INFO back to " + sender + ", activeWorkers=" + activeWorkers);
 						
 						taskNumber = getSenderIndex(sender);
-
 						
 						// create start work message to send to workers
-						startWorkMessage = createMessage();
+						Message startWorkMessage = createMessage();
 						startWorkMessage.setId(MessageID.START_INFO);
 						startWorkMessage.setValue( MessageID.PROPERTY_MAP_KEY, propertyMap );
 						startWorkMessage.setValue( MessageID.ZONAL_DATA_MANAGER_KEY, zdm );
@@ -124,15 +125,16 @@ public class DcModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.SHADOW_PRICE_ITER_KEY, Integer.toString(shadowPriceIter) );
 						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
-						sendTo( sender, startWorkMessage );
+						//sendTo( sender, startWorkMessage );
+                        sendTo( sender, startWorkMessage, logger, this.name );
 						activeWorkers++;
-						i.remove();
 				    }
+                    i.remove();
 				}
 				else if (qMsg.getId().equals(MessageID.FINISHED)) {
 
-				    if (LOGGING)
-						logger.info( this.name + " had a queued FINISH and is sending a RELEASE_MEMORY back to " + qMsg.getSender() );
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", taking message out of workerQueue[" + workerQueue.size() + "], received from " + qMsg.getSender() + ", sending a RELEASE_MEMORY back to " + qMsg.getSender() );
 
 				    //send a RELEASE_MEMORY to the worker to free its big local memory allocations
 					Message rMsg = createMessage();
@@ -141,6 +143,10 @@ public class DcModelServer extends MessageProcessingTask {
 					
 					//queue a SEND_START_INFO from a worker
 					qMsg.setId(MessageID.SEND_START_INFO);
+
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + qMsg.getId() + " adding message (taken from queue) with SEND_START_INFO to workerQueue[" + workerQueue.size() + "] on thread " + Thread.currentThread().getName() + " for sender " + qMsg.getSender() );
+
 					workerQueue.add( qMsg );
 					activeWorkers--;
 				}
@@ -155,9 +161,11 @@ public class DcModelServer extends MessageProcessingTask {
 		        
 				if (msg.getId().equals(MessageID.SEND_START_INFO)) {
 				    if (serverExiting) {
-						if (LOGGING)
-						    logger.info( this.name + " sending an EXIT back to " + msg.getSender() );
-						exitMessage = createMessage();
+				        
+                        if (LOGGING)
+                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", received from " + workerQueue.size() + "], received from " + msg.getSender() + ", serverExiting is true, sending an EXIT back to " + msg.getSender() );
+                        
+						Message exitMessage = createMessage();
 						exitMessage.setId(MessageID.EXIT);
 						sendTo( msg.getSender(), exitMessage );
 						activeWorkers--;
@@ -166,15 +174,13 @@ public class DcModelServer extends MessageProcessingTask {
 				        try {
 				            
 							//Send a START_INFO message back to the worker
-							if (LOGGING)
-								logger.info( this.name + " sending a START_INFO back to " + msg.getSender() );
-
+                            if (LOGGING)
+                                logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", received from " + msg.getSender() + ", sending a START_INFO back to " + msg.getSender() );
 
 							taskNumber = getSenderIndex(msg.getSender());
-
 							
 							// create start work message to send to workers
-							startWorkMessage = createMessage();
+							Message startWorkMessage = createMessage();
 							startWorkMessage.setId(MessageID.START_INFO);
 							startWorkMessage.setValue( MessageID.PROPERTY_MAP_KEY, propertyMap );
 							startWorkMessage.setValue( MessageID.ZONAL_DATA_MANAGER_KEY, zdm );
@@ -184,8 +190,10 @@ public class DcModelServer extends MessageProcessingTask {
 							startWorkMessage.setValue( MessageID.SHADOW_PRICE_ITER_KEY, Integer.toString(shadowPriceIter) );
 							startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
-							replyToSender(startWorkMessage);
-							activeWorkers++;
+                            //replyToSender(startWorkMessage, logger);
+							replyToSender(startWorkMessage, logger, this.name, msg.getSender() );
+
+	                        activeWorkers++;
 				        
 				        }
 						catch (RuntimeException e) {
@@ -195,13 +203,16 @@ public class DcModelServer extends MessageProcessingTask {
 				}
 				else if (msg.getId().equals(MessageID.FINISHED)) {
 
-					if (LOGGING)
-						logger.info( this.name + " got a FINISHED and is sending a RELEASE_MEMORY back to " + msg.getSender() );
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + " received from " + msg.getSender() + ", sending a RELEASE_MEMORY back to " + msg.getSender() );
 
 					//send a RELEASE_MEMORY to the worker to free its big local memory allocations
 					Message rMsg = createMessage();
 					rMsg.setId(MessageID.RELEASE_MEMORY);
 					sendTo( msg.getSender(), rMsg );
+
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + msg.getId() + " adding message with SEND_START_INFO to workerQueue[" + workerQueue.size() + "] on thread " + Thread.currentThread().getName() + " for sender " + msg.getSender() );
 
 					//queue a SEND_START_INFO from a worker that's ready to start the next model
 					msg.setId(MessageID.SEND_START_INFO);
@@ -215,14 +226,16 @@ public class DcModelServer extends MessageProcessingTask {
 		        // queue the messages until DcModelServer is told to start
 				workerQueue.add( msg );
 				
+                if (LOGGING)
+                    logger.info( this.name + " onMessage() id=" + msg.getId() + " received from " + msg.getSender() + " added to workerQueue[" + workerQueue.size() + "] on thread " + Thread.currentThread().getName() );
 		    }
 		}
 
 		// if all workers that were sent START_INFO have finished, release memory
 		if ( serverStarted && activeWorkers == 0 ) {
 			//all workers are done, so send an EXIT message back to the main server
-			if (LOGGING)
-			    logger.info( this.name + " sending an EXIT back to MorpcServer" );
+            if (LOGGING)
+                logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", serverStarted && activeWorkers == 0, sending RESET_HHS_PROCESSED to HhArrayServer."  );
 			
 			if (serverExiting) {
 				zdm = null;
@@ -238,7 +251,10 @@ public class DcModelServer extends MessageProcessingTask {
 			resetHHsMsg.setId(MessageID.RESET_HHS_PROCESSED);
 			sendTo("HhArrayServer", resetHHsMsg);
 
-			exitMessage = createMessage();
+            if (LOGGING)
+                logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", serverStarted && activeWorkers == 0, sending EXIT to MorpcServer."  );
+            
+			Message exitMessage = createMessage();
 			exitMessage.setId(MessageID.EXIT);
 			sendTo("MorpcServer", exitMessage);
 		}

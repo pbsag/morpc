@@ -9,12 +9,10 @@ package com.pb.morpc.models;
 
 
 import com.pb.common.calculator.MatrixDataManager;
-import com.pb.common.calculator.MatrixDataServerIf;
 import com.pb.common.matrix.MatrixIO32BitJvm;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.SeededRandom;
 import com.pb.morpc.structures.Household;
-import com.pb.morpc.structures.TourType;
 import com.pb.morpc.matrix.MatrixDataServer;
 import com.pb.morpc.matrix.MatrixDataServerRmi;
 import com.pb.morpc.matrix.MorpcMatrixAggregaterTpp;
@@ -27,8 +25,8 @@ public class MorpcModelRunner extends MorpcModelBase {
     static Logger logger = Logger.getLogger(MorpcModelRunner.class);
 
 
-    public MorpcModelRunner() {
-        super();        
+    public MorpcModelRunner( String basePropertyName ) {
+        super( basePropertyName );        
     }
 
     public void runModels() {
@@ -125,17 +123,13 @@ public class MorpcModelRunner extends MorpcModelBase {
             // first apply destination choice for tours with shadow pricing
             zdm.balanceSizeVariables(hhMgr.getHouseholds());
 
-            int shadowPriceIterations = (Integer.parseInt((String) propertyMap.get(
-                        "NumberOfShadowPriceIterations")));
+            int shadowPriceIterations = (Integer.parseInt((String) propertyMap.get( "NumberOfShadowPriceIterations" )));
 
             // run destination, time-of-day, and mode choice models for indivdual mandatory tours
             MandatoryDTM manDTM = new MandatoryDTM(propertyMap, hhMgr);
 
             for (int i = 0; i < shadowPriceIterations; i++) {
-                manDTM.setShadowPricingIteration(i + 1);
-                manDTM.resetHouseholdCount();
-
-                manDTM.doDcWork();
+                manDTM.doDcWork( i+1 );
 				zdm.sumAttractions(hhMgr.getHouseholds());
                 zdm.reportMaxDiff();
                 zdm.updateShadowPrices();
@@ -144,9 +138,7 @@ public class MorpcModelRunner extends MorpcModelBase {
             }
 
             // next apply time-of-day and mode choice for tours
-            manDTM.resetHouseholdCount();
             manDTM.doTcMcWork();
-            manDTM.printTimes(TourType.MANDATORY_CATEGORY);
             manDTM = null;
         }
 
@@ -161,7 +153,6 @@ public class MorpcModelRunner extends MorpcModelBase {
             // run destination, time-of-day, and mode choice models for joint tours
             JointDTM jointDTM = new JointDTM(propertyMap, hhMgr);
             jointDTM.doWork();
-            jointDTM.printTimes(TourType.JOINT_CATEGORY);
             jointDTM = null;
         }
 
@@ -179,7 +170,6 @@ public class MorpcModelRunner extends MorpcModelBase {
             // run destination, time-of-day, and mode choice models for indivdual non-mandatory tours
             NonMandatoryDTM nonManDTM = new NonMandatoryDTM(propertyMap, hhMgr);
             nonManDTM.doWork();
-            nonManDTM.printTimes(TourType.NON_MANDATORY_CATEGORY);
             nonManDTM = null;
         }
 
@@ -187,7 +177,6 @@ public class MorpcModelRunner extends MorpcModelBase {
             // run destination, time-of-day, and mode choice models for subtours within work tours
             AtWorkDTM atWorkDTM = new AtWorkDTM(propertyMap, hhMgr);
             atWorkDTM.doWork();
-            atWorkDTM.printTimes(TourType.AT_WORK_CATEGORY);
             atWorkDTM = null;
         }
 
@@ -197,11 +186,8 @@ public class MorpcModelRunner extends MorpcModelBase {
 
             // run stop frequency and stop location for each of the mandatory tours
             MandatoryStops manStops = new MandatoryStops(propertyMap, hhMgr);
-            manStops.resetHouseholdCount();
             manStops.doSfcSlcWork();
-            manStops.resetHouseholdCount();
             manStops.doSmcWork();
-            manStops.printTimes(TourType.MANDATORY_CATEGORY);
             manStops = null;
 
 		}
@@ -210,11 +196,8 @@ public class MorpcModelRunner extends MorpcModelBase {
 		if ( ((String)propertyMap.get("RUN_JOINT_STOPS")).equalsIgnoreCase("true") ) {
             // run stop frequency and stop location for each of the joint tours
             JointStops jointStops = new JointStops(propertyMap, hhMgr);
-            jointStops.resetHouseholdCount();
             jointStops.doSfcSlcWork();
-            jointStops.resetHouseholdCount();
             jointStops.doSmcWork();
-            jointStops.printTimes(TourType.JOINT_CATEGORY);
             jointStops = null;
 		}
 		
@@ -223,11 +206,8 @@ public class MorpcModelRunner extends MorpcModelBase {
 		if ( ((String)propertyMap.get("RUN_NON_MANDATORY_STOPS")).equalsIgnoreCase("true") ) {
             // run stop frequency and stop location for each of the individual non-mandatory tours
             NonMandatoryStops nonManStops = new NonMandatoryStops(propertyMap, hhMgr);
-            nonManStops.resetHouseholdCount();
             nonManStops.doSfcSlcWork();
-            nonManStops.resetHouseholdCount();
             nonManStops.doSmcWork();
-            nonManStops.printTimes(TourType.NON_MANDATORY_CATEGORY);
             nonManStops = null;
 		}
 
@@ -235,14 +215,12 @@ public class MorpcModelRunner extends MorpcModelBase {
 		if ( ((String)propertyMap.get("RUN_ATWORK_STOPS")).equalsIgnoreCase("true") ) {
 		    // run stop frequency and stop location for each of the at-work subtours
             AtWorkStops atWorkStops = new AtWorkStops(propertyMap, hhMgr);
-            atWorkStops.resetHouseholdCount();
             atWorkStops.doSfcSlcWork();
-            atWorkStops.resetHouseholdCount();
             atWorkStops.doSmcWork();
             atWorkStops = null;
 
             // release skims matrices used in stop frequency and stop location choice from memory
-            com.pb.common.calculator.UtilityExpressionCalculator.clearData();
+            //com.pb.common.calculator.UtilityExpressionCalculator.clearData();
         }
 
 		
@@ -297,7 +275,7 @@ public class MorpcModelRunner extends MorpcModelBase {
         try {
             
             // create a model runner object and run models
-            MorpcModelRunner mr = new MorpcModelRunner();
+            MorpcModelRunner mr = new MorpcModelRunner( args.length == 0 ? null : args[0] );
 
             if ( mr.serverAddress != null && mr.serverPort > 0 ) {
                 try
@@ -306,7 +284,7 @@ public class MorpcModelRunner extends MorpcModelBase {
         
                     MatrixDataManager mdm = MatrixDataManager.getInstance();
                     mr.ms = new MatrixDataServerRmi(mr.serverAddress, mr.serverPort, MatrixDataServer.MATRIX_DATA_SERVER_NAME);
-                    mr.ms.testRemote();
+                    mr.ms.testRemote("MorpcServerMain");
                     mdm.setMatrixDataServerObject(mr.ms);
                     logger.info( "connected to matrix server " + mr.serverAddress + ":" + mr.serverPort);
         
@@ -330,7 +308,7 @@ public class MorpcModelRunner extends MorpcModelBase {
             // run tour based models
             try {
             
-                logger.info ("starting tour based model.");
+                logger.info ("starting tour based model using " + ( args.length == 0 ? MorpcModelBase.PROPERTIES_FILE_BASENAME : args[0]) + ".properties.");
                 mr.runModels();
                 
             }

@@ -16,34 +16,35 @@ import org.apache.log4j.Logger;
 
 public class RnServer extends MessageProcessingTask {
 
-	private static boolean LOGGING = false;
+	private static boolean LOGGING = true;
     static Logger logger = Logger.getLogger("com.pb.morpc.daf");
     
-	private boolean workersStarted = false;
 	private boolean serverStarted = false;
 	private boolean serverExiting = false;
 
-	private Message startWorkMessage = null; 	
-	private Message exitMessage = null; 	
-
-	private ArrayList rnWorkerQueue = new ArrayList();
+	private ArrayList workerQueue = new ArrayList();
 
 	private HashMap propertyMap = null; 
 
-	private int activeWorkers = 0;
+    private int sentWorkers = 0;
+    private int receivedWorkers = 0;
 	
 	
 	
 	
     public RnServer () {
+
+        if (LOGGING)
+            logger.info( "RnServer() constructor: " + this.name + ".");
+
     }
 
 
 
     public void onStart () {
 
-		if (LOGGING)
-		    logger.info( this.name + " onStart().");
+        if (LOGGING)
+            logger.info( "RnServer (name=" + this.name + ") onStart().");
 
     }
 
@@ -52,10 +53,10 @@ public class RnServer extends MessageProcessingTask {
 
 	public void onMessage(Message msg) {
 
-		if (LOGGING)
-		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
+        if (LOGGING)
+            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", received from " + msg.getSender() + "." );
 
-		//The random number server gets a START_INFO message from the main server
+        //The random number server gets a START_INFO message from the main server
 		//when it's ready for the random number seeds to be set.
 		if ( msg.getSender().equals("MorpcServer") ) {
 
@@ -63,7 +64,8 @@ public class RnServer extends MessageProcessingTask {
 				propertyMap = (HashMap)msg.getValue( MessageID.PROPERTY_MAP_KEY );
 				serverStarted = true;
 				serverExiting = false;
-				activeWorkers = 0;
+				sentWorkers = 0;
+				receivedWorkers = 0;
 			}
 			else if ( msg.getId().equals( MessageID.EXIT )	) {		
 			    
@@ -71,42 +73,52 @@ public class RnServer extends MessageProcessingTask {
 	
 			}
 			
+            if (LOGGING) {
+                logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + " received from " + msg.getSender() + ", sentWorkers=" + sentWorkers + ", receivedWorkers=" + receivedWorkers + ", serverExiting=" + serverExiting);                        
+                logger.info( "*** starting loop to process messages in rnWorkerQueue[" + workerQueue.size() + "] ***" );                        
+            }            
+            
 			//handle any messages from rnWorkers queued up while waiting for rnServer to start
-			for ( Iterator i = rnWorkerQueue.iterator(); i.hasNext(); ) {
+			for ( Iterator i = workerQueue.iterator(); i.hasNext(); ) {
 			    Message qMsg = (Message)i.next(); 
 				if ( qMsg.getId().equals(MessageID.SEND_START_INFO)) {
     				String sender = ( qMsg.getSender() );
 				    if (serverExiting) {
-						if (LOGGING)
-						    logger.info( this.name + " sending an EXIT back to " + sender );
+
+				        if (LOGGING)
+                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", taking message out of rnWorkeQueue[" + workerQueue.size() + "], received from " + sender + ", serverExiting is true, sending an EXIT back to " + sender  + ", sentWorkers=" + sentWorkers + ", receivedWorkers=" + receivedWorkers );                        
 						
-						exitMessage = createMessage();
+						Message exitMessage = createMessage();
 						exitMessage.setId(MessageID.EXIT);
 						sendTo( sender, exitMessage );
-						activeWorkers--;
-						i.remove();
+
 				    }
 				    else {
-    					if (LOGGING)
-    					    logger.info( this.name + " sending a START_INFO back to " + sender );
-    
-                		startWorkMessage = createMessage();
+
+                        if (LOGGING)
+                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", taking message out of rnWorkerQueue[" + workerQueue.size() + "], received from " + sender + ", sending a START_INFO back to " + sender + ", sentWorkers=" + sentWorkers + ", receivedWorkers=" + receivedWorkers );
+        
+    					Message startWorkMessage = createMessage();
     		            startWorkMessage.setId(MessageID.START_INFO);
     					startWorkMessage.setValue( MessageID.PROPERTY_MAP_KEY, propertyMap );
 
-    					sendTo( sender, startWorkMessage );
-    					activeWorkers++;
-						workersStarted = true;
+                        //sendTo( sender, startWorkMessage );
+                        sendTo( sender, startWorkMessage, logger, this.name );
+    					sentWorkers++;
 
-						i.remove();
 					}
+                    i.remove();
 				}
 				else if (qMsg.getId().equals(MessageID.FINISHED)) {
-					//send a RELEASE_MEMORY to the worker to free its big local memory allocations
+
+				    //send a RELEASE_MEMORY to the worker to free its big local memory allocations
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + ", taking message out of rnWorkeQueue[" + workerQueue.size() + "], received from " + qMsg.getSender() + ", sending a RELEASE_MEMORY back to " + qMsg.getSender() );
+
 					Message rMsg = createMessage();
 					rMsg.setId(MessageID.RELEASE_MEMORY);
-					sendTo( qMsg.getSender(), rMsg );
-					activeWorkers--;
+					sendTo( qMsg.getSender(), rMsg, logger, this.name );
+					receivedWorkers++;
 				}
 			}
 				
@@ -118,61 +130,80 @@ public class RnServer extends MessageProcessingTask {
 		    if ( serverStarted ) {
 		        
 				if (msg.getId().equals(MessageID.SEND_START_INFO)) {
-				    if (serverExiting) {
-						if (LOGGING)
-						    logger.info( this.name + " sending an EXIT back to " + msg.getSender() );
-						exitMessage = createMessage();
-						exitMessage.setId(MessageID.EXIT);
-						sendTo( msg.getSender(), exitMessage );
-						activeWorkers--;
-				    }
-				    else {
+//				    if (serverExiting) {
+//
+//                        if (LOGGING)
+//                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", received from " + msg.getSender() + ", serverExiting is true, sending an EXIT back to " + msg.getSender() + ", sentWorkers=" + sentWorkers + ", receivedWorkers=" + receivedWorkers );                       
+//						Message exitMessage = createMessage();
+//						exitMessage.setId(MessageID.EXIT);
+//						sendTo( msg.getSender(), exitMessage );
+//						receivedWorkers++;
+//				    }
+//				    else {
 				        try {
 
-				            if (activeWorkers == 0) {
+//				            if (activeWorkers == 0) {
 
-								//Send a START_INFO message back to the worker
-								if (LOGGING)
-									logger.info( this.name + " sending a START_INFO back to " + msg.getSender() );
-        
-								startWorkMessage = createMessage();
+	                            //Send a START_INFO message back to the worker
+		                        if (LOGGING)
+		                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", received from " + msg.getSender() + ", serverExiting is false, sending an START_INFO back to " + msg.getSender() + ", sentWorkers=" + sentWorkers + ", receivedWorkers=" + receivedWorkers + ", workerQueue["+workerQueue.size() + "]" );
+	                
+								Message startWorkMessage = createMessage();
 								startWorkMessage.setId(MessageID.START_INFO);
 								startWorkMessage.setValue( MessageID.PROPERTY_MAP_KEY, propertyMap );
 				
-								replyToSender(startWorkMessage);
-								activeWorkers++;
-								workersStarted = true;
+	                            //replyToSender(startWorkMessage);
+	                            //replyToSender( startWorkMessage, logger, this.name, msg.getSender() );
+	                            sendTo( msg.getSender(), startWorkMessage, logger, this.name );
+
+	                            sentWorkers++;
 				                
-				            }
+//				            }
+//				            else {
+//				                
+//		                        if (LOGGING)
+//		                            logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", received from " + msg.getSender() + ", serverExiting is false, no action taken, activeWorkers=" + activeWorkers );                       
+//				                
+//				            }
 				        
 				        }
 						catch (RuntimeException e) {
 							throw e;
 						}
-				    }
+//				    }
 				}
 				else if (msg.getId().equals(MessageID.FINISHED)) {
-					//send a RELEASE_MEMORY to the worker to free its big local memory allocations
+
+                    //send a RELEASE_MEMORY to the worker to free its big local memory allocations
+                    if (LOGGING)
+                        logger.info( this.name + " onMessage() id=" + msg.getId() + " on thread " + Thread.currentThread().getName() + "[" + Thread.currentThread().getId() + "]" + ", received from " + msg.getSender() + ", sending a RELEASE_MEMORY back to " + msg.getSender() + ", sentWorkers=" + sentWorkers + ", receivedWorkers=" + receivedWorkers + ", workerQueue["+workerQueue.size() + "]" );
+                    
 					Message rMsg = createMessage();
 					rMsg.setId(MessageID.RELEASE_MEMORY);
-					sendTo( msg.getSender(), rMsg );
-					//queue a SEND_START_INFO from a worker that's ready to start the next model
-					msg.setId(MessageID.SEND_START_INFO);
-					rnWorkerQueue.add( msg );
-					activeWorkers--;
+					sendTo( msg.getSender(), rMsg, logger, this.name );
+
+//                    if (LOGGING)
+//                        logger.info( this.name + " onMessage() id=" + msg.getId() + " adding message with SEND_START_INFO to rnWorkerQueue[" + workerQueue.size() + "] on thread " + Thread.currentThread().getName() + " for sender " + msg.getSender() + ", activeWorkers=" + activeWorkers );
+//
+//					msg.setId(MessageID.SEND_START_INFO);
+//					workerQueue.add( msg );
+					receivedWorkers++;
 				}
 			
 		    }
 		    else {
 		        
+                if (LOGGING)
+                    logger.info( this.name + " onMessage() id=" + msg.getId() + " waiting for server to start, adding message to rnWorkerQueue[" + workerQueue.size() + "] on thread " + Thread.currentThread().getName() + " for sender " + msg.getSender() + ", sentWorkers=" + sentWorkers + ", receivedWorkers=" + receivedWorkers );
+
 				// queue the messages until RnServer is told to start
-				rnWorkerQueue.add( msg );
+				workerQueue.add( msg );
 				
 		    }
 		}
 
 		// if all workers that were sent START_INFO have finished, kill the server
-		if ( workersStarted && serverStarted && activeWorkers == 0 ) {
+		if ( sentWorkers > 0 && serverStarted && sentWorkers == receivedWorkers ) {
 			//all workers are done, so send an EXIT message back to the main server
 			if (LOGGING)
 			    logger.info( this.name + " sending an EXIT back to MorpcServer" );
@@ -181,7 +212,7 @@ public class RnServer extends MessageProcessingTask {
 				propertyMap = null;
 			}
 			
-			exitMessage = createMessage();
+			Message exitMessage = createMessage();
 			exitMessage.setId(MessageID.EXIT);
 			sendTo("MorpcServer", exitMessage);
 

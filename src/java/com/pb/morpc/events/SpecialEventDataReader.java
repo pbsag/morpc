@@ -203,7 +203,7 @@ public class SpecialEventDataReader {
 		int NoTOD=TODIndex.getNoTODs();
 		for(int i=0; i<NoTOD; i++){
 			logger.info("Reading UEC using file:"+MCControlFile+" and data sheet:"+(i+1));
-			UtilityExpressionCalculator.clearData();
+			//UtilityExpressionCalculator.clearData();
 			UtilityExpressionCalculator uec =new UtilityExpressionCalculator(new File(MCControlFile), 0, (i+1), propertyMap,null);
 			result.put(TODIndex.getNameByIndex(i+1),uec);
 		}

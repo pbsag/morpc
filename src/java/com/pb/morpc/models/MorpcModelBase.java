@@ -5,25 +5,18 @@ package com.pb.morpc.models;
  *
  * Individual Non-Madatory Tour Generation Model
  */
-import com.pb.common.calculator.MatrixDataManager;
 import com.pb.common.calculator.MatrixDataServerIf;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.ResourceUtil;
-import com.pb.common.util.SeededRandom;
-import com.pb.morpc.matrix.MorpcMatrixAggregaterTpp;
 import com.pb.morpc.models.HouseholdArrayManager;
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.synpop.pums2000.PUMSData;
 import com.pb.morpc.synpop.SyntheticPopulation;
-import com.pb.morpc.structures.Household;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
 
 
@@ -32,27 +25,30 @@ public class MorpcModelBase {
 	static final String CMD_LOCATION = "c:\\windows\\system32";
     static Logger logger = Logger.getLogger(MorpcModelBase.class);
     
-	protected HashMap propertyMap = null;
+	protected HashMap<String,String> propertyMap = null;
 	protected HouseholdArrayManager hhMgr = null;
 	protected ZonalDataManager zdm = null;
     protected TODDataManager tdm = null;
 
-    static final String PROPERTIES_FILE_BASENAME = "morpc_bench";
+    public static final String PROPERTIES_FILE_BASENAME = "morpc_bench";
 
     protected MatrixDataServerIf ms;
     protected String serverAddress = null;
     protected int serverPort = -1;
     
 	
-    public MorpcModelBase () {
+    public MorpcModelBase ( String basePropertyName ) {
 
-        propertyMap = ResourceUtil.getResourceBundleAsHashMap ( PROPERTIES_FILE_BASENAME );
+        if ( basePropertyName == null )
+            propertyMap = ResourceUtil.getResourceBundleAsHashMap ( PROPERTIES_FILE_BASENAME );
+        else
+            propertyMap = ResourceUtil.getResourceBundleAsHashMap ( basePropertyName );
 
         logger.info("");
         logger.info("");
-        serverAddress = (String)propertyMap.get("RunModel.MatrixServerAddress");
+        serverAddress = (String)propertyMap.get("MatrixServerAddress");
 
-        String serverPortString = (String)propertyMap.get("RunModel.MatrixServerPort");
+        String serverPortString = (String)propertyMap.get("MatrixServerPort");
         if ( serverPortString != null )
             serverPort = Integer.parseInt(serverPortString);
 

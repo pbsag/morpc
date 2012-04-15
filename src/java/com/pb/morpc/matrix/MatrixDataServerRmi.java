@@ -43,8 +43,9 @@ public class MatrixDataServerRmi
 
     public Matrix readTppMatrix(String fileName, String tableName)
     {
-        Object[] objArray = {fileName, tableName};
-        return (Matrix) remote.method("readTppMatrix", objArray);
+        DataEntry entry = new DataEntry("matrix", "none", "TPPLUS", fileName, tableName, "", false);
+        Object[] objArray = {entry};
+        return (Matrix) remote.method("getMatrix", objArray);
     }
 
     public void writeTpplusMatrices ( String fileName, float[][][] trips, String[] names, String[] descriptions ) {
@@ -62,6 +63,12 @@ public class MatrixDataServerRmi
     {
         Object[] objArray = {};
         remote.method("stop32BitMatrixIoServer", objArray);
+    }
+
+    public String testRemote(String remoteObjectName)
+    {
+        Object[] objArray = {remoteObjectName};
+        return (String) remote.method("testRemote", objArray);
     }
 
     public String testRemote()
