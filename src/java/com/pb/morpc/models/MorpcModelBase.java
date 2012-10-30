@@ -31,6 +31,7 @@ public class MorpcModelBase {
     protected TODDataManager tdm = null;
 
     public static final String PROPERTIES_FILE_BASENAME = "morpc_bench";
+    protected String basePropertyName;
 
     protected MatrixDataServerIf ms;
     protected String serverAddress = null;
@@ -39,10 +40,8 @@ public class MorpcModelBase {
 	
     public MorpcModelBase ( String basePropertyName ) {
 
-        if ( basePropertyName == null )
-            propertyMap = ResourceUtil.getResourceBundleAsHashMap ( PROPERTIES_FILE_BASENAME );
-        else
-            propertyMap = ResourceUtil.getResourceBundleAsHashMap ( basePropertyName );
+    	this.basePropertyName = basePropertyName;
+        propertyMap = ResourceUtil.getResourceBundleAsHashMap ( basePropertyName );
 
         logger.info("");
         logger.info("");

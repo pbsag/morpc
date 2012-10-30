@@ -7,8 +7,6 @@ package com.pb.morpc.models;
  */
 import com.pb.common.calculator.MatrixDataManager;
 import com.pb.common.calculator.MatrixDataServerIf;
-import com.pb.common.calculator.TableDataSetManager;
-import com.pb.common.datafile.DiskObjectArray;
 import com.pb.common.matrix.MatrixIO32BitJvm;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.ResourceUtil;
@@ -28,8 +26,6 @@ import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 
 public class MorpcModelGlobal {
 
@@ -126,12 +122,12 @@ public class MorpcModelGlobal {
         
     }
 
-    private void runModelIteration( String basePropertName, int iteration ) {
+    private void runModelIteration( String basePropertyName, int iteration ) {
 
         logger.info("Global iteration:" + (iteration+1) + " started.");
         
         // read the property file specific to this global iteration
-        propertyMap = ResourceUtil.getResourceBundleAsHashMap( basePropertName + (iteration+1) );
+        propertyMap = ResourceUtil.getResourceBundleAsHashMap( basePropertyName + (iteration+1) );
  
         MatrixIO32BitJvm ioVm32Bit = startMatrixServer();        
         
@@ -154,15 +150,15 @@ public class MorpcModelGlobal {
             tdm = new TODDataManager(propertyMap);
         }
         
-        zdm.updatePropertyMap( iteration+1 );
+        zdm.updatePropertyMap( basePropertyName, iteration+1 );
 
 
 
         // create a model runner object and run models for this iteration
         try {        
             
-            logger.info ("starting tour based model for global iteration " + (iteration+1) + " using " + basePropertName + (iteration+1) + ".properties.");
-            MorpcModelRunner mr = new MorpcModelRunner( basePropertName + (iteration+1) );
+            logger.info ("starting tour based model for global iteration " + (iteration+1) + " using " + basePropertyName + (iteration+1) + ".properties.");
+            MorpcModelRunner mr = new MorpcModelRunner( basePropertyName + (iteration+1) );
 
             //if FTA_Restart_run is false, run PopSyn, otherwise skip it.
             if (!FtaRestartRun){
@@ -297,9 +293,11 @@ public class MorpcModelGlobal {
         runDOSCommand(command); 
         
         
+        String run_msahskimfCmd=(String)propertyMap.get("run_msahskimf.batch")+" "+scenario+" "+(iteration+1);
+        
         //run external and commercial procedures in all global iterations
         
-	    //if future year scenario +Y, othewise +N
+	    //if future year scenario +Y, otherwise +N
 		if(!scenario.equalsIgnoreCase(baseYearScenario)){
 	    	runDOSCommand(run_extfutureCmd+" Y");
 	    }else{
@@ -323,6 +321,8 @@ public class MorpcModelGlobal {
 		            runDOSCommand(run_tskimfCmd);
 		            //runDOSCommand(run_bestCmd);
 		        }
+
+		        runDOSCommand(run_msahskimfCmd);
 
 		    }
 		    // last iteration only
@@ -360,8 +360,11 @@ public class MorpcModelGlobal {
 	            //runDOSCommand(run_bestCmd);
 		    }
 
+	        runDOSCommand(run_msahskimfCmd);
+
 		}
 		
+        
 		//copy intermediate assignment results to sub iteration folders  
 		String tempDir=assignDir.trim();
 		
@@ -446,43 +449,58 @@ public class MorpcModelGlobal {
 
         MatrixIO32BitJvm ioVm32Bit = null;
         
-        String serverAddress = (String)propertyMap.get("MatrixServerAddress");
-        String serverPortString = (String)propertyMap.get("MatrixServerPort");
-        int serverPort = 0;
+        MatrixType mt = null;
+        String matrixFormatString = (String)propertyMap.get("format");
+        if ( matrixFormatString.equalsIgnoreCase( "tpplus") ) {
 
-        if ( serverAddress != null && serverPortString != null ) {
+            mt = MatrixType.TPPLUS;
 
-            serverPort = Integer.parseInt( serverPortString );
-            
-            System.out.println("attempting connection to matrix server " + serverAddress + ":" + serverPort);
+            String serverAddress = (String)propertyMap.get("MatrixServerAddress");
+            String serverPortString = (String)propertyMap.get("MatrixServerPort");
+            int serverPort = 0;
 
-            try
-            {
-                ms = new MatrixDataServerRmi(serverAddress, serverPort, MatrixDataServer.MATRIX_DATA_SERVER_NAME);
-                ms.testRemote( Thread.currentThread().getName() );
-                ms.start32BitMatrixIoServer(MatrixType.TPPLUS);
+            if ( serverAddress != null && serverPortString != null ) {
+
+                serverPort = Integer.parseInt( serverPortString );
+                
+                System.out.println("attempting connection to matrix server " + serverAddress + ":" + serverPort);
+
+                try
+                {
+                    ms = new MatrixDataServerRmi(serverAddress, serverPort, MatrixDataServer.MATRIX_DATA_SERVER_NAME);
+                    ms.testRemote( Thread.currentThread().getName() );
+                    ms.clear();
+                    ms.start32BitMatrixIoServer( mt );
+
+                    MatrixDataManager mdm = MatrixDataManager.getInstance();
+                    mdm.clearData();                
+                    mdm.setMatrixDataServerObject(ms);
+
+                    System.out.println( "connected to matrix server " + serverAddress + ":" + serverPort);
+                }
+                catch (Exception e) {
+                    logger.error( "exception caught setting up connection to remote matrix server -- exiting.", e );
+                    throw new RuntimeException();
+                }
+
+            }
+            else {
+                
+                System.out.println ("starting matrix data server in a 32 bit process.");
+                // start the 32 bit JVM used specifically for running matrix io classes
+                ioVm32Bit = MatrixIO32BitJvm.getInstance();
+                ioVm32Bit.startJVM32();
+                
+                // establish that matrix reader and writer classes will use the RMI versions for TRANSCAD format matrices
+                ioVm32Bit.startMatrixDataServer( mt );
 
                 MatrixDataManager mdm = MatrixDataManager.getInstance();
-                mdm.setMatrixDataServerObject(ms);
-
-                System.out.println( "connected to matrix server " + serverAddress + ":" + serverPort);
+                mdm.clearData();                
+                mdm.setMatrixDataServerObject( ms );
             }
-            catch (Exception e) {
-                logger.error( "exception caught setting up connection to remote matrix server -- exiting.", e );
-                throw new RuntimeException();
-            }
-
+        
         }
-        else {
-            
-            System.out.println ("starting matrix data server in a 32 bit process.");
-            // start the 32 bit JVM used specifically for running matrix io classes
-            ioVm32Bit = MatrixIO32BitJvm.getInstance();
-            ioVm32Bit.startJVM32();
-            
-            // establish that matrix reader and writer classes will use the RMI versions for TRANSCAD format matrices
-            ioVm32Bit.startMatrixDataServer( MatrixType.TPPLUS );
-        }
+        
         
         return ioVm32Bit;
         
@@ -490,7 +508,8 @@ public class MorpcModelGlobal {
 
     private void stop32BitMatrixIoServer() {
         
-        ms.stop32BitMatrixIoServer();
+        if ( ms != null )
+            ms.stop32BitMatrixIoServer();
     }
     
 

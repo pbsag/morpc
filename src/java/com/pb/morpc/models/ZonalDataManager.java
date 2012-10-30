@@ -2045,8 +2045,8 @@ public class ZonalDataManager implements java.io.Serializable {
 	/**
 	 * update property map in each global iteration
 	 */
-	public void updatePropertyMap(int iteration){
-		propertyMap=ResourceUtil.getResourceBundleAsHashMap("morpc"+iteration);
+	public void updatePropertyMap(String basePropertName, int iteration){
+		propertyMap=ResourceUtil.getResourceBundleAsHashMap(basePropertName+iteration);
 	}
 
     

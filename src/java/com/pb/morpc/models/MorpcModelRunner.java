@@ -68,7 +68,7 @@ public class MorpcModelRunner extends MorpcModelBase {
     
             //update accessibily indices, and then write it to hard drive as a .csv file.
             if ( ((String)propertyMap.get("format")).equalsIgnoreCase("tpplus") ) {
-                AccessibilityIndicesTpp accInd = new AccessibilityIndicesTpp( PROPERTIES_FILE_BASENAME );
+                AccessibilityIndicesTpp accInd = new AccessibilityIndicesTpp( basePropertyName );
                 accInd.writeIndices();
             }
             else {

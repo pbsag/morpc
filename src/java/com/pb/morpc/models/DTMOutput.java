@@ -7,6 +7,7 @@ import com.pb.morpc.structures.*;
 
 import com.pb.morpc.synpop.SyntheticPopulation;
 import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.model.ChoiceModelApplication;
@@ -1255,6 +1256,27 @@ public class DTMOutput implements java.io.Serializable {
             logger.info( String.format("    [%d] %-16s: %.0f", i-1, newNames[i-1], outputMatrices[i-1].getSum()) );
         }            
 
+        try {
+        	
+            String matrixSeverAddress = (String) propertyMap.get("MatrixServerAddress");
+            String matrixSeverPort = (String) propertyMap.get("MatrixServerPort");
+
+        	
+            if ( matrixSeverAddress == null ){
+                MatrixWriter writer = MatrixWriter.createWriter ( MatrixType.TPPLUS, new File(tppFileName) );
+                writer.writeMatrices( newNames, outputMatrices );
+            }
+            else{
+                //These lines will remote any matrix reader call
+                MatrixDataServerRmi ms = new MatrixDataServerRmi( matrixSeverAddress, Integer.parseInt(matrixSeverPort), MatrixDataServer.MATRIX_DATA_SERVER_NAME);
+                ms.writeTpplusMatrices( tppFileName, trips, newNames, newDescriptions  );
+            }
+        }        
+        catch (RuntimeException e) {
+            logger.fatal( "exception occurred writing matrices to file: " + tppFileName );
+            throw e;
+        }
+        
     }
 
 
