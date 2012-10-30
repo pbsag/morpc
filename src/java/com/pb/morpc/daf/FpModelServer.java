@@ -88,8 +88,7 @@ public class FpModelServer extends MessageProcessingTask {
 						Message exitMessage = createMessage();
 						exitMessage.setId(MessageID.EXIT);
 
-						//sendTo( sender, exitMessage );
-                        sendTo( sender, exitMessage, logger, this.name );
+						sendTo( sender, exitMessage );
 						activeWorkers--;
 				    }
 				    else {
@@ -101,8 +100,7 @@ public class FpModelServer extends MessageProcessingTask {
     		            startWorkMessage.setId(MessageID.START_INFO);
     					startWorkMessage.setValue( MessageID.PROPERTY_MAP_KEY, propertyMap );
 
-                        //sendTo( sender, startWorkMessage );
-                        sendTo( sender, startWorkMessage, logger, this.name );
+                        sendTo( sender, startWorkMessage );
     					activeWorkers++;
 					}
                     i.remove();
@@ -158,8 +156,7 @@ public class FpModelServer extends MessageProcessingTask {
         		            startWorkMessage.setId(MessageID.START_INFO);
         					startWorkMessage.setValue( MessageID.PROPERTY_MAP_KEY, propertyMap );
 				
-							//replyToSender(startWorkMessage);
-							replyToSender( startWorkMessage, logger, this.name, msg.getSender() );
+							replyToSender(startWorkMessage);
 							activeWorkers++;
 				        
 				        }

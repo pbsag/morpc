@@ -246,7 +246,7 @@ public class MorpcModelServer extends MessageProcessingTask {
             tdm = new TODDataManager(propertyMap);
         }
         
-        zdm.updatePropertyMap(iteration+1);
+        zdm.updatePropertyMap( "morpc", iteration+1 );
 
 
 		//if FTA_Restart_run is false, run PopSyn, otherwise skip it.

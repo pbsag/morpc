@@ -102,8 +102,7 @@ public class RnServer extends MessageProcessingTask {
     		            startWorkMessage.setId(MessageID.START_INFO);
     					startWorkMessage.setValue( MessageID.PROPERTY_MAP_KEY, propertyMap );
 
-                        //sendTo( sender, startWorkMessage );
-                        sendTo( sender, startWorkMessage, logger, this.name );
+                        sendTo( sender, startWorkMessage );
     					sentWorkers++;
 
 					}
@@ -117,7 +116,7 @@ public class RnServer extends MessageProcessingTask {
 
 					Message rMsg = createMessage();
 					rMsg.setId(MessageID.RELEASE_MEMORY);
-					sendTo( qMsg.getSender(), rMsg, logger, this.name );
+					sendTo( qMsg.getSender(), rMsg );
 					receivedWorkers++;
 				}
 			}
@@ -154,7 +153,7 @@ public class RnServer extends MessageProcessingTask {
 				
 	                            //replyToSender(startWorkMessage);
 	                            //replyToSender( startWorkMessage, logger, this.name, msg.getSender() );
-	                            sendTo( msg.getSender(), startWorkMessage, logger, this.name );
+	                            sendTo( msg.getSender(), startWorkMessage);
 
 	                            sentWorkers++;
 				                
@@ -180,7 +179,7 @@ public class RnServer extends MessageProcessingTask {
                     
 					Message rMsg = createMessage();
 					rMsg.setId(MessageID.RELEASE_MEMORY);
-					sendTo( msg.getSender(), rMsg, logger, this.name );
+					sendTo( msg.getSender(), rMsg );
 
 //                    if (LOGGING)
 //                        logger.info( this.name + " onMessage() id=" + msg.getId() + " adding message with SEND_START_INFO to rnWorkerQueue[" + workerQueue.size() + "] on thread " + Thread.currentThread().getName() + " for sender " + msg.getSender() + ", activeWorkers=" + activeWorkers );

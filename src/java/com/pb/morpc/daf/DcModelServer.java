@@ -103,8 +103,7 @@ public class DcModelServer extends MessageProcessingTask {
 						Message exitMessage = createMessage();
 						exitMessage.setId(MessageID.EXIT);
 
-						//sendTo( sender, exitMessage );
-                        sendTo( sender, exitMessage, logger, this.name );
+						sendTo( sender, exitMessage );
 						activeWorkers--;
 				    }
 				    else {
@@ -125,8 +124,7 @@ public class DcModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.SHADOW_PRICE_ITER_KEY, Integer.toString(shadowPriceIter) );
 						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
-						//sendTo( sender, startWorkMessage );
-                        sendTo( sender, startWorkMessage, logger, this.name );
+						sendTo( sender, startWorkMessage );
 						activeWorkers++;
 				    }
                     i.remove();
@@ -190,8 +188,7 @@ public class DcModelServer extends MessageProcessingTask {
 							startWorkMessage.setValue( MessageID.SHADOW_PRICE_ITER_KEY, Integer.toString(shadowPriceIter) );
 							startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
-                            //replyToSender(startWorkMessage, logger);
-							replyToSender(startWorkMessage, logger, this.name, msg.getSender() );
+							replyToSender(startWorkMessage);
 
 	                        activeWorkers++;
 				        

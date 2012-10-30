@@ -77,7 +77,7 @@ public class RnWorker extends MessageProcessingTask implements java.io.Serializa
 
 			Message finishedMsg = createMessage();
 			finishedMsg.setId( MessageID.FINISHED );
-			sendTo( modelServer, finishedMsg, logger, this.getName() );
+			sendTo( modelServer, finishedMsg );
 			
 		}
 		else if ( msg.getId().equals( MessageID.RELEASE_MEMORY ) || msg.getId().equals( MessageID.EXIT ) ) {

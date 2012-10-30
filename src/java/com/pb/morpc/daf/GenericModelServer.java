@@ -130,8 +130,7 @@ public class GenericModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.STATIC_TOD_DATA_MAP_KEY, tdmMap );
 						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
-                        //sendTo( sender, startWorkMessage );
-                        sendTo( sender, startWorkMessage, logger, this.name );
+                        sendTo( sender, startWorkMessage );
 
 
 						activeWorkers++;
@@ -211,9 +210,8 @@ public class GenericModelServer extends MessageProcessingTask {
 						startWorkMessage.setValue( MessageID.STATIC_TOD_DATA_MAP_KEY, tdmMap );
 						startWorkMessage.setValue( MessageID.PROCESSOR_ID_KEY, Integer.toString(taskNumber % ZonalDataManager.MAX_DISTRIBUTED_PROCESSORES) );
 				
-						//replyToSender(startWorkMessage);
-                        replyToSender( startWorkMessage, logger, this.name, msg.getSender() );
-						
+						replyToSender(startWorkMessage);
+                        
 						activeWorkers++;
 					}
 				}
