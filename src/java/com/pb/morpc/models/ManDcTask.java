@@ -9,8 +9,12 @@ package com.pb.morpc.models;
 
 import com.pb.morpc.models.DTMHousehold;
 import com.pb.morpc.structures.Household;
+import com.pb.morpc.structures.TourType;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 
@@ -19,16 +23,18 @@ public class ManDcTask implements Callable<List<Object>> {
 
 	private Logger logger = Logger.getLogger("com.pb.morpc.models");
 
+	private BlockingQueue<DTMHousehold> modelQueue;
+	private HashMap<String,String> propertyMap;
 	private Household[] hhList;
-	private DTMHousehold dtmHH;
 	private int taskIndex;
 	private int startIndex;
 	private int endIndex;
 	
 
-    public ManDcTask ( DTMHousehold dtmHH, int taskIndex, int startIndex, int endIndex, Household[] hhList ) {
-        this.dtmHH = dtmHH;
-        this.taskIndex = taskIndex;
+    public ManDcTask ( BlockingQueue<DTMHousehold> modelQueue, HashMap<String,String> propertyMap, int taskIndex, int startIndex, int endIndex, Household[] hhList ) {
+    	this.modelQueue = modelQueue;
+    	this.propertyMap = propertyMap;
+    	this.taskIndex = taskIndex;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
         this.hhList = hhList;
@@ -37,10 +43,19 @@ public class ManDcTask implements Callable<List<Object>> {
 
     public List<Object> call() {
 
-        dtmHH.setProcessorIndex( taskIndex );
+    	DTMHousehold dtmHH = null;
+    	try {
+			dtmHH = modelQueue.take();
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+    	
+    	int processorIndex = dtmHH.getProcessorIndex();
+        dtmHH.setProcessorIndex( processorIndex );
         for (int i=startIndex; i <= endIndex; i++) {
             try {
-                hhList[i].setProcessorIndex (taskIndex);       
+                hhList[i].setProcessorIndex ( processorIndex );       
                 dtmHH.mandatoryTourDc (hhList[i]);
             }
             catch (java.lang.Exception e) {
@@ -50,11 +65,14 @@ public class ManDcTask implements Callable<List<Object>> {
             }
         }
 
-        List<Object> resultBundle = new ArrayList<Object>(3);
+        List<Object> resultBundle = new ArrayList<Object>(4);
         resultBundle.add(taskIndex);
+        resultBundle.add(processorIndex);
         resultBundle.add(startIndex);
         resultBundle.add(endIndex);
 
+        modelQueue.offer( dtmHH );
+        
         return resultBundle;
         
 	}

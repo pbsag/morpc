@@ -33,7 +33,7 @@ public class HouseholdArrayManager implements java.io.Serializable {
     HashMap propertyMap;
 
     int hhsProcessed = 0;
-    int hhsPerCPU = 0;
+    int hhsPerThread = 0;
     int totalHhsToProcess = 0;
 
 	int[] listOfHHIds = null;
@@ -44,7 +44,7 @@ public class HouseholdArrayManager implements java.io.Serializable {
     public HouseholdArrayManager(HashMap propertyMap) {
         this.propertyMap = propertyMap;
 
-        hhsPerCPU = Integer.parseInt((String) propertyMap.get("hhsPerCPU"));
+        hhsPerThread = Integer.parseInt((String) propertyMap.get("hhsPerThread"));
     }
     
     public void createBigHHArrayFromDiskObject(){
@@ -674,8 +674,8 @@ public class HouseholdArrayManager implements java.io.Serializable {
         if (totalHhsToProcess > listOfHHIds.length)
 			totalHhsToProcess = listOfHHIds.length;
         
-		if (hhsPerCPU > totalHhsToProcess)
-			hhsPerCPU = totalHhsToProcess;
+		if (hhsPerThread > totalHhsToProcess)
+			hhsPerThread = totalHhsToProcess;
         
     }
 
@@ -686,13 +686,13 @@ public class HouseholdArrayManager implements java.io.Serializable {
 
     public Household[] getHouseholdsForWorker() {
 
-        if ((hhsProcessed + hhsPerCPU) < totalHhsToProcess) {
+        if ((hhsProcessed + hhsPerThread) < totalHhsToProcess) {
 
-			Household[] workerHHs = new Household[hhsPerCPU];
-            for (int i = 0; i < hhsPerCPU; i++)
+			Household[] workerHHs = new Household[hhsPerThread];
+            for (int i = 0; i < hhsPerThread; i++)
                 workerHHs[i] = (Household) bigHHArray[listOfHHIds[i + hhsProcessed]];
 
-            hhsProcessed += hhsPerCPU;
+            hhsProcessed += hhsPerThread;
 
 			// return the array of hh objects so the worker can process DTM choices.
 			return workerHHs;

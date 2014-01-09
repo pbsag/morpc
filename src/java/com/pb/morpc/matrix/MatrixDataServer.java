@@ -215,4 +215,10 @@ public class MatrixDataServer implements MatrixDataServerIf, Serializable
 
     }
 
+	@Override
+	public void writeMatrixFile(String fileName, Matrix[] m) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

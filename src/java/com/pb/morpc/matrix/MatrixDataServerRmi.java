@@ -77,4 +77,10 @@ public class MatrixDataServerRmi
         return (String) remote.method("testRemote", objArray);
     }
 
+	@Override
+	public void writeMatrixFile(String fileName, Matrix[] m) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

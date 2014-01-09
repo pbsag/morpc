@@ -30,7 +30,7 @@ public class ZonalDataManager implements java.io.Serializable {
     // The way to check this value is to check the daf application properties file
     // where tasks are assigned to processors, and make sure that no more tasks than
     // this number are assigned to a daf node. 
-	public static final int MAX_DISTRIBUTED_PROCESSORES = 16;
+	public static final int MAX_DISTRIBUTED_PROCESSORES = 64;
 
     public static final int WALK_SEGMENTS = 3;
     public static final int INCOME_CATEGORIES = 3;

@@ -11,19 +11,12 @@ import com.pb.common.calculator.IndexValues;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.model.ChoiceModelApplication;
-import com.pb.common.util.SeededRandom;
 
 import com.pb.morpc.models.ZonalDataManager;
 import com.pb.morpc.structures.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import org.apache.log4j.Logger;
 import java.io.*;
 
@@ -197,6 +190,11 @@ public class DTMModelBase implements java.io.Serializable {
 	
 	public void setProcessorIndex( int index ){
 	    processorIndex = index;
+	}
+	
+
+	public int getProcessorIndex(){
+	    return processorIndex;
 	}
 	
 
