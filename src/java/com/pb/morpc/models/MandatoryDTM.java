@@ -8,7 +8,6 @@ package com.pb.morpc.models;
  */
 
 
-import com.pb.common.util.SeededRandom;
 import com.pb.morpc.structures.*;
 
 import java.util.ArrayList;
@@ -26,6 +25,8 @@ import org.apache.log4j.Logger;
 
 
 public class MandatoryDTM implements java.io.Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
 	
@@ -97,13 +98,13 @@ public class MandatoryDTM implements java.io.Serializable {
     	        dtmHH[modelIndex] = new DTMHousehold ( modelIndex, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
     	        dtmHH[modelIndex].setShadowPricingIteration( shadowPriceIter );
     	        dtmHH[modelIndex].clearProbabilitiesMaps( TourType.MANDATORY_TYPES );
-
+   
     	        modelQueue.offer( dtmHH[modelIndex] );
     	        modelIndex++;
 
             }
 
-            calculateDcDistributed( propertyMap, hhList, shadowPriceIter );        
+            calculateDcDistributed( hhList, shadowPriceIter );        
 
 		}
 		    
@@ -130,14 +131,14 @@ public class MandatoryDTM implements java.io.Serializable {
             }
         }        
         else {
-            calculateTcMcDistributed( propertyMap, hhList, numThreads );        
+            calculateTcMcDistributed( hhList, numThreads );        
         }
 
         hhMgr.sendResults ( hhList );
     }
     
     
-    private void calculateDcDistributed( HashMap<String,String> propertyMap, Household[] hhList, int shadowPriceIter ) {
+    private void calculateDcDistributed( Household[] hhList, int shadowPriceIter ) {
 
         ArrayList<int[]> startEndIndexList = getStartEndIndexList( hhList.length );
 
@@ -151,29 +152,33 @@ public class MandatoryDTM implements java.io.Serializable {
         {
             int startIndex = startEndIndices[0];
             int endIndex = startEndIndices[1];
-            ManDcTask task = new ManDcTask( modelQueue, propertyMap, taskIndex, startIndex, endIndex, hhList );
+            ManDcTask task = new ManDcTask( modelQueue, taskIndex, startIndex, endIndex, hhList );
             completionService.submit( task );
             taskIndex++;
 
         }
-
         
         logger.info(String.format("created %d ManDcTASKs with %d hhs each for %d total hhs.", startEndIndexList.size(), hhsPerThread, hhList.length) );
 
-        
+
+        int i = 0;
+    	int start = 0;
+    	int end = 0;
+    	int modelId = 0;
+        int task = 0;
 		int numHouseholdsProcessed = 0;		
-        for ( int i=1; i < taskIndex; i++ ) {
+    	int nexp = 0;
+        for ( i=1; i < taskIndex; i++ ) {
 
             try {
 
             	Future<List<Object>> resultFuture = completionService.take();
             	List<Object> resultBundle = resultFuture.get();
-                int task = (Integer) resultBundle.get(0);
-                int modelId = (Integer) resultBundle.get(1);
-                int start = (Integer) resultBundle.get(2);
-                int end = (Integer) resultBundle.get(3);
+                task = (Integer) resultBundle.get(0);
+                modelId = (Integer) resultBundle.get(1);
+                start = (Integer) resultBundle.get(2);
+                end = (Integer) resultBundle.get(3);
                 numHouseholdsProcessed += ( end - start + 1 );
-                logger.info(String.format("returned ManDcTask %d, %d of %d, start=%d, end=%d, modelId=%d, numHhs=%d.", task, i, startEndIndexList.size(), start, end, modelId, numHouseholdsProcessed));                
 
                 if ( modelIndex < numThreads ) {
 
@@ -197,23 +202,29 @@ public class MandatoryDTM implements java.io.Serializable {
                 System.exit(-1);
             }
 
-        } // future
+       		if ( (i+1) % (Math.pow(2,nexp)) == 0 ) {
+	            nexp++;
+                logger.info( String.format("returned ManDcTask %d, %d of %d, start=%d, end=%d, modelId=%d, numHhs=%d.", task, i, startEndIndexList.size(), start, end, modelId, numHouseholdsProcessed) );                
+	        }
 
+    	} // future
+
+        logger.info( String.format("returned ManDcTask %d, %d of %d, start=%d, end=%d, modelId=%d, numHhs=%d.", task, i, startEndIndexList.size(), start, end, modelId, numHouseholdsProcessed) );                
     	logger.info( "shutting down ExecutorService" );
         exec.shutdown();
         logger.info( "returned all distributed ManDcTasks." );
+
     }
 
 
     
-    private void calculateTcMcDistributed( HashMap<String,String> propertyMap, Household[] hhList, int numThreads ) {
+    private void calculateTcMcDistributed( Household[] hhList, int numThreads ) {
 
-        int numPackets = numThreads;
         ArrayList<int[]> startEndIndexList = getStartEndIndexList( hhList.length );
 
         
         ExecutorService exec = Executors.newFixedThreadPool(numThreads);
-        ArrayList<Future<List<Object>>> results = new ArrayList<Future<List<Object>>>();
+        ExecutorCompletionService<List<Object>> completionService = new ExecutorCompletionService<List<Object>>(exec);
 
         
         int taskIndex = 1;
@@ -221,37 +232,65 @@ public class MandatoryDTM implements java.io.Serializable {
         {
             int startIndex = startEndIndices[0];
             int endIndex = startEndIndices[1];
-
-            logger.info(String.format("creating TcMcTASK: %d range: %d to %d.", taskIndex, startIndex, endIndex));
-
-            ManTcMcTask task = new ManTcMcTask( dtmHH[taskIndex], taskIndex, startIndex, endIndex, hhList );
-
-            results.add(exec.submit(task));
+            ManTcMcTask task = new ManTcMcTask( modelQueue, taskIndex, startIndex, endIndex, hhList );
+            completionService.submit( task );
             taskIndex++;
+
         }
 
-        for (Future<List<Object>> fs : results) {
+        logger.info(String.format("created %d ManTcMcTASKs with %d hhs each for %d total hhs.", startEndIndexList.size(), hhsPerThread, hhList.length) );
+
+        
+        int i = 0;
+    	int start = 0;
+    	int end = 0;
+    	int modelId = 0;
+        int task = 0;
+		int numHouseholdsProcessed = 0;		
+    	int nexp = 0;
+        for ( i=1; i < taskIndex; i++ ) {
 
             try {
-                List<Object> resultBundle = fs.get();
-                int task = (Integer) resultBundle.get(0);
-                int start = (Integer) resultBundle.get(1);
-                int end = (Integer) resultBundle.get(2);
-                logger.info(String.format("returned tcMcTask %d of %d, start=%d, end=%d.", task, numPackets, start, end));
+
+            	Future<List<Object>> resultFuture = completionService.take();
+            	List<Object> resultBundle = resultFuture.get();
+                task = (Integer) resultBundle.get(0);
+                modelId = (Integer) resultBundle.get(1);
+                start = (Integer) resultBundle.get(2);
+                end = (Integer) resultBundle.get(3);
+                numHouseholdsProcessed += ( end - start + 1 );
+
+                if ( modelIndex < numThreads ) {
+
+                    // create DTMHousehold objects
+        	        dtmHH[modelIndex] = new DTMHousehold ( modelIndex, propertyMap, TourType.MANDATORY_CATEGORY, TourType.MANDATORY_TYPES );
+
+        	        modelQueue.offer( dtmHH[modelIndex] );
+        	        modelIndex++;
+
+                }
+
             }
             catch (InterruptedException e) {
-                logger.error("InterruptedException returned in place of result object.", e);
+                logger.error( "InterruptedException returned in place of result object, i=" + i, e );
                 System.exit(-1);
             }
             catch (ExecutionException e) {
-                logger.error("ExecutionException returned in place of result object.", e);
+                logger.error( "ExecutionException returned in place of result object, i=" + i, e.getCause() );
                 System.exit(-1);
             }
-            finally {
-                exec.shutdown();
-            }
 
-        } // future
+       		if ( (i+1) % (Math.pow(2,nexp)) == 0 ) {
+	            nexp++;
+                logger.info( String.format("returned ManTcMcTask %d, %d of %d, start=%d, end=%d, modelId=%d, numHhs=%d.", task, i, startEndIndexList.size(), start, end, modelId, numHouseholdsProcessed) );
+	        }
+
+    	} // future
+
+        logger.info( String.format("returned ManTcMcTask %d, %d of %d, start=%d, end=%d, modelId=%d, numHhs=%d.", task, i, startEndIndexList.size(), start, end, modelId, numHouseholdsProcessed) );      
+    	logger.info( "shutting down ExecutorService" );
+        exec.shutdown();
+        logger.info( "returned all distributed ManTcMcTasks." );
 
     }
 

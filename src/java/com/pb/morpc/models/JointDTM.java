@@ -13,36 +13,50 @@ import com.pb.morpc.structures.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.apache.log4j.Logger;
 
 
 public class JointDTM implements java.io.Serializable {
-
 	
+  	private static final long serialVersionUID = 1L;
+
     protected static Logger logger = Logger.getLogger("com.pb.morpc.models");
     
-    private static final String NUM_THREADS_PROPERTY = "numThreads";
+	private static final String NUM_THREADS_PROPERTY = "numThreads";
+	private static final String HHS_PER_THREAD_PROPERTY = "hhsPerThread";
     
-    private HashMap<String,String> propertyMap;
-    private int numThreads = -1;
 	private DTMHousehold[] dtmHH;
 	private HouseholdArrayManager hhMgr;
+    private HashMap<String,String> propertyMap;
 
-
+    private BlockingQueue<DTMHousehold> modelQueue = null;
+    private int modelIndex = 0;
+	
+	private int numThreads = -1;
+	private int hhsPerThread = -1;
+	
+	
+	
 	
     public JointDTM (HashMap<String,String> propertyMap, HouseholdArrayManager hhMgr) {
-
 		this.propertyMap = propertyMap;
 		this.hhMgr = hhMgr;
-
 
         String numThreadsString = (String)propertyMap.get( NUM_THREADS_PROPERTY );
         if ( numThreadsString != null )
             numThreads = Integer.parseInt( numThreadsString );
+
+        String hhsPerCpuString = (String)propertyMap.get( HHS_PER_THREAD_PROPERTY );
+        if ( hhsPerCpuString != null )
+        	hhsPerThread = Integer.parseInt( hhsPerCpuString );
 
         if ( numThreads <= 0 ) {
             dtmHH = new DTMHousehold[1];
@@ -50,7 +64,8 @@ public class JointDTM implements java.io.Serializable {
             dtmHH[0].setProcessorIndex ( 0 );       
         }
         else {
-            dtmHH = new DTMHousehold[numThreads+1];
+            dtmHH = new DTMHousehold[numThreads];
+        	modelQueue = new LinkedBlockingQueue<DTMHousehold>( numThreads );
         }
 
     }

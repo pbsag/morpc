@@ -129,7 +129,7 @@ public class MorpcModelGlobal {
         // read the property file specific to this global iteration
         propertyMap = ResourceUtil.getResourceBundleAsHashMap( basePropertyName + (iteration+1) );
  
-        MatrixIO32BitJvm ioVm32Bit = startMatrixServer();        
+//        MatrixIO32BitJvm ioVm32Bit = startMatrixServer();        
         
         //Wu added
         //if 2nd iteration starts from disk object array, then read zdm and tdm from ZDMTDMObjetOnDisk created in 1st iteration
@@ -178,19 +178,19 @@ public class MorpcModelGlobal {
         
 
 
-        if ( ioVm32Bit != null ) {
-            // establish that matrix reader and writer classes will not use the RMI versions any longer.
-            // local matrix i/o, as specified by setting types, is now the default again.
-            ioVm32Bit.stopMatrixDataServer();
-            
-            // close the JVM in which the RMI reader/writer classes were running
-            ioVm32Bit.stopJVM32();
-            System.out.println ("matrix data server 32 bit process stopped.");
-        }
-        else {
-            stop32BitMatrixIoServer();
-            System.out.println ("remote matrix data server 32 bit process stopped.");
-        }
+//        if ( ioVm32Bit != null ) {
+//            // establish that matrix reader and writer classes will not use the RMI versions any longer.
+//            // local matrix i/o, as specified by setting types, is now the default again.
+//            ioVm32Bit.stopMatrixDataServer();
+//            
+//            // close the JVM in which the RMI reader/writer classes were running
+//            ioVm32Bit.stopJVM32();
+//            System.out.println ("matrix data server 32 bit process stopped.");
+//        }
+//        else {
+//            stop32BitMatrixIoServer();
+//            System.out.println ("remote matrix data server 32 bit process stopped.");
+//        }
 
         
 		//execute assignment and skimming

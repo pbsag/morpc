@@ -9,10 +9,8 @@ package com.pb.morpc.models;
 
 import com.pb.morpc.models.DTMHousehold;
 import com.pb.morpc.structures.Household;
-import com.pb.morpc.structures.TourType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -24,16 +22,14 @@ public class ManDcTask implements Callable<List<Object>> {
 	private Logger logger = Logger.getLogger("com.pb.morpc.models");
 
 	private BlockingQueue<DTMHousehold> modelQueue;
-	private HashMap<String,String> propertyMap;
 	private Household[] hhList;
 	private int taskIndex;
 	private int startIndex;
 	private int endIndex;
 	
 
-    public ManDcTask ( BlockingQueue<DTMHousehold> modelQueue, HashMap<String,String> propertyMap, int taskIndex, int startIndex, int endIndex, Household[] hhList ) {
+    public ManDcTask ( BlockingQueue<DTMHousehold> modelQueue, int taskIndex, int startIndex, int endIndex, Household[] hhList ) {
     	this.modelQueue = modelQueue;
-    	this.propertyMap = propertyMap;
     	this.taskIndex = taskIndex;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
@@ -46,9 +42,12 @@ public class ManDcTask implements Callable<List<Object>> {
     	DTMHousehold dtmHH = null;
     	try {
 			dtmHH = modelQueue.take();
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		}
+    	catch (InterruptedException e1) {
+            logger.fatal ( "InterruptedException caught taking DTMHousehold from modelQueue in ManDcTask " + taskIndex + ", hhList range [" + startIndex + "," + endIndex + "]." );
+            logger.fatal ( e1.getCause().getMessage() );
+            logger.fatal ( "", e1 );
+            System.exit(-1);
 		}
     	
     	int processorIndex = dtmHH.getProcessorIndex();
